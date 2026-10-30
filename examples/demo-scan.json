@@ -1,0 +1,1274 @@
+{
+  "metadata": {
+    "scan_id": "c901e636-3f4b-4147-bb6d-31e3eb7867b9",
+    "tenant_id": "demo-tenant-0000",
+    "scan_timestamp": "2026-10-30T08:33:39Z",
+    "scanner_version": "0.1.0",
+    "hygiene_score": 8,
+    "summary_counts": {
+      "by_severity": {
+        "critical": 7,
+        "high": 17,
+        "medium": 4,
+        "low": 2
+      },
+      "by_entity_type": {
+        "service_principal": 8,
+        "app_registration": 8,
+        "managed_identity": 2,
+        "ai_agent": 5
+      },
+      "total_entities": 23,
+      "total_findings": 30,
+      "orphaned_identities": 5
+    },
+    "rules_evaluated": [
+      "NHI-SEC-001",
+      "NHI-SEC-002",
+      "NHI-SEC-003",
+      "NHI-SEC-004",
+      "NHI-SEC-005",
+      "NHI-DORM-001",
+      "NHI-DORM-002",
+      "NHI-PERM-001",
+      "NHI-PERM-002",
+      "NHI-PERM-003",
+      "NHI-RBAC-001",
+      "NHI-RBAC-002",
+      "NHI-AGENT-001",
+      "NHI-AGENT-002",
+      "NHI-AGENT-003",
+      "NHI-AGENT-004",
+      "NHI-AGENT-005"
+    ],
+    "collection_warnings": []
+  },
+  "entities": [
+    {
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
+      "display_name": "Finance Copilot Agent",
+      "entity_type": "ai_agent",
+      "created_datetime": "2026-04-03T08:33:39Z",
+      "last_sign_in": "2026-10-29T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": true,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "9162b6eb-fa78-597f-b69e-f52ec55085c5",
+        "sp_credential_count": 0,
+        "agent_classification_signals": [
+          "name:copilot"
+        ]
+      }
+    },
+    {
+      "entity_id": "34b0ade0-3c17-550a-9299-6d91f5026cbc",
+      "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
+      "display_name": "Helpdesk Assistant",
+      "entity_type": "ai_agent",
+      "created_datetime": "2026-07-02T08:33:39Z",
+      "last_sign_in": "2026-10-27T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "it-ops@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [
+          "AIAgent"
+        ],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "f75c89a4-61d8-5ca8-9e9b-99838f161eed",
+        "sp_credential_count": 0,
+        "agent_classification_signals": [
+          "tag:aiagent"
+        ]
+      }
+    },
+    {
+      "entity_id": "525107c6-ad2d-5652-a103-c39a60ba0e94",
+      "app_id": "f56b589f-68ee-5695-8ed8-c993c979fc98",
+      "display_name": "id-foundry-research-agent",
+      "entity_type": "ai_agent",
+      "created_datetime": null,
+      "last_sign_in": "2026-10-29T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "ManagedIdentity",
+        "publisherName": null,
+        "appOwnerOrganizationId": null,
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": false,
+        "application_object_id": null,
+        "sp_credential_count": 0,
+        "agent_classification_signals": [
+          "name:foundry agent"
+        ],
+        "azure_resource_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-ai/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-foundry-research-agent",
+        "managed_identity_kind": "user_assigned"
+      }
+    },
+    {
+      "entity_id": "dee7cb58-c6c4-599f-bbfd-4395e56029d2",
+      "app_id": "788270a6-4e80-5444-9407-58b223e65e1b",
+      "display_name": "Procurement Agent",
+      "entity_type": "ai_agent",
+      "created_datetime": null,
+      "last_sign_in": null,
+      "is_enabled": true,
+      "owners": [
+        "procurement-lead@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "ServiceIdentity",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": false,
+        "application_object_id": null,
+        "sp_credential_count": 0,
+        "agent_classification_signals": [
+          "entra_agent_id"
+        ],
+        "agent_identity_blueprint_id": "b29524de-734a-5ad3-9031-56cb3e62e25d",
+        "sponsors": [
+          "procurement-lead@demo-corp.example"
+        ],
+        "sponsors_unknown": false
+      }
+    },
+    {
+      "entity_id": "cd62f8b2-5d2b-5943-8e72-f4d3c83d508c",
+      "app_id": "ad346126-6df4-5b72-83ef-f5dd51d8fcdf",
+      "display_name": "Sales Outreach Agent",
+      "entity_type": "ai_agent",
+      "created_datetime": null,
+      "last_sign_in": null,
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": true,
+      "raw_metadata": {
+        "servicePrincipalType": "ServiceIdentity",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": false,
+        "application_object_id": null,
+        "sp_credential_count": 0,
+        "agent_classification_signals": [
+          "entra_agent_id"
+        ],
+        "agent_identity_blueprint_id": "b29524de-734a-5ad3-9031-56cb3e62e25d",
+        "sponsors": [],
+        "sponsors_unknown": false
+      }
+    },
+    {
+      "entity_id": "6ef73c6b-032f-5fcf-a95d-ad6a50129a5b",
+      "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
+      "display_name": "ci-deploy-pipeline",
+      "entity_type": "app_registration",
+      "created_datetime": "2024-05-13T08:33:39Z",
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "devops-lead@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "3f70f801-4ce8-5a1d-99e9-2fb50deefece",
+        "password_credential_count": 1,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "9162b6eb-fa78-597f-b69e-f52ec55085c5",
+      "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
+      "display_name": "Finance Copilot Agent",
+      "entity_type": "app_registration",
+      "created_datetime": "2026-04-03T08:33:39Z",
+      "last_sign_in": "2026-10-29T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": true,
+      "raw_metadata": {
+        "signInAudience": "AzureADMultipleOrgs",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+        "password_credential_count": 1,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "f75c89a4-61d8-5ca8-9e9b-99838f161eed",
+      "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
+      "display_name": "Helpdesk Assistant",
+      "entity_type": "app_registration",
+      "created_datetime": "2026-07-02T08:33:39Z",
+      "last_sign_in": "2026-10-27T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "it-ops@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [
+          "AIAgent"
+        ],
+        "service_principal_id": "34b0ade0-3c17-550a-9299-6d91f5026cbc",
+        "password_credential_count": 0,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "203bdc96-9fa0-5546-b8e9-235e207471fe",
+      "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
+      "display_name": "Identity Automation",
+      "entity_type": "app_registration",
+      "created_datetime": "2024-11-29T08:33:39Z",
+      "last_sign_in": "2026-10-28T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "iam-team@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "23d10cf8-6099-5143-8db8-f97a738d83cd",
+        "password_credential_count": 3,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "f5f8be6e-b8e0-5ce8-8a41-d6790201cc46",
+      "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
+      "display_name": "legacy-hr-sync",
+      "entity_type": "app_registration",
+      "created_datetime": "2022-06-13T08:33:39Z",
+      "last_sign_in": "2026-03-04T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": true,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "59cf3713-48f3-5dce-8d5e-97c546a0e41f",
+        "password_credential_count": 3,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "be15c511-bdab-5ec7-bef1-5241cf63b7cb",
+      "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
+      "display_name": "marketing-analytics-poc",
+      "entity_type": "app_registration",
+      "created_datetime": "2026-01-03T08:33:39Z",
+      "last_sign_in": null,
+      "is_enabled": true,
+      "owners": [
+        "growth@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "eaa48941-65f2-5b21-870c-3437fe8dd9c5",
+        "password_credential_count": 1,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "b4be89f3-a9e3-503f-9d75-2f473fcfb8b5",
+      "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
+      "display_name": "payments-api",
+      "entity_type": "app_registration",
+      "created_datetime": "2025-06-17T08:33:39Z",
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "payments-team@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "43523998-3a95-5537-b966-b39b2a77a3e7",
+        "password_credential_count": 0,
+        "certificate_credential_count": 1
+      }
+    },
+    {
+      "entity_id": "d9d9d03e-995b-5707-8192-8f68e12610f2",
+      "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
+      "display_name": "sharepoint-migration-tool",
+      "entity_type": "app_registration",
+      "created_datetime": "2025-09-05T08:33:39Z",
+      "last_sign_in": "2026-10-26T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "m365-admins@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "signInAudience": "AzureADMyOrg",
+        "publisherDomain": "demo-corp.onmicrosoft.com",
+        "tags": [],
+        "service_principal_id": "ae72a780-e581-57fe-a706-734a96348248",
+        "password_credential_count": 0,
+        "certificate_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "3d5ef7e5-9f16-5ca3-90fb-3bbf7ee1739b",
+      "app_id": "79840d1c-d3f1-5890-be3b-378bf84965ac",
+      "display_name": "func-invoice-processor",
+      "entity_type": "managed_identity",
+      "created_datetime": null,
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "ManagedIdentity",
+        "publisherName": null,
+        "appOwnerOrganizationId": null,
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": false,
+        "application_object_id": null,
+        "sp_credential_count": 0,
+        "azure_resource_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-finance/providers/Microsoft.Web/sites/func-invoice-processor",
+        "managed_identity_kind": "system_assigned"
+      }
+    },
+    {
+      "entity_id": "c45db8f8-596d-5cfc-8d76-8de485ed2e95",
+      "app_id": "5c26141c-d51d-5097-936f-5c868a51b3d5",
+      "display_name": "id-aks-workload",
+      "entity_type": "managed_identity",
+      "created_datetime": null,
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "ManagedIdentity",
+        "publisherName": null,
+        "appOwnerOrganizationId": null,
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": false,
+        "application_object_id": null,
+        "sp_credential_count": 0,
+        "azure_resource_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-aks/providers/Microsoft.ManagedIdentity/userAssignedIdentities/id-aks-workload",
+        "managed_identity_kind": "user_assigned"
+      }
+    },
+    {
+      "entity_id": "863a805b-6466-54ff-ba12-48e74763b3ed",
+      "app_id": "6253058b-e16d-5e9f-b46a-55d9174deaee",
+      "display_name": "Acme Cloud Backup",
+      "entity_type": "service_principal",
+      "created_datetime": null,
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Acme Backup Inc.",
+        "appOwnerOrganizationId": "4c1e2a6b-0000-4000-8000-0000000acbe0",
+        "tags": [
+          "WindowsAzureActiveDirectoryIntegratedApp"
+        ],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": false,
+        "is_external_app": true,
+        "application_object_id": null,
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "3f70f801-4ce8-5a1d-99e9-2fb50deefece",
+      "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
+      "display_name": "ci-deploy-pipeline",
+      "entity_type": "service_principal",
+      "created_datetime": "2024-05-13T08:33:39Z",
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "devops-lead@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "6ef73c6b-032f-5fcf-a95d-ad6a50129a5b",
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "23d10cf8-6099-5143-8db8-f97a738d83cd",
+      "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
+      "display_name": "Identity Automation",
+      "entity_type": "service_principal",
+      "created_datetime": "2024-11-29T08:33:39Z",
+      "last_sign_in": "2026-10-28T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "iam-team@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "203bdc96-9fa0-5546-b8e9-235e207471fe",
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "59cf3713-48f3-5dce-8d5e-97c546a0e41f",
+      "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
+      "display_name": "legacy-hr-sync",
+      "entity_type": "service_principal",
+      "created_datetime": "2022-06-13T08:33:39Z",
+      "last_sign_in": "2026-03-04T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": true,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "f5f8be6e-b8e0-5ce8-8a41-d6790201cc46",
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "eaa48941-65f2-5b21-870c-3437fe8dd9c5",
+      "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
+      "display_name": "marketing-analytics-poc",
+      "entity_type": "service_principal",
+      "created_datetime": "2026-01-03T08:33:39Z",
+      "last_sign_in": null,
+      "is_enabled": true,
+      "owners": [
+        "growth@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "be15c511-bdab-5ec7-bef1-5241cf63b7cb",
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "3b810ed1-c2f1-57fa-9420-3060d44ce500",
+      "app_id": "00000002-0000-0ff1-ce00-000000000000",
+      "display_name": "Office 365 Exchange Online",
+      "entity_type": "service_principal",
+      "created_datetime": null,
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Microsoft Services",
+        "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+        "tags": [
+          "WindowsAzureActiveDirectoryIntegratedApp"
+        ],
+        "is_microsoft_first_party": true,
+        "is_tenant_owned_app": false,
+        "is_external_app": true,
+        "application_object_id": null,
+        "sp_credential_count": 1
+      }
+    },
+    {
+      "entity_id": "43523998-3a95-5537-b966-b39b2a77a3e7",
+      "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
+      "display_name": "payments-api",
+      "entity_type": "service_principal",
+      "created_datetime": "2025-06-17T08:33:39Z",
+      "last_sign_in": "2026-10-30T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "payments-team@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "b4be89f3-a9e3-503f-9d75-2f473fcfb8b5",
+        "sp_credential_count": 0
+      }
+    },
+    {
+      "entity_id": "ae72a780-e581-57fe-a706-734a96348248",
+      "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
+      "display_name": "sharepoint-migration-tool",
+      "entity_type": "service_principal",
+      "created_datetime": "2025-09-05T08:33:39Z",
+      "last_sign_in": "2026-10-26T05:33:39Z",
+      "is_enabled": true,
+      "owners": [
+        "m365-admins@demo-corp.example"
+      ],
+      "is_orphaned": false,
+      "raw_metadata": {
+        "servicePrincipalType": "Application",
+        "publisherName": "Demo Corp",
+        "appOwnerOrganizationId": "demo-tenant-0000",
+        "tags": [],
+        "is_microsoft_first_party": false,
+        "is_tenant_owned_app": true,
+        "is_external_app": false,
+        "application_object_id": "d9d9d03e-995b-5707-8192-8f68e12610f2",
+        "sp_credential_count": 1
+      }
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "ab127435c1c3e27817909480a273d770e8e4649be9792b61aa18c3e096555749",
+      "rule_id": "NHI-AGENT-003",
+      "category": "ai_agent_governance",
+      "severity": "CRITICAL",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "AI agent can read tenant data and send it out (exfiltration path)",
+      "description": "AI agent 'Finance Copilot Agent' combines broad read access (Files.Read.All, Mail.Read) with an egress channel (Mail.Send): the 'lethal trifecta' of private data, untrusted input and external communication.",
+      "attack_path_context": "Indirect prompt injection: an attacker emails or shares a document containing instructions; the agent reads it, collects data via Files.Read.All and exfiltrates it via Mail.Send — no credential theft required.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/71d70141-4ea1-5009-add5-5977bcf6b353/appRoleAssignments/df5b0f44-06e8-5579-816f-ddec1e9596c2  # Mail.Send",
+      "evidence": {
+        "read_permissions": [
+          "Files.Read.All",
+          "Mail.Read"
+        ],
+        "egress_permissions": [
+          "Mail.Send"
+        ]
+      }
+    },
+    {
+      "finding_id": "202f58a1b6e49528cf0b7cb8a4370278f48801661a7dc07028998abc86aae017",
+      "rule_id": "NHI-AGENT-003",
+      "category": "ai_agent_governance",
+      "severity": "CRITICAL",
+      "entity_id": "525107c6-ad2d-5652-a103-c39a60ba0e94",
+      "entity_name": "id-foundry-research-agent",
+      "title": "AI agent can read tenant data and send it out (exfiltration path)",
+      "description": "AI agent 'id-foundry-research-agent' combines broad read access (Files.Read.All) with an egress channel (Mail.Send): the 'lethal trifecta' of private data, untrusted input and external communication.",
+      "attack_path_context": "Indirect prompt injection: an attacker emails or shares a document containing instructions; the agent reads it, collects data via Files.Read.All and exfiltrates it via Mail.Send — no credential theft required.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/525107c6-ad2d-5652-a103-c39a60ba0e94/appRoleAssignments/e54b8281-20c3-5fe5-85c1-d957fa432cf9  # Mail.Send",
+      "evidence": {
+        "read_permissions": [
+          "Files.Read.All"
+        ],
+        "egress_permissions": [
+          "Mail.Send"
+        ]
+      }
+    },
+    {
+      "finding_id": "f41a41a8f98a0c7dce1006c005f4f653192476e98835f5456e5f7df3162ebe59",
+      "rule_id": "NHI-PERM-001",
+      "category": "excessive_graph_permissions",
+      "severity": "CRITICAL",
+      "entity_id": "23d10cf8-6099-5143-8db8-f97a738d83cd",
+      "entity_name": "Identity Automation",
+      "title": "Tenant-takeover Graph permission: AppRoleAssignment.ReadWrite.All, RoleManagement.ReadWrite.Directory",
+      "description": "'Identity Automation' holds Microsoft Graph application permission(s) AppRoleAssignment.ReadWrite.All, RoleManagement.ReadWrite.Directory. Application permissions apply tenant-wide with no user in the loop.",
+      "attack_path_context": "Compromise of this identity is equivalent to Global Administrator: AppRoleAssignment.ReadWrite.All can grant itself any Graph permission, including RoleManagement.ReadWrite.Directory; RoleManagement.ReadWrite.Directory can assign itself (or anyone) Global Administrator.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/23d10cf8-6099-5143-8db8-f97a738d83cd/appRoleAssignments/67cb6e6d-83e1-5d1c-8281-b813a6576d6e  # RoleManagement.ReadWrite.Directory\naz rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/23d10cf8-6099-5143-8db8-f97a738d83cd/appRoleAssignments/6f5f81b5-84d5-51d4-9605-f4aaea6d780e  # AppRoleAssignment.ReadWrite.All",
+      "evidence": {
+        "permissions": [
+          "AppRoleAssignment.ReadWrite.All",
+          "RoleManagement.ReadWrite.Directory"
+        ],
+        "assignments": [
+          {
+            "permission": "RoleManagement.ReadWrite.Directory",
+            "assignment_id": "67cb6e6d-83e1-5d1c-8281-b813a6576d6e"
+          },
+          {
+            "permission": "AppRoleAssignment.ReadWrite.All",
+            "assignment_id": "6f5f81b5-84d5-51d4-9605-f4aaea6d780e"
+          }
+        ],
+        "orphaned": false
+      }
+    },
+    {
+      "finding_id": "81557c37a1c1d001fde9aeb77ea236422d4b0de0bc984abfe739e805b6139c2b",
+      "rule_id": "NHI-PERM-001",
+      "category": "excessive_graph_permissions",
+      "severity": "CRITICAL",
+      "entity_id": "59cf3713-48f3-5dce-8d5e-97c546a0e41f",
+      "entity_name": "legacy-hr-sync",
+      "title": "Tenant-takeover Graph permission: Directory.ReadWrite.All",
+      "description": "'legacy-hr-sync' holds Microsoft Graph application permission(s) Directory.ReadWrite.All. Application permissions apply tenant-wide with no user in the loop.",
+      "attack_path_context": "Compromise of this identity is equivalent to Global Administrator: Directory.ReadWrite.All can modify users, groups and service principals across the directory. The identity has no owner, so no one is accountable for it.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/59cf3713-48f3-5dce-8d5e-97c546a0e41f/appRoleAssignments/cb724de2-3077-5aae-b66b-63948fd460ac  # Directory.ReadWrite.All",
+      "evidence": {
+        "permissions": [
+          "Directory.ReadWrite.All"
+        ],
+        "assignments": [
+          {
+            "permission": "Directory.ReadWrite.All",
+            "assignment_id": "cb724de2-3077-5aae-b66b-63948fd460ac"
+          }
+        ],
+        "orphaned": true
+      }
+    },
+    {
+      "finding_id": "ab096b0dbaeedf2c1bd720db3ee7ac3350e7d2df56cd8a5ba440eb36b96ae632",
+      "rule_id": "NHI-PERM-003",
+      "category": "excessive_graph_permissions",
+      "severity": "CRITICAL",
+      "entity_id": "23d10cf8-6099-5143-8db8-f97a738d83cd",
+      "entity_name": "Identity Automation",
+      "title": "Privileged Entra role: Privileged Role Administrator",
+      "description": "Service principal 'Identity Automation' is a permanent member of Privileged Role Administrator. Workload identities are excluded from most MFA and Conditional Access controls.",
+      "attack_path_context": "Anyone who can authenticate as this identity operates as Privileged Role Administrator and can take over the entire tenant.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments/69f52862-af8f-5e2a-81d9-f2b7ba11a9aa  # Privileged Role Administrator",
+      "evidence": {
+        "roles": [
+          {
+            "role": "Privileged Role Administrator",
+            "severity": "CRITICAL",
+            "assignment_id": "69f52862-af8f-5e2a-81d9-f2b7ba11a9aa",
+            "directory_scope": "/"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "9ea5f8a2f1d2c1c9ed1d2bc104a2cf238af9dd3411d9d04648f377ca999de06b",
+      "rule_id": "NHI-RBAC-001",
+      "category": "azure_rbac_privilege",
+      "severity": "CRITICAL",
+      "entity_id": "3d5ef7e5-9f16-5ca3-90fb-3bbf7ee1739b",
+      "entity_name": "func-invoice-processor",
+      "title": "Azure Owner on 1 scope(s)",
+      "description": "'func-invoice-processor' holds role-assignment-capable Azure roles (Owner) at subscription scope.",
+      "attack_path_context": "These roles can grant any role to any principal. A compromised workload can make an attacker identity Owner, read Key Vault secrets, run commands on VMs and pivot to every managed identity in scope — lateral movement from one leaked secret to the whole Azure estate.",
+      "remediation_cli": "az role assignment delete --ids /subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/c68c5f90-9f24-51b9-8f0d-11a38ff3ebda",
+      "evidence": {
+        "assignments": [
+          {
+            "role": "Owner",
+            "scope": "/subscriptions/00000000-0000-4000-8000-0000000000a1",
+            "level": "subscription",
+            "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/c68c5f90-9f24-51b9-8f0d-11a38ff3ebda"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "bc1cd12f1e87e2963ec0875a267dc27e24d8d643bc09e1511f4dd26dee6c98a3",
+      "rule_id": "NHI-SEC-004",
+      "category": "secret_hygiene",
+      "severity": "CRITICAL",
+      "entity_id": "3b810ed1-c2f1-57fa-9420-3060d44ce500",
+      "entity_name": "Office 365 Exchange Online",
+      "title": "Credentials added to a Microsoft first-party service principal",
+      "description": "Service principal 'Office 365 Exchange Online' has 1 credential(s) set on the service principal object itself. These do not appear under 'Certificates & secrets' in the portal and are a well-known persistence technique (Solorigate / Midnight Blizzard).",
+      "attack_path_context": "An attacker with Application.ReadWrite.All or Application Administrator can silently add a secret here and authenticate as this identity indefinitely. Whoever holds it inherits every permission granted to the identity.",
+      "remediation_cli": "# Check who added them (Entra audit log: 'Add service principal credentials'), then delete what nobody recognises:\n# az ad sp credential delete --id 3b810ed1-c2f1-57fa-9420-3060d44ce500 --key-id 9f73ea88-83ff-5dac-8a48-4d53e2396408",
+      "evidence": {
+        "microsoft_first_party": true,
+        "credentials": [
+          {
+            "kind": "client_secret",
+            "key_id": "9f73ea88-83ff-5dac-8a48-4d53e2396408",
+            "display_name": "sync",
+            "created": "2026-10-21T08:33:39Z",
+            "expires_on": "2028-10-19T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "8f88b67c3fe85845ae33b2a7d02b86a258890b0f3e548494d4d5e844946b31eb",
+      "rule_id": "NHI-AGENT-001",
+      "category": "ai_agent_governance",
+      "severity": "HIGH",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "Orphaned AI agent: no accountable owner",
+      "description": "AI agent 'Finance Copilot Agent' has no human owner on its service principal or app registration. No one reviews its permissions, prompts, tools or behaviour.",
+      "attack_path_context": "Autonomous agents act on untrusted input (mail, documents, chats). Without an owner, prompt-injection abuse or permission creep goes unnoticed and there is nobody to page during an incident.",
+      "remediation_cli": "az ad app owner add --id d5aea2f1-96ea-57c8-9073-7420aec22627 --owner-object-id \"<OWNER_OBJECT_ID>\"",
+      "evidence": {
+        "classification_signals": [
+          "name:copilot"
+        ],
+        "permissions": [
+          "Files.Read.All",
+          "Mail.Read",
+          "Mail.Send"
+        ]
+      }
+    },
+    {
+      "finding_id": "002e84b5b8a78edf7a2d64ef24a467184c66c38bff0401a7b5d7a23a0bce535d",
+      "rule_id": "NHI-AGENT-001",
+      "category": "ai_agent_governance",
+      "severity": "HIGH",
+      "entity_id": "cd62f8b2-5d2b-5943-8e72-f4d3c83d508c",
+      "entity_name": "Sales Outreach Agent",
+      "title": "Orphaned AI agent: no accountable owner",
+      "description": "AI agent 'Sales Outreach Agent' has no owner or sponsor. No one reviews its permissions, prompts, tools or behaviour.",
+      "attack_path_context": "Autonomous agents act on untrusted input (mail, documents, chats). Without an owner, prompt-injection abuse or permission creep goes unnoticed and there is nobody to page during an incident.",
+      "remediation_cli": "az rest --method POST --url 'https://graph.microsoft.com/beta/servicePrincipals/cd62f8b2-5d2b-5943-8e72-f4d3c83d508c/microsoft.graph.agentIdentity/sponsors/$ref' --body '{\"@odata.id\":\"https://graph.microsoft.com/beta/directoryObjects/<SPONSOR_OBJECT_ID>\"}'",
+      "evidence": {
+        "classification_signals": [
+          "entra_agent_id"
+        ],
+        "permissions": [
+          "User.Read.All"
+        ]
+      }
+    },
+    {
+      "finding_id": "2afd61a99d4db5d9e5d6b40305899e82fa378ad51776d395784fb713c730862b",
+      "rule_id": "NHI-AGENT-002",
+      "category": "ai_agent_governance",
+      "severity": "HIGH",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "AI agent with tenant-wide write/act permissions (1)",
+      "description": "AI agent 'Finance Copilot Agent' can take actions across the tenant via application permissions: Mail.Send. Agents should use delegated, user-scoped access or resource-specific consent.",
+      "attack_path_context": "OWASP LLM06 Excessive Agency: a single injected instruction in content the agent processes can make it send mail, overwrite files or change directory objects with its own tenant-wide rights.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/71d70141-4ea1-5009-add5-5977bcf6b353/appRoleAssignments/df5b0f44-06e8-5579-816f-ddec1e9596c2  # Mail.Send",
+      "evidence": {
+        "action_permissions": [
+          "Mail.Send"
+        ]
+      }
+    },
+    {
+      "finding_id": "1c5fa85184a7b0a0f22311989d9d6a2fddee1ea7655fabef45ca0f30ab285ef4",
+      "rule_id": "NHI-AGENT-002",
+      "category": "ai_agent_governance",
+      "severity": "HIGH",
+      "entity_id": "525107c6-ad2d-5652-a103-c39a60ba0e94",
+      "entity_name": "id-foundry-research-agent",
+      "title": "AI agent with tenant-wide write/act permissions (1)",
+      "description": "AI agent 'id-foundry-research-agent' can take actions across the tenant via application permissions: Mail.Send. Agents should use delegated, user-scoped access or resource-specific consent.",
+      "attack_path_context": "OWASP LLM06 Excessive Agency: a single injected instruction in content the agent processes can make it send mail, overwrite files or change directory objects with its own tenant-wide rights.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/525107c6-ad2d-5652-a103-c39a60ba0e94/appRoleAssignments/e54b8281-20c3-5fe5-85c1-d957fa432cf9  # Mail.Send",
+      "evidence": {
+        "action_permissions": [
+          "Mail.Send"
+        ]
+      }
+    },
+    {
+      "finding_id": "b2e5274ff930f12d54588d61c3beccb6a55dbf52b32d7c1dd00471ac0e947261",
+      "rule_id": "NHI-AGENT-005",
+      "category": "ai_agent_governance",
+      "severity": "HIGH",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "AI agent registered as multi-tenant",
+      "description": "The app behind AI agent 'Finance Copilot Agent' accepts sign-ins from any Entra tenant (signInAudience=AzureADMultipleOrgs).",
+      "attack_path_context": "Its credentials authenticate in every tenant that consented to it; a compromise of this agent is a supply-chain compromise for all of them, and anyone can attempt consent phishing with its name.",
+      "remediation_cli": "az ad app update --id d5aea2f1-96ea-57c8-9073-7420aec22627 --sign-in-audience AzureADMyOrg",
+      "evidence": {
+        "sign_in_audience": "AzureADMultipleOrgs"
+      }
+    },
+    {
+      "finding_id": "6d748ab76eaf77572887d1b1c6f4a625eb5915dcdd2f3308bacfb1d4a7ecc1b1",
+      "rule_id": "NHI-DORM-001",
+      "category": "dormant_nhi",
+      "severity": "HIGH",
+      "entity_id": "f5f8be6e-b8e0-5ce8-8a41-d6790201cc46",
+      "entity_name": "legacy-hr-sync",
+      "title": "Dormant for 240 days with 1 valid credential(s)",
+      "description": "'legacy-hr-sync' last authenticated 240 days ago but still holds 1 valid credential(s). Nobody would notice if it started signing in again.",
+      "attack_path_context": "Dormant identities with live credentials are prime targets: their activity is not baselined, so an attacker using a leaked secret blends in. Whoever holds it inherits Graph Directory.ReadWrite.All; directory role(s) User Administrator — a direct privilege-escalation path.",
+      "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id 59cf3713-48f3-5dce-8d5e-97c546a0e41f --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id 963474b3-2d0d-587c-9259-420036e153b1",
+      "evidence": {
+        "last_sign_in": "2026-03-04T05:33:39Z",
+        "days_inactive": 240,
+        "threshold_days": 90,
+        "active_credentials": 1,
+        "privileged": true
+      }
+    },
+    {
+      "finding_id": "c65316621ab526c319aaea9b8ccb7c7a2983fe949358d06006a5100a7f237e5a",
+      "rule_id": "NHI-PERM-002",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "863a805b-6466-54ff-ba12-48e74763b3ed",
+      "entity_name": "Acme Cloud Backup",
+      "title": "Tenant-wide data access: Files.Read.All, Mail.ReadWrite",
+      "description": "'Acme Cloud Backup' can read every OneDrive/SharePoint file; read and modify every mailbox. Consider resource-specific consent or Exchange application access policies to scope it down.",
+      "attack_path_context": "A stolen token for this identity gives silent, tenant-wide access to business data: bulk exfiltration of mail/files and impersonation without touching any user account or MFA.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/863a805b-6466-54ff-ba12-48e74763b3ed/appRoleAssignments/dfc0dbf5-9591-50c4-8469-c2fbc078d51d  # Mail.ReadWrite\naz rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/863a805b-6466-54ff-ba12-48e74763b3ed/appRoleAssignments/8a4c1438-4606-54ea-b6d9-2ca124a71664  # Files.Read.All",
+      "evidence": {
+        "permissions": [
+          "Files.Read.All",
+          "Mail.ReadWrite"
+        ],
+        "assignments": [
+          {
+            "permission": "Mail.ReadWrite",
+            "assignment_id": "dfc0dbf5-9591-50c4-8469-c2fbc078d51d"
+          },
+          {
+            "permission": "Files.Read.All",
+            "assignment_id": "8a4c1438-4606-54ea-b6d9-2ca124a71664"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "af4e0ea022bf92ef91e85126df7f1a59a2cb0b2e9a63fbdcd11930a502cba0e6",
+      "rule_id": "NHI-PERM-002",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "Tenant-wide data access: Files.Read.All, Mail.Read, Mail.Send",
+      "description": "'Finance Copilot Agent' can read every OneDrive/SharePoint file; read every mailbox in the tenant; send mail as any user (BEC / internal phishing). Consider resource-specific consent or Exchange application access policies to scope it down.",
+      "attack_path_context": "A stolen token for this identity gives silent, tenant-wide access to business data: bulk exfiltration of mail/files and impersonation without touching any user account or MFA.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/71d70141-4ea1-5009-add5-5977bcf6b353/appRoleAssignments/68796eea-007a-5904-b6e4-80ff65a72cfb  # Mail.Read\naz rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/71d70141-4ea1-5009-add5-5977bcf6b353/appRoleAssignments/07ea5d1f-4b4f-5aec-bba1-a46507d39c65  # Files.Read.All\naz rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/71d70141-4ea1-5009-add5-5977bcf6b353/appRoleAssignments/df5b0f44-06e8-5579-816f-ddec1e9596c2  # Mail.Send",
+      "evidence": {
+        "permissions": [
+          "Files.Read.All",
+          "Mail.Read",
+          "Mail.Send"
+        ],
+        "assignments": [
+          {
+            "permission": "Mail.Read",
+            "assignment_id": "68796eea-007a-5904-b6e4-80ff65a72cfb"
+          },
+          {
+            "permission": "Files.Read.All",
+            "assignment_id": "07ea5d1f-4b4f-5aec-bba1-a46507d39c65"
+          },
+          {
+            "permission": "Mail.Send",
+            "assignment_id": "df5b0f44-06e8-5579-816f-ddec1e9596c2"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "6f062e193c697f94fd6116dae419f4f8d944c877622b9bb3c7693555b239ebd2",
+      "rule_id": "NHI-PERM-002",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "34b0ade0-3c17-550a-9299-6d91f5026cbc",
+      "entity_name": "Helpdesk Assistant",
+      "title": "Tenant-wide data access: Sites.Read.All",
+      "description": "'Helpdesk Assistant' can read every SharePoint site. Consider resource-specific consent or Exchange application access policies to scope it down.",
+      "attack_path_context": "A stolen token for this identity gives silent, tenant-wide access to business data: bulk exfiltration of mail/files and impersonation without touching any user account or MFA.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/34b0ade0-3c17-550a-9299-6d91f5026cbc/appRoleAssignments/d9db69ed-94e0-5c8c-af1f-f32062e0f4f3  # Sites.Read.All",
+      "evidence": {
+        "permissions": [
+          "Sites.Read.All"
+        ],
+        "assignments": [
+          {
+            "permission": "Sites.Read.All",
+            "assignment_id": "d9db69ed-94e0-5c8c-af1f-f32062e0f4f3"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "4bcc80fa942c32fbe904787cd196cf04e25acf7257f23e3fab2bb4724d325f8d",
+      "rule_id": "NHI-PERM-002",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "525107c6-ad2d-5652-a103-c39a60ba0e94",
+      "entity_name": "id-foundry-research-agent",
+      "title": "Tenant-wide data access: Files.Read.All, Mail.Send",
+      "description": "'id-foundry-research-agent' can read every OneDrive/SharePoint file; send mail as any user (BEC / internal phishing). Consider resource-specific consent or Exchange application access policies to scope it down.",
+      "attack_path_context": "A stolen token for this identity gives silent, tenant-wide access to business data: bulk exfiltration of mail/files and impersonation without touching any user account or MFA.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/525107c6-ad2d-5652-a103-c39a60ba0e94/appRoleAssignments/09ee396e-51ce-50a9-9a4c-1e25fe35e36b  # Files.Read.All\naz rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/525107c6-ad2d-5652-a103-c39a60ba0e94/appRoleAssignments/e54b8281-20c3-5fe5-85c1-d957fa432cf9  # Mail.Send",
+      "evidence": {
+        "permissions": [
+          "Files.Read.All",
+          "Mail.Send"
+        ],
+        "assignments": [
+          {
+            "permission": "Files.Read.All",
+            "assignment_id": "09ee396e-51ce-50a9-9a4c-1e25fe35e36b"
+          },
+          {
+            "permission": "Mail.Send",
+            "assignment_id": "e54b8281-20c3-5fe5-85c1-d957fa432cf9"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "c6e913f428464d90682eab8ea61de902ca3ad1bff63e093d3f593cb0aaf67a35",
+      "rule_id": "NHI-PERM-002",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "ae72a780-e581-57fe-a706-734a96348248",
+      "entity_name": "sharepoint-migration-tool",
+      "title": "Tenant-wide data access: Sites.FullControl.All",
+      "description": "'sharepoint-migration-tool' can full control of every SharePoint site. Consider resource-specific consent or Exchange application access policies to scope it down.",
+      "attack_path_context": "A stolen token for this identity gives silent, tenant-wide access to business data: bulk exfiltration of mail/files and impersonation without touching any user account or MFA.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/servicePrincipals/ae72a780-e581-57fe-a706-734a96348248/appRoleAssignments/0270b4da-dc73-5891-9b07-7ccebea0f7de  # Sites.FullControl.All",
+      "evidence": {
+        "permissions": [
+          "Sites.FullControl.All"
+        ],
+        "assignments": [
+          {
+            "permission": "Sites.FullControl.All",
+            "assignment_id": "0270b4da-dc73-5891-9b07-7ccebea0f7de"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "d8e1095451f997168bac2d8e435a4f7cde04c4b546fb1dbded95bd9f6ee923d8",
+      "rule_id": "NHI-PERM-003",
+      "category": "excessive_graph_permissions",
+      "severity": "HIGH",
+      "entity_id": "59cf3713-48f3-5dce-8d5e-97c546a0e41f",
+      "entity_name": "legacy-hr-sync",
+      "title": "Privileged Entra role: User Administrator",
+      "description": "Service principal 'legacy-hr-sync' is a permanent member of User Administrator. Workload identities are excluded from most MFA and Conditional Access controls.",
+      "attack_path_context": "Anyone who can authenticate as this identity operates as User Administrator, with control over a sensitive slice of the tenant.",
+      "remediation_cli": "az rest --method DELETE --url https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments/0027792a-587c-5cfe-b27d-b490618108fe  # User Administrator",
+      "evidence": {
+        "roles": [
+          {
+            "role": "User Administrator",
+            "severity": "HIGH",
+            "assignment_id": "0027792a-587c-5cfe-b27d-b490618108fe",
+            "directory_scope": "/"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "bd5dfbd95baacca844df70accf28a3782d8092f0fa2b6e6582abe344e8ce3f38",
+      "rule_id": "NHI-RBAC-001",
+      "category": "azure_rbac_privilege",
+      "severity": "HIGH",
+      "entity_id": "3f70f801-4ce8-5a1d-99e9-2fb50deefece",
+      "entity_name": "ci-deploy-pipeline",
+      "title": "Azure User Access Administrator on 1 scope(s)",
+      "description": "'ci-deploy-pipeline' holds role-assignment-capable Azure roles (User Access Administrator) at resource group scope.",
+      "attack_path_context": "These roles can grant any role to any principal. A compromised workload can make an attacker identity Owner, read Key Vault secrets, run commands on VMs and pivot to every managed identity in scope — lateral movement from one leaked secret to the whole Azure estate.",
+      "remediation_cli": "az role assignment delete --ids /subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-platform/providers/Microsoft.Authorization/roleAssignments/4e333a9b-cf76-50bd-87c3-69cab9ad868e",
+      "evidence": {
+        "assignments": [
+          {
+            "role": "User Access Administrator",
+            "scope": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-platform",
+            "level": "resource_group",
+            "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-platform/providers/Microsoft.Authorization/roleAssignments/4e333a9b-cf76-50bd-87c3-69cab9ad868e"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "266b412a17624627a2a604a11089b7412a28366e341fbc4475fb3a8b37a7075a",
+      "rule_id": "NHI-RBAC-002",
+      "category": "azure_rbac_privilege",
+      "severity": "HIGH",
+      "entity_id": "3f70f801-4ce8-5a1d-99e9-2fb50deefece",
+      "entity_name": "ci-deploy-pipeline",
+      "title": "Contributor on 1 subscription-level scope(s)",
+      "description": "'ci-deploy-pipeline' is Contributor at subscription or management-group scope. Pipelines rarely need more than a few resource groups.",
+      "attack_path_context": "Contributor can deploy and modify any resource: run code on VMs and Automation accounts, read storage keys, and attach privileged managed identities to attacker-controlled resources.",
+      "remediation_cli": "# 1. Grant Contributor only where it is needed (repeat for each resource group):\naz role assignment create --assignee 721f86b6-720c-5b98-9376-f38c527dee54 --role Contributor --scope \"<RESOURCE_GROUP_SCOPE>\"\n# 2. Confirm the workload still runs, then remove the broad assignment:\n# az role assignment delete --ids /subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/affb713d-bc71-563e-9fe5-db669f591de4",
+      "evidence": {
+        "assignments": [
+          {
+            "role": "Contributor",
+            "scope": "/subscriptions/00000000-0000-4000-8000-0000000000a1",
+            "level": "subscription",
+            "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/affb713d-bc71-563e-9fe5-db669f591de4"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "c5532c3cbd3042573116e33ad816028bd049af3365363a9b14b4a0c570d9072c",
+      "rule_id": "NHI-SEC-002",
+      "category": "secret_hygiene",
+      "severity": "HIGH",
+      "entity_id": "6ef73c6b-032f-5fcf-a95d-ad6a50129a5b",
+      "entity_name": "ci-deploy-pipeline",
+      "title": "Client secret valid for 730 days",
+      "description": "'ci-deploy-pipeline' has 1 active client secret(s) with a lifetime above 365 days (longest: 730 days). Long-lived static secrets end up in config files, CI variables and chat history.",
+      "attack_path_context": "A leaked long-lived secret stays valid for months without anyone noticing. Whoever holds it inherits Azure Contributor on subscription, User Access Administrator on resource group — a direct privilege-escalation path.",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id 721f86b6-720c-5b98-9376-f38c527dee54 --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# 3. Only then delete the old secret(s):\n# az ad app credential delete --id 721f86b6-720c-5b98-9376-f38c527dee54 --key-id d12787a1-899f-5adf-abe1-7d48511537f4",
+      "evidence": {
+        "max_lifetime_days": 730,
+        "policy_max_days": 365,
+        "credentials": [
+          {
+            "key_id": "d12787a1-899f-5adf-abe1-7d48511537f4",
+            "display_name": "github-actions",
+            "lifetime_days": 730,
+            "expires_on": "2027-09-25T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "0e5f9a6f558bee11c24a5ebd0a3526141d4355738a17b3e6c3514aef2dd80ebb",
+      "rule_id": "NHI-SEC-002",
+      "category": "secret_hygiene",
+      "severity": "HIGH",
+      "entity_id": "f5f8be6e-b8e0-5ce8-8a41-d6790201cc46",
+      "entity_name": "legacy-hr-sync",
+      "title": "Client secret valid for 730 days",
+      "description": "'legacy-hr-sync' has 1 active client secret(s) with a lifetime above 365 days (longest: 730 days). Long-lived static secrets end up in config files, CI variables and chat history.",
+      "attack_path_context": "A leaked long-lived secret stays valid for months without anyone noticing. Whoever holds it inherits Graph Directory.ReadWrite.All; directory role(s) User Administrator — a direct privilege-escalation path.",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# 3. Only then delete the old secret(s):\n# az ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id 963474b3-2d0d-587c-9259-420036e153b1",
+      "evidence": {
+        "max_lifetime_days": 730,
+        "policy_max_days": 365,
+        "credentials": [
+          {
+            "key_id": "963474b3-2d0d-587c-9259-420036e153b1",
+            "display_name": "hr-2025",
+            "lifetime_days": 730,
+            "expires_on": "2028-01-03T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "254b249f26e5ab48e1c28076d5708d8153ca5a0914e3a02c49ab55f68232e824",
+      "rule_id": "NHI-SEC-004",
+      "category": "secret_hygiene",
+      "severity": "HIGH",
+      "entity_id": "ae72a780-e581-57fe-a706-734a96348248",
+      "entity_name": "sharepoint-migration-tool",
+      "title": "Credentials set directly on the service principal",
+      "description": "Service principal 'sharepoint-migration-tool' has 1 credential(s) set on the service principal object itself. These do not appear under 'Certificates & secrets' in the portal and are a well-known persistence technique (Solorigate / Midnight Blizzard).",
+      "attack_path_context": "An attacker with Application.ReadWrite.All or Application Administrator can silently add a secret here and authenticate as this identity indefinitely. Whoever holds it inherits every permission granted to the identity.",
+      "remediation_cli": "# Check who added them (Entra audit log: 'Add service principal credentials'), then delete what nobody recognises:\n# az ad sp credential delete --id ae72a780-e581-57fe-a706-734a96348248 --key-id e1b7c172-abef-58b4-abf5-ace4be0381f2",
+      "evidence": {
+        "microsoft_first_party": false,
+        "credentials": [
+          {
+            "kind": "client_secret",
+            "key_id": "e1b7c172-abef-58b4-abf5-ace4be0381f2",
+            "display_name": "added-via-graph",
+            "created": "2026-10-09T08:33:39Z",
+            "expires_on": "2028-10-08T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "75947b44f47e9a1b43835674f28c9faaed4815df7c9fb986ef099abe05d947db",
+      "rule_id": "NHI-AGENT-004",
+      "category": "ai_agent_governance",
+      "severity": "MEDIUM",
+      "entity_id": "71d70141-4ea1-5009-add5-5977bcf6b353",
+      "entity_name": "Finance Copilot Agent",
+      "title": "AI agent authenticates with a static client secret",
+      "description": "AI agent 'Finance Copilot Agent' uses 1 client secret(s) instead of a managed identity or workload identity federation.",
+      "attack_path_context": "Agent runtimes expose their environment to tools and code interpreters; a secret in an env var or config file can be read back through the agent itself and replayed from anywhere.",
+      "remediation_cli": "# Best option on Azure: host the agent with a managed identity. Otherwise:\n# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id d5aea2f1-96ea-57c8-9073-7420aec22627 --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# 3. Only then delete the old secret(s):\n# az ad app credential delete --id d5aea2f1-96ea-57c8-9073-7420aec22627 --key-id 5436ed7a-ccad-568e-a6d4-7125229b20e6",
+      "evidence": {
+        "client_secrets": [
+          {
+            "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
+            "expires_on": "2028-04-12T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "5c4247a69c54163b89edb93bfbc2baf0f4f1d422288a54c451ae2408d9d1f9f0",
+      "rule_id": "NHI-DORM-002",
+      "category": "dormant_nhi",
+      "severity": "MEDIUM",
+      "entity_id": "be15c511-bdab-5ec7-bef1-5241cf63b7cb",
+      "entity_name": "marketing-analytics-poc",
+      "title": "Never signed in, yet holds valid credentials",
+      "description": "'marketing-analytics-poc' has no recorded sign-in in the 300 days since it was created but holds 1 valid credential(s). It is either abandoned or not yet in use.",
+      "attack_path_context": "Unused identities with credentials and permissions are free attack surface: first use by an attacker raises no anomaly because there is no history. Whoever holds it inherits every permission granted to the identity.",
+      "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id eaa48941-65f2-5b21-870c-3437fe8dd9c5 --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id f82dda04-e8f5-5cea-91b4-5da750927a8c --key-id bc38e086-30be-53cd-a622-463c5565243f",
+      "evidence": {
+        "created": "2026-01-03T08:33:39Z",
+        "age_days": 300,
+        "active_credentials": 1,
+        "privileged": false
+      }
+    },
+    {
+      "finding_id": "8c1499e19aad22c5eba789fb4109ac62e7aa8bb2807c28ccc3b96763ab1db9ba",
+      "rule_id": "NHI-SEC-002",
+      "category": "secret_hygiene",
+      "severity": "MEDIUM",
+      "entity_id": "9162b6eb-fa78-597f-b69e-f52ec55085c5",
+      "entity_name": "Finance Copilot Agent",
+      "title": "Client secret valid for 730 days",
+      "description": "'Finance Copilot Agent' has 1 active client secret(s) with a lifetime above 365 days (longest: 730 days). Long-lived static secrets end up in config files, CI variables and chat history.",
+      "attack_path_context": "A leaked long-lived secret stays valid for months without anyone noticing. Whoever holds it inherits every permission granted to the identity.",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id d5aea2f1-96ea-57c8-9073-7420aec22627 --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# 3. Only then delete the old secret(s):\n# az ad app credential delete --id d5aea2f1-96ea-57c8-9073-7420aec22627 --key-id 5436ed7a-ccad-568e-a6d4-7125229b20e6",
+      "evidence": {
+        "max_lifetime_days": 730,
+        "policy_max_days": 365,
+        "credentials": [
+          {
+            "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
+            "display_name": "prod",
+            "lifetime_days": 730,
+            "expires_on": "2028-04-12T08:33:39Z"
+          }
+        ]
+      }
+    },
+    {
+      "finding_id": "0ed91d3a79442553f7e62047ec94c016a8231b03f27b9a7eee17e65912e92a41",
+      "rule_id": "NHI-SEC-003",
+      "category": "secret_hygiene",
+      "severity": "MEDIUM",
+      "entity_id": "203bdc96-9fa0-5546-b8e9-235e207471fe",
+      "entity_name": "Identity Automation",
+      "title": "3 active client secrets",
+      "description": "'Identity Automation' has 3 simultaneously valid client secrets. Only one should exist outside a short rotation window; extra secrets are usually forgotten copies.",
+      "attack_path_context": "Every additional valid secret is another place the identity can leak from, and an attacker-added secret blends in among legitimate ones. Whoever holds it inherits Graph AppRoleAssignment.ReadWrite.All, RoleManagement.ReadWrite.Directory; directory role(s) Privileged Role Administrator — a direct privilege-escalation path.",
+      "remediation_cli": "az ad app credential list --id 4bda9395-9b53-52ca-8633-32d74601e2f9 -o table\n# Find the secret in use (workload configuration, sign-in logs), then delete only the others:\n# az ad app credential delete --id 4bda9395-9b53-52ca-8633-32d74601e2f9 --key-id e1ec685a-ba27-5f53-b7ab-6f1bfd1300e3\n# az ad app credential delete --id 4bda9395-9b53-52ca-8633-32d74601e2f9 --key-id 77bcbd70-5028-5caf-a97d-a59342edc937\n# az ad app credential delete --id 4bda9395-9b53-52ca-8633-32d74601e2f9 --key-id b66b95c9-c0ce-52b6-bb19-7c54b8348583",
+      "evidence": {
+        "active_secret_count": 3,
+        "key_ids": [
+          "e1ec685a-ba27-5f53-b7ab-6f1bfd1300e3",
+          "77bcbd70-5028-5caf-a97d-a59342edc937",
+          "b66b95c9-c0ce-52b6-bb19-7c54b8348583"
+        ]
+      }
+    },
+    {
+      "finding_id": "fa60657ff82f6e7ad7182227fea0df61181ac15a9868006462f2709e23883749",
+      "rule_id": "NHI-SEC-001",
+      "category": "secret_hygiene",
+      "severity": "LOW",
+      "entity_id": "f5f8be6e-b8e0-5ce8-8a41-d6790201cc46",
+      "entity_name": "legacy-hr-sync",
+      "title": "2 expired credential(s) still attached",
+      "description": "App registration 'legacy-hr-sync' still carries 2 expired secret/certificate(s), the oldest expired 412 days ago. They no longer authenticate but signal an unmanaged rotation process.",
+      "attack_path_context": "Expired credentials cannot mint tokens, but stale credential slots hide which secrets are actually in use, making a newly planted attacker secret harder to spot during review.",
+      "remediation_cli": "az ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id f24e500e-4aa7-5b25-9393-f9707246da17\naz ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
+      "evidence": {
+        "credentials": [
+          {
+            "kind": "client_secret",
+            "key_id": "f24e500e-4aa7-5b25-9393-f9707246da17",
+            "display_name": "hr-2022",
+            "expired_on": "2025-09-13T08:33:39Z",
+            "days_expired": 412
+          },
+          {
+            "kind": "client_secret",
+            "key_id": "bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
+            "display_name": "hr-2024",
+            "expired_on": "2026-07-27T08:33:39Z",
+            "days_expired": 95
+          }
+        ],
+        "max_days_expired": 412
+      }
+    },
+    {
+      "finding_id": "683559f4ce1a883be7332a77fccacfa72ff581ca2692280a3d75477016f6f377",
+      "rule_id": "NHI-SEC-005",
+      "category": "secret_hygiene",
+      "severity": "LOW",
+      "entity_id": "be15c511-bdab-5ec7-bef1-5241cf63b7cb",
+      "entity_name": "marketing-analytics-poc",
+      "title": "All credentials expire within 11 days",
+      "description": "Every valid credential of 'marketing-analytics-poc' expires within 30 days and no replacement exists yet. Unplanned expiry causes outages and rushed, insecure rotations.",
+      "attack_path_context": "Emergency rotations are when secrets get pasted into tickets and chats, or issued with multi-year lifetimes 'to avoid this next time'.",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id f82dda04-e8f5-5cea-91b4-5da750927a8c --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# or, if a new secret is unavoidable, store it in Key Vault so it never reaches the terminal:\n# az keyvault secret set --vault-name \"<VAULT_NAME>\" --name rotated-f82dda04-e8f5-5cea-91b4-5da750927a8c -o none --value \"$(az ad app credential reset --id f82dda04-e8f5-5cea-91b4-5da750927a8c --append --display-name rotated --end-date 2027-04-28 --query password -o tsv)\"",
+      "evidence": {
+        "days_until_expiry": 11,
+        "credentials": [
+          {
+            "key_id": "bc38e086-30be-53cd-a622-463c5565243f",
+            "expires_on": "2026-11-11T08:33:39Z"
+          }
+        ]
+      }
+    }
+  ]
+}

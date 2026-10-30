@@ -1,0 +1,368 @@
+{
+  "$defs": {
+    "EntityType": {
+      "enum": [
+        "service_principal",
+        "app_registration",
+        "managed_identity",
+        "ai_agent"
+      ],
+      "title": "EntityType",
+      "type": "string"
+    },
+    "EntityTypeCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "service_principal": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Service Principal",
+          "type": "integer"
+        },
+        "app_registration": {
+          "default": 0,
+          "minimum": 0,
+          "title": "App Registration",
+          "type": "integer"
+        },
+        "managed_identity": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Managed Identity",
+          "type": "integer"
+        },
+        "ai_agent": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Ai Agent",
+          "type": "integer"
+        }
+      },
+      "title": "EntityTypeCounts",
+      "type": "object"
+    },
+    "FindingCategory": {
+      "enum": [
+        "secret_hygiene",
+        "dormant_nhi",
+        "excessive_graph_permissions",
+        "azure_rbac_privilege",
+        "ai_agent_governance"
+      ],
+      "title": "FindingCategory",
+      "type": "string"
+    },
+    "NHIEntity": {
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "app_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "App Id"
+        },
+        "display_name": {
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "entity_type": {
+          "$ref": "#/$defs/EntityType"
+        },
+        "created_datetime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created Datetime"
+        },
+        "last_sign_in": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Sign In"
+        },
+        "is_enabled": {
+          "default": true,
+          "title": "Is Enabled",
+          "type": "boolean"
+        },
+        "owners": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owners",
+          "type": "array"
+        },
+        "is_orphaned": {
+          "default": false,
+          "title": "Is Orphaned",
+          "type": "boolean"
+        },
+        "raw_metadata": {
+          "additionalProperties": true,
+          "title": "Raw Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "entity_id",
+        "display_name",
+        "entity_type"
+      ],
+      "title": "NHIEntity",
+      "type": "object"
+    },
+    "ScanMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "scan_id": {
+          "format": "uuid4",
+          "title": "Scan Id",
+          "type": "string"
+        },
+        "tenant_id": {
+          "minLength": 1,
+          "title": "Tenant Id",
+          "type": "string"
+        },
+        "scan_timestamp": {
+          "title": "Scan Timestamp",
+          "type": "string"
+        },
+        "scanner_version": {
+          "default": "0.1.0",
+          "minLength": 1,
+          "title": "Scanner Version",
+          "type": "string"
+        },
+        "hygiene_score": {
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Hygiene Score",
+          "type": "integer"
+        },
+        "summary_counts": {
+          "$ref": "#/$defs/SummaryCounts"
+        },
+        "rules_evaluated": {
+          "items": {
+            "pattern": "^NHI-[A-Z]+-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Rules Evaluated",
+          "type": "array"
+        },
+        "collection_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Collection Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "tenant_id",
+        "hygiene_score",
+        "summary_counts"
+      ],
+      "title": "ScanMetadata",
+      "type": "object"
+    },
+    "SecurityFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "finding_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "rule_id": {
+          "pattern": "^NHI-[A-Z]+-\\d{3}$",
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/FindingCategory"
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity"
+        },
+        "entity_id": {
+          "minLength": 1,
+          "title": "Entity Id",
+          "type": "string"
+        },
+        "entity_name": {
+          "minLength": 1,
+          "title": "Entity Name",
+          "type": "string"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "attack_path_context": {
+          "minLength": 1,
+          "title": "Attack Path Context",
+          "type": "string"
+        },
+        "remediation_cli": {
+          "minLength": 1,
+          "title": "Remediation Cli",
+          "type": "string"
+        },
+        "evidence": {
+          "additionalProperties": true,
+          "title": "Evidence",
+          "type": "object"
+        }
+      },
+      "required": [
+        "finding_id",
+        "rule_id",
+        "category",
+        "severity",
+        "entity_id",
+        "entity_name",
+        "title",
+        "description",
+        "attack_path_context",
+        "remediation_cli"
+      ],
+      "title": "SecurityFinding",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SeverityCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "critical": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Critical",
+          "type": "integer"
+        },
+        "high": {
+          "default": 0,
+          "minimum": 0,
+          "title": "High",
+          "type": "integer"
+        },
+        "medium": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Medium",
+          "type": "integer"
+        },
+        "low": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Low",
+          "type": "integer"
+        }
+      },
+      "title": "SeverityCounts",
+      "type": "object"
+    },
+    "SummaryCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "by_severity": {
+          "$ref": "#/$defs/SeverityCounts"
+        },
+        "by_entity_type": {
+          "$ref": "#/$defs/EntityTypeCounts"
+        },
+        "total_entities": {
+          "minimum": 0,
+          "title": "Total Entities",
+          "type": "integer"
+        },
+        "total_findings": {
+          "minimum": 0,
+          "title": "Total Findings",
+          "type": "integer"
+        },
+        "orphaned_identities": {
+          "minimum": 0,
+          "title": "Orphaned Identities",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "by_severity",
+        "by_entity_type",
+        "total_entities",
+        "total_findings",
+        "orphaned_identities"
+      ],
+      "title": "SummaryCounts",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "$ref": "#/$defs/ScanMetadata"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/NHIEntity"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/SecurityFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    }
+  },
+  "required": [
+    "metadata",
+    "entities",
+    "findings"
+  ],
+  "title": "ZetahScanPayload",
+  "type": "object"
+}

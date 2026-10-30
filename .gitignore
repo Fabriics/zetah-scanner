@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.pytest_cache/
+scan*.json
+.env
+*.pdf
+!examples/*.pdf
