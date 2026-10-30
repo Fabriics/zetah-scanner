@@ -30,6 +30,10 @@ def _user(upn: str) -> dict[str, Any]:
     return {"@odata.type": "#microsoft.graph.user", "id": _id("user", upn), "userPrincipalName": upn}
 
 
+def _publisher(name: Optional[str]) -> dict[str, Any]:
+    return {"displayName": name or None}
+
+
 def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
     now = now or datetime.now(timezone.utc)
     ago = lambda days: _ts(now - timedelta(days=days))  # noqa: E731
@@ -59,7 +63,7 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         sps.append({
             "id": _id("sp", name), "appId": app_id, "displayName": name, "servicePrincipalType": "Application",
             "accountEnabled": enabled, "appOwnerOrganizationId": DEMO_TENANT_ID, "tags": list(tags),
-            "publisherName": "Demo Corp", "alternativeNames": [], "passwordCredentials": list(sp_secrets),
+            "verifiedPublisher": _publisher("Demo Corp"), "alternativeNames": [], "passwordCredentials": list(sp_secrets),
             "keyCredentials": [], "owners": [],
         })
         return _id("sp", name)
@@ -69,7 +73,7 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         sps.append({
             "id": _id("sp", name), "appId": app_id or _id("appId", name), "displayName": name,
             "servicePrincipalType": "Application", "accountEnabled": True, "appOwnerOrganizationId": owner_org,
-            "tags": ["WindowsAzureActiveDirectoryIntegratedApp"], "publisherName": publisher,
+            "tags": ["WindowsAzureActiveDirectoryIntegratedApp"], "verifiedPublisher": _publisher(publisher),
             "alternativeNames": [], "passwordCredentials": list(sp_secrets), "keyCredentials": [], "owners": [],
         })
         return _id("sp", name)
@@ -78,7 +82,7 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         sps.append({
             "id": _id("sp", name), "appId": _id("appId", name), "displayName": name,
             "servicePrincipalType": "ManagedIdentity", "accountEnabled": True, "appOwnerOrganizationId": None,
-            "tags": [], "publisherName": None,
+            "tags": [], "verifiedPublisher": _publisher(None),
             "alternativeNames": [f"isExplicit={user_assigned}", resource],
             "passwordCredentials": [], "keyCredentials": [], "owners": [],
         })
@@ -90,8 +94,8 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
             "@odata.type": "#microsoft.graph.agentIdentity", "id": _id("sp", name), "appId": _id("appId", name),
             "displayName": name, "servicePrincipalType": "ServiceIdentity", "accountEnabled": True,
             "appOwnerOrganizationId": DEMO_TENANT_ID, "agentIdentityBlueprintId": blueprint_app_id, "tags": [],
-            "publisherName": "Demo Corp", "alternativeNames": [], "passwordCredentials": [], "keyCredentials": [],
-            "owners": [], "sponsors": [_user(u) for u in sponsors],
+            "verifiedPublisher": _publisher("Demo Corp"), "alternativeNames": [], "passwordCredentials": [],
+            "keyCredentials": [], "owners": [], "sponsors": [_user(u) for u in sponsors],
         })
         return _id("sp", name)
 

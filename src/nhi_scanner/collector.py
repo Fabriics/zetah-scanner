@@ -32,7 +32,7 @@ _APP_SELECT = (
 )
 _SP_SELECT = (
     "id,appId,displayName,servicePrincipalType,accountEnabled,appOwnerOrganizationId,"
-    "tags,publisherName,alternativeNames,preferredSingleSignOnMode,passwordCredentials,keyCredentials"
+    "tags,verifiedPublisher,alternativeNames,preferredSingleSignOnMode,passwordCredentials,keyCredentials"
 )
 
 

@@ -36,7 +36,8 @@ ROUTES = {
         {"id": GRAPH_SP, "appId": collector.MS_GRAPH_APP_ID, "displayName": "Microsoft Graph",
          "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a", "servicePrincipalType": "Application"},
         {"id": APP_SP, "appId": "app-1", "displayName": "etl-runner", "servicePrincipalType": "Application",
-         "accountEnabled": True, "appOwnerOrganizationId": TENANT, "owners": []},
+         "accountEnabled": True, "appOwnerOrganizationId": TENANT, "owners": [],
+         "verifiedPublisher": {"displayName": "Contoso Ltd", "verifiedPublisherId": "1234567", "addedDateTime": None}},
         {"@odata.type": "#microsoft.graph.agentIdentityBlueprintPrincipal", "id": BLUEPRINT_SP, "appId": "bp-1",
          "displayName": "hr-agent-blueprint", "servicePrincipalType": "Application", "appOwnerOrganizationId": TENANT,
          "owners": [{"id": "u1", "userPrincipalName": "owner@contoso.example"}]},
@@ -103,6 +104,16 @@ def test_collect_builds_a_scannable_snapshot(fake_backend):
     assert not any(r.startswith("NHI-DORM") for r in payload.metadata.rules_evaluated)
     assert ("NHI-PERM-001", "etl-runner") in {(f.rule_id, f.entity_name) for f in payload.findings}
     assert all(e.display_name != "Microsoft Graph" for e in payload.entities)
+
+
+def test_publisher_comes_from_a_field_v1_really_returns(fake_backend):
+    selected = collector._SP_SELECT.split(",")
+    assert "verifiedPublisher" in selected
+    assert "publisherName" not in selected  # beta only: v1.0 omits it from the response, without an error
+
+    publishers = {e.display_name: e.raw_metadata.get("verifiedPublisher") for e in run_scan(collector.collect()).entities}
+    assert publishers["etl-runner"] == "Contoso Ltd"
+    assert publishers["hr-agent-blueprint"] is None  # an unverified publisher, not an error
 
 
 def _agents(payload):
