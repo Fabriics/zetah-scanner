@@ -56,7 +56,7 @@
       "is_orphaned": true,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -83,7 +83,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [
           "AIAgent"
@@ -110,7 +110,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "ManagedIdentity",
-        "publisherName": null,
+        "verifiedPublisher": null,
         "appOwnerOrganizationId": null,
         "tags": [],
         "is_microsoft_first_party": false,
@@ -139,7 +139,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "ServiceIdentity",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -169,7 +169,7 @@
       "is_orphaned": true,
       "raw_metadata": {
         "servicePrincipalType": "ServiceIdentity",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -363,7 +363,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "ManagedIdentity",
-        "publisherName": null,
+        "verifiedPublisher": null,
         "appOwnerOrganizationId": null,
         "tags": [],
         "is_microsoft_first_party": false,
@@ -387,7 +387,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "ManagedIdentity",
-        "publisherName": null,
+        "verifiedPublisher": null,
         "appOwnerOrganizationId": null,
         "tags": [],
         "is_microsoft_first_party": false,
@@ -411,7 +411,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Acme Backup Inc.",
+        "verifiedPublisher": "Acme Backup Inc.",
         "appOwnerOrganizationId": "4c1e2a6b-0000-4000-8000-0000000acbe0",
         "tags": [
           "WindowsAzureActiveDirectoryIntegratedApp"
@@ -437,7 +437,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -461,7 +461,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -483,7 +483,7 @@
       "is_orphaned": true,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -507,7 +507,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -529,7 +529,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Microsoft Services",
+        "verifiedPublisher": "Microsoft Services",
         "appOwnerOrganizationId": "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
         "tags": [
           "WindowsAzureActiveDirectoryIntegratedApp"
@@ -555,7 +555,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,
@@ -579,7 +579,7 @@
       "is_orphaned": false,
       "raw_metadata": {
         "servicePrincipalType": "Application",
-        "publisherName": "Demo Corp",
+        "verifiedPublisher": "Demo Corp",
         "appOwnerOrganizationId": "demo-tenant-0000",
         "tags": [],
         "is_microsoft_first_party": false,

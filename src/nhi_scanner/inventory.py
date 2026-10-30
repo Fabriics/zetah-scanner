@@ -125,7 +125,7 @@ def build_inventory(snap: TenantSnapshot) -> Inventory:
         owner_org = sp.get("appOwnerOrganizationId")
         raw: dict[str, Any] = {
             "servicePrincipalType": sp_type,
-            "publisherName": sp.get("publisherName"),
+            "verifiedPublisher": (sp.get("verifiedPublisher") or {}).get("displayName"),
             "appOwnerOrganizationId": sp.get("appOwnerOrganizationId"),
             "tags": sp.get("tags") or [],
             "is_microsoft_first_party": first_party,
