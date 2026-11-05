@@ -33,7 +33,7 @@ def test_demo_payload_round_trips_through_json(payload):
     data = json.loads(raw)
     assert set(data) == {"metadata", "entities", "findings"}
     assert data["metadata"]["tenant_id"] == DEMO_TENANT_ID
-    assert data["metadata"]["scanner_version"] == "0.1.0"
+    assert data["metadata"]["scanner_version"] == "0.1.1"
     assert data["metadata"]["scan_timestamp"] == "2026-10-26T12:00:00Z"
 
 

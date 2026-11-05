@@ -58,7 +58,7 @@ from tags and naming patterns, and the matched signals are kept in each entity's
 Sponsors count as owners for the "orphaned AI agent" check. Microsoft currently documents a ReadWrite
 permission for reading sponsors; when the scanner cannot read them it says so and reports those agents
 as "unknown", not orphaned. Agent ID APIs are new: this support follows the Microsoft Learn documentation
-of October 2026. Please open an issue if the API behaves differently in your tenant.
+of November 2026. Please open an issue if the API behaves differently in your tenant.
 
 ## Scan your tenant
 

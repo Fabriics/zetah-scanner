@@ -114,7 +114,7 @@ def _merge_agent_identities(graph: _Http, sps: list[dict[str, Any]], warnings: l
         if sponsors_readable:
             try:
                 agent["sponsors"] = list(graph.paged(
-                    f"/beta/servicePrincipals/{agent['id']}/microsoft.graph.agentIdentity/sponsors",
+                    f"/v1.0/servicePrincipals/{agent['id']}/microsoft.graph.agentIdentity/sponsors",
                     {"$select": _SPONSOR_SELECT},
                 ))
             except CollectionError as exc:

@@ -50,9 +50,9 @@ ROUTES = {
          "displayName": "expense-checker", "servicePrincipalType": "ServiceIdentity", "agentIdentityBlueprintId": "bp-1",
          "appOwnerOrganizationId": TENANT, "owners": []},
     ]},
-    f"/beta/servicePrincipals/{AGENT_SPONSORED}/microsoft.graph.agentIdentity/sponsors": {
+    f"/v1.0/servicePrincipals/{AGENT_SPONSORED}/microsoft.graph.agentIdentity/sponsors": {
         "value": [{"id": "u2", "userPrincipalName": "sponsor@contoso.example"}]},
-    f"/beta/servicePrincipals/{AGENT_LONELY}/microsoft.graph.agentIdentity/sponsors": {"value": []},
+    f"/v1.0/servicePrincipals/{AGENT_LONELY}/microsoft.graph.agentIdentity/sponsors": {"value": []},
     f"/v1.0/servicePrincipals/{GRAPH_SP}": {"appRoles": [{"id": ROLE_ID, "value": "Application.ReadWrite.All"}]},
     f"/v1.0/servicePrincipals/{GRAPH_SP}/appRoleAssignedTo": {"value": [
         {"id": "ara-1", "principalId": APP_SP, "principalType": "ServicePrincipal", "appRoleId": ROLE_ID},

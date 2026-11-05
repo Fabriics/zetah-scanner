@@ -19,7 +19,6 @@ from .models import EntityType, FindingCategory, NHIEntity, SecurityFinding, Sev
 from .snapshot import TenantSnapshot, parse_graph_datetime
 
 GRAPH_API = "https://graph.microsoft.com/v1.0"
-GRAPH_BETA = "https://graph.microsoft.com/beta"
 
 # --------------------------------------------------------------------------- #
 # Knowledge base
@@ -919,9 +918,9 @@ def orphaned_agent(ctx: RuleContext) -> list[SecurityFinding]:
         agent_id = "entra_agent_id" in entity.raw_metadata.get("agent_classification_signals", [])
         if agent_id:
             remediation = (
-                f"az rest --method POST --url '{GRAPH_BETA}/servicePrincipals/{entity.entity_id}"
+                f"az rest --method POST --url '{GRAPH_API}/servicePrincipals/{entity.entity_id}"
                 f"/microsoft.graph.agentIdentity/sponsors/$ref' "
-                f"--body '{{\"@odata.id\":\"{GRAPH_BETA}/directoryObjects/<SPONSOR_OBJECT_ID>\"}}'"
+                f"--body '{{\"@odata.id\":\"{GRAPH_API}/directoryObjects/<SPONSOR_OBJECT_ID>\"}}'"
             )
         elif app_obj:
             remediation = f"az ad app owner add --id {entity.app_id} --owner-object-id \"<OWNER_OBJECT_ID>\""
