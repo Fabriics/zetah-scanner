@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "scan_id": "c901e636-3f4b-4147-bb6d-31e3eb7867b9",
+    "scan_id": "b2e08892-5c19-4512-845a-2418e494f71b",
     "tenant_id": "demo-tenant-0000",
-    "scan_timestamp": "2026-10-30T08:33:39Z",
-    "scanner_version": "0.1.0",
+    "scan_timestamp": "2026-11-05T09:13:04Z",
+    "scanner_version": "0.1.1",
     "hygiene_score": 8,
     "summary_counts": {
       "by_severity": {
@@ -49,8 +49,8 @@
       "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
       "display_name": "Finance Copilot Agent",
       "entity_type": "ai_agent",
-      "created_datetime": "2026-04-03T08:33:39Z",
-      "last_sign_in": "2026-10-29T05:33:39Z",
+      "created_datetime": "2026-04-09T09:13:04Z",
+      "last_sign_in": "2026-11-04T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -74,8 +74,8 @@
       "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
       "display_name": "Helpdesk Assistant",
       "entity_type": "ai_agent",
-      "created_datetime": "2026-07-02T08:33:39Z",
-      "last_sign_in": "2026-10-27T05:33:39Z",
+      "created_datetime": "2026-07-08T09:13:04Z",
+      "last_sign_in": "2026-11-02T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "it-ops@demo-corp.example"
@@ -104,7 +104,7 @@
       "display_name": "id-foundry-research-agent",
       "entity_type": "ai_agent",
       "created_datetime": null,
-      "last_sign_in": "2026-10-29T05:33:39Z",
+      "last_sign_in": "2026-11-04T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -190,8 +190,8 @@
       "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
       "display_name": "ci-deploy-pipeline",
       "entity_type": "app_registration",
-      "created_datetime": "2024-05-13T08:33:39Z",
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "created_datetime": "2024-05-19T09:13:04Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "devops-lead@demo-corp.example"
@@ -211,8 +211,8 @@
       "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
       "display_name": "Finance Copilot Agent",
       "entity_type": "app_registration",
-      "created_datetime": "2026-04-03T08:33:39Z",
-      "last_sign_in": "2026-10-29T05:33:39Z",
+      "created_datetime": "2026-04-09T09:13:04Z",
+      "last_sign_in": "2026-11-04T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -230,8 +230,8 @@
       "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
       "display_name": "Helpdesk Assistant",
       "entity_type": "app_registration",
-      "created_datetime": "2026-07-02T08:33:39Z",
-      "last_sign_in": "2026-10-27T05:33:39Z",
+      "created_datetime": "2026-07-08T09:13:04Z",
+      "last_sign_in": "2026-11-02T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "it-ops@demo-corp.example"
@@ -253,8 +253,8 @@
       "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
       "display_name": "Identity Automation",
       "entity_type": "app_registration",
-      "created_datetime": "2024-11-29T08:33:39Z",
-      "last_sign_in": "2026-10-28T05:33:39Z",
+      "created_datetime": "2024-12-05T09:13:04Z",
+      "last_sign_in": "2026-11-03T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "iam-team@demo-corp.example"
@@ -274,8 +274,8 @@
       "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
       "display_name": "legacy-hr-sync",
       "entity_type": "app_registration",
-      "created_datetime": "2022-06-13T08:33:39Z",
-      "last_sign_in": "2026-03-04T05:33:39Z",
+      "created_datetime": "2022-06-19T09:13:04Z",
+      "last_sign_in": "2026-03-10T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -293,7 +293,7 @@
       "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
       "display_name": "marketing-analytics-poc",
       "entity_type": "app_registration",
-      "created_datetime": "2026-01-03T08:33:39Z",
+      "created_datetime": "2026-01-09T09:13:04Z",
       "last_sign_in": null,
       "is_enabled": true,
       "owners": [
@@ -314,8 +314,8 @@
       "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
       "display_name": "payments-api",
       "entity_type": "app_registration",
-      "created_datetime": "2025-06-17T08:33:39Z",
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "created_datetime": "2025-06-23T09:13:04Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "payments-team@demo-corp.example"
@@ -335,8 +335,8 @@
       "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
       "display_name": "sharepoint-migration-tool",
       "entity_type": "app_registration",
-      "created_datetime": "2025-09-05T08:33:39Z",
-      "last_sign_in": "2026-10-26T05:33:39Z",
+      "created_datetime": "2025-09-11T09:13:04Z",
+      "last_sign_in": "2026-11-01T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "m365-admins@demo-corp.example"
@@ -357,7 +357,7 @@
       "display_name": "func-invoice-processor",
       "entity_type": "managed_identity",
       "created_datetime": null,
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -381,7 +381,7 @@
       "display_name": "id-aks-workload",
       "entity_type": "managed_identity",
       "created_datetime": null,
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -405,7 +405,7 @@
       "display_name": "Acme Cloud Backup",
       "entity_type": "service_principal",
       "created_datetime": null,
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -428,8 +428,8 @@
       "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
       "display_name": "ci-deploy-pipeline",
       "entity_type": "service_principal",
-      "created_datetime": "2024-05-13T08:33:39Z",
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "created_datetime": "2024-05-19T09:13:04Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "devops-lead@demo-corp.example"
@@ -452,8 +452,8 @@
       "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
       "display_name": "Identity Automation",
       "entity_type": "service_principal",
-      "created_datetime": "2024-11-29T08:33:39Z",
-      "last_sign_in": "2026-10-28T05:33:39Z",
+      "created_datetime": "2024-12-05T09:13:04Z",
+      "last_sign_in": "2026-11-03T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "iam-team@demo-corp.example"
@@ -476,8 +476,8 @@
       "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
       "display_name": "legacy-hr-sync",
       "entity_type": "service_principal",
-      "created_datetime": "2022-06-13T08:33:39Z",
-      "last_sign_in": "2026-03-04T05:33:39Z",
+      "created_datetime": "2022-06-19T09:13:04Z",
+      "last_sign_in": "2026-03-10T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -498,7 +498,7 @@
       "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
       "display_name": "marketing-analytics-poc",
       "entity_type": "service_principal",
-      "created_datetime": "2026-01-03T08:33:39Z",
+      "created_datetime": "2026-01-09T09:13:04Z",
       "last_sign_in": null,
       "is_enabled": true,
       "owners": [
@@ -523,7 +523,7 @@
       "display_name": "Office 365 Exchange Online",
       "entity_type": "service_principal",
       "created_datetime": null,
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -546,8 +546,8 @@
       "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
       "display_name": "payments-api",
       "entity_type": "service_principal",
-      "created_datetime": "2025-06-17T08:33:39Z",
-      "last_sign_in": "2026-10-30T05:33:39Z",
+      "created_datetime": "2025-06-23T09:13:04Z",
+      "last_sign_in": "2026-11-05T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "payments-team@demo-corp.example"
@@ -570,8 +570,8 @@
       "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
       "display_name": "sharepoint-migration-tool",
       "entity_type": "service_principal",
-      "created_datetime": "2025-09-05T08:33:39Z",
-      "last_sign_in": "2026-10-26T05:33:39Z",
+      "created_datetime": "2025-09-11T09:13:04Z",
+      "last_sign_in": "2026-11-01T06:13:04Z",
       "is_enabled": true,
       "owners": [
         "m365-admins@demo-corp.example"
@@ -747,8 +747,8 @@
             "kind": "client_secret",
             "key_id": "9f73ea88-83ff-5dac-8a48-4d53e2396408",
             "display_name": "sync",
-            "created": "2026-10-21T08:33:39Z",
-            "expires_on": "2028-10-19T08:33:39Z"
+            "created": "2026-10-27T09:13:04Z",
+            "expires_on": "2028-10-25T09:13:04Z"
           }
         ]
       }
@@ -785,7 +785,7 @@
       "title": "Orphaned AI agent: no accountable owner",
       "description": "AI agent 'Sales Outreach Agent' has no owner or sponsor. No one reviews its permissions, prompts, tools or behaviour.",
       "attack_path_context": "Autonomous agents act on untrusted input (mail, documents, chats). Without an owner, prompt-injection abuse or permission creep goes unnoticed and there is nobody to page during an incident.",
-      "remediation_cli": "az rest --method POST --url 'https://graph.microsoft.com/beta/servicePrincipals/cd62f8b2-5d2b-5943-8e72-f4d3c83d508c/microsoft.graph.agentIdentity/sponsors/$ref' --body '{\"@odata.id\":\"https://graph.microsoft.com/beta/directoryObjects/<SPONSOR_OBJECT_ID>\"}'",
+      "remediation_cli": "az rest --method POST --url 'https://graph.microsoft.com/v1.0/servicePrincipals/cd62f8b2-5d2b-5943-8e72-f4d3c83d508c/microsoft.graph.agentIdentity/sponsors/$ref' --body '{\"@odata.id\":\"https://graph.microsoft.com/v1.0/directoryObjects/<SPONSOR_OBJECT_ID>\"}'",
       "evidence": {
         "classification_signals": [
           "entra_agent_id"
@@ -856,7 +856,7 @@
       "attack_path_context": "Dormant identities with live credentials are prime targets: their activity is not baselined, so an attacker using a leaked secret blends in. Whoever holds it inherits Graph Directory.ReadWrite.All; directory role(s) User Administrator — a direct privilege-escalation path.",
       "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id 59cf3713-48f3-5dce-8d5e-97c546a0e41f --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id 963474b3-2d0d-587c-9259-420036e153b1",
       "evidence": {
-        "last_sign_in": "2026-03-04T05:33:39Z",
+        "last_sign_in": "2026-03-10T06:13:04Z",
         "days_inactive": 240,
         "threshold_days": 90,
         "active_credentials": 1,
@@ -1083,7 +1083,7 @@
             "key_id": "d12787a1-899f-5adf-abe1-7d48511537f4",
             "display_name": "github-actions",
             "lifetime_days": 730,
-            "expires_on": "2027-09-25T08:33:39Z"
+            "expires_on": "2027-10-01T09:13:04Z"
           }
         ]
       }
@@ -1107,7 +1107,7 @@
             "key_id": "963474b3-2d0d-587c-9259-420036e153b1",
             "display_name": "hr-2025",
             "lifetime_days": 730,
-            "expires_on": "2028-01-03T08:33:39Z"
+            "expires_on": "2028-01-09T09:13:04Z"
           }
         ]
       }
@@ -1130,8 +1130,8 @@
             "kind": "client_secret",
             "key_id": "e1b7c172-abef-58b4-abf5-ace4be0381f2",
             "display_name": "added-via-graph",
-            "created": "2026-10-09T08:33:39Z",
-            "expires_on": "2028-10-08T08:33:39Z"
+            "created": "2026-10-15T09:13:04Z",
+            "expires_on": "2028-10-14T09:13:04Z"
           }
         ]
       }
@@ -1151,7 +1151,7 @@
         "client_secrets": [
           {
             "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
-            "expires_on": "2028-04-12T08:33:39Z"
+            "expires_on": "2028-04-18T09:13:04Z"
           }
         ]
       }
@@ -1168,7 +1168,7 @@
       "attack_path_context": "Unused identities with credentials and permissions are free attack surface: first use by an attacker raises no anomaly because there is no history. Whoever holds it inherits every permission granted to the identity.",
       "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id eaa48941-65f2-5b21-870c-3437fe8dd9c5 --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id f82dda04-e8f5-5cea-91b4-5da750927a8c --key-id bc38e086-30be-53cd-a622-463c5565243f",
       "evidence": {
-        "created": "2026-01-03T08:33:39Z",
+        "created": "2026-01-09T09:13:04Z",
         "age_days": 300,
         "active_credentials": 1,
         "privileged": false
@@ -1193,7 +1193,7 @@
             "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
             "display_name": "prod",
             "lifetime_days": 730,
-            "expires_on": "2028-04-12T08:33:39Z"
+            "expires_on": "2028-04-18T09:13:04Z"
           }
         ]
       }
@@ -1235,14 +1235,14 @@
             "kind": "client_secret",
             "key_id": "f24e500e-4aa7-5b25-9393-f9707246da17",
             "display_name": "hr-2022",
-            "expired_on": "2025-09-13T08:33:39Z",
+            "expired_on": "2025-09-19T09:13:04Z",
             "days_expired": 412
           },
           {
             "kind": "client_secret",
             "key_id": "bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
             "display_name": "hr-2024",
-            "expired_on": "2026-07-27T08:33:39Z",
+            "expired_on": "2026-08-02T09:13:04Z",
             "days_expired": 95
           }
         ],
@@ -1259,13 +1259,13 @@
       "title": "All credentials expire within 11 days",
       "description": "Every valid credential of 'marketing-analytics-poc' expires within 30 days and no replacement exists yet. Unplanned expiry causes outages and rushed, insecure rotations.",
       "attack_path_context": "Emergency rotations are when secrets get pasted into tickets and chats, or issued with multi-year lifetimes 'to avoid this next time'.",
-      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id f82dda04-e8f5-5cea-91b4-5da750927a8c --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# or, if a new secret is unavoidable, store it in Key Vault so it never reaches the terminal:\n# az keyvault secret set --vault-name \"<VAULT_NAME>\" --name rotated-f82dda04-e8f5-5cea-91b4-5da750927a8c -o none --value \"$(az ad app credential reset --id f82dda04-e8f5-5cea-91b4-5da750927a8c --append --display-name rotated --end-date 2027-04-28 --query password -o tsv)\"",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id f82dda04-e8f5-5cea-91b4-5da750927a8c --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# or, if a new secret is unavoidable, store it in Key Vault so it never reaches the terminal:\n# az keyvault secret set --vault-name \"<VAULT_NAME>\" --name rotated-f82dda04-e8f5-5cea-91b4-5da750927a8c -o none --value \"$(az ad app credential reset --id f82dda04-e8f5-5cea-91b4-5da750927a8c --append --display-name rotated --end-date 2027-05-04 --query password -o tsv)\"",
       "evidence": {
         "days_until_expiry": 11,
         "credentials": [
           {
             "key_id": "bc38e086-30be-53cd-a622-463c5565243f",
-            "expires_on": "2026-11-11T08:33:39Z"
+            "expires_on": "2026-11-17T09:13:04Z"
           }
         ]
       }
