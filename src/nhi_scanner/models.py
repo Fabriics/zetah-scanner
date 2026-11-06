@@ -11,7 +11,7 @@ import uuid
 from collections import Counter
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Literal, Optional
 
 from pydantic import (
     UUID4,
@@ -110,6 +110,8 @@ class SummaryCounts(_Contract):
 
 
 class ScanMetadata(_Contract):
+    # Payloads written before the field existed (scanner 0.1.x) are version 1.
+    contract_version: Literal[1, 2] = 1
     scan_id: UUID4 = Field(default_factory=uuid.uuid4)
     tenant_id: NonEmptyStr
     scan_timestamp: UTCDateTime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -121,6 +123,146 @@ class ScanMetadata(_Contract):
     # RBAC never "resolves" dormancy/RBAC issues by omission.
     rules_evaluated: list[RuleId] = Field(default_factory=list)
     collection_warnings: list[str] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Identity record (contract version 2)
+#
+# The record is the fact, the finding is the judgment: it describes every
+# identity, clean ones included. Each section says where its data comes from,
+# when it was read and whether it could be read at all, because "not read" is
+# not "empty".
+# --------------------------------------------------------------------------- #
+
+CONTRACT_VERSION = 2
+
+
+class SectionStatus(str, Enum):
+    READ = "read"
+    # could not be read, or was not collected in this scan: unknown, not empty
+    NOT_READ = "not_read"
+    # the section does not exist for this kind of identity
+    NOT_APPLICABLE = "not_applicable"
+
+
+class _Section(_Contract):
+    status: SectionStatus
+    # the API reads the data comes from, e.g. "GET /v1.0/servicePrincipals"
+    sources: list[NonEmptyStr] = Field(default_factory=list)
+    read_at: Optional[UTCDateTime] = None
+    # coverage limits worth knowing even when status is "read"
+    note: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _status_is_consistent(self) -> _Section:
+        if self.status is SectionStatus.READ and not (self.sources and self.read_at):
+            raise ValueError("a section that was read must state its sources and read_at")
+        if self.status is not SectionStatus.READ:
+            for name in type(self).model_fields:
+                if name in _Section.model_fields:
+                    continue
+                value = getattr(self, name)
+                if value not in (None, [], ""):
+                    raise ValueError(f"section is {self.status.value} but '{name}' holds data")
+        return self
+
+
+class ProfileSection(_Section):
+    description: Optional[str] = None
+    notes: Optional[str] = None
+    sign_in_audience: Optional[str] = None
+    publisher_domain: Optional[str] = None
+
+
+class AccountableObjectType(str, Enum):
+    USER = "user"
+    SERVICE_PRINCIPAL = "service_principal"
+    OTHER = "other"
+
+
+class Accountable(_Contract):
+    object_id: NonEmptyStr
+    object_type: AccountableObjectType
+    user_principal_name: Optional[str] = None
+    display_name: Optional[str] = None
+    # None when the account status could not be read
+    account_enabled: Optional[bool] = None
+    # where the owner is set: on the service principal or on its app registration
+    held_on: Optional[Annotated[str, StringConstraints(pattern=r"^(application|service_principal)$")]] = None
+
+
+class OwnersSection(_Section):
+    items: list[Accountable] = Field(default_factory=list)
+
+
+class SponsorsSection(_Section):
+    items: list[Accountable] = Field(default_factory=list)
+
+
+class CredentialKind(str, Enum):
+    CLIENT_SECRET = "client_secret"
+    CERTIFICATE = "certificate"
+
+
+class Credential(_Contract):
+    """Credential metadata only: secret values are never read."""
+
+    key_id: Optional[str] = None
+    kind: CredentialKind
+    display_name: Optional[str] = None
+    start: Optional[UTCDateTime] = None
+    end: Optional[UTCDateTime] = None
+    held_on: Annotated[str, StringConstraints(pattern=r"^(application|service_principal)$")]
+
+
+class CredentialsSection(_Section):
+    items: list[Credential] = Field(default_factory=list)
+
+
+class GraphPermission(_Contract):
+    permission: NonEmptyStr
+    assignment_id: NonEmptyStr
+
+
+class GraphPermissionsSection(_Section):
+    items: list[GraphPermission] = Field(default_factory=list)
+
+
+class DirectoryRole(_Contract):
+    role: NonEmptyStr
+    role_template_id: Optional[str] = None
+    directory_scope: NonEmptyStr = "/"
+    assignment_id: NonEmptyStr
+
+
+class DirectoryRolesSection(_Section):
+    items: list[DirectoryRole] = Field(default_factory=list)
+
+
+class AzureRole(_Contract):
+    role: NonEmptyStr
+    scope: NonEmptyStr
+    assignment_id: NonEmptyStr
+
+
+class AzureRolesSection(_Section):
+    items: list[AzureRole] = Field(default_factory=list)
+
+
+class ActivitySection(_Section):
+    # None with status "read" means no sign-in was recorded
+    last_sign_in: Optional[UTCDateTime] = None
+
+
+class IdentityRecord(_Contract):
+    profile: ProfileSection
+    owners: OwnersSection
+    sponsors: SponsorsSection
+    credentials: CredentialsSection
+    graph_permissions: GraphPermissionsSection
+    directory_roles: DirectoryRolesSection
+    azure_roles: AzureRolesSection
+    activity: ActivitySection
 
 
 class NHIEntity(_Contract):
@@ -139,6 +281,8 @@ class NHIEntity(_Contract):
     # Entra Agent ID identities whose sponsors could not be read are unknown, not orphaned.
     is_orphaned: bool = False
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
+    # Contract version 2: the full record of the identity. Absent in version 1 payloads.
+    record: Optional[IdentityRecord] = None
 
     @model_validator(mode="after")
     def _derive_orphaned(self) -> NHIEntity:
@@ -195,6 +339,12 @@ class ZetahScanPayload(_Contract):
         dupes = [k for k, n in Counter(entity_ids).items() if n > 1]
         if dupes:
             raise ValueError(f"duplicate entity_id(s): {dupes}")
+
+        with_record = sum(e.record is not None for e in self.entities)
+        if self.metadata.contract_version >= 2 and with_record != len(self.entities):
+            raise ValueError("contract version 2 requires a record on every entity")
+        if self.metadata.contract_version == 1 and with_record:
+            raise ValueError("contract version 1 payloads carry no identity record")
 
         known = set(entity_ids)
         tenant = self.metadata.tenant_id

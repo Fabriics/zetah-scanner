@@ -75,9 +75,9 @@ Microsoft Graph **read** permissions for the scanning identity (application or d
 
 | Permission | Used for |
 |---|---|
-| `Application.Read.All` | app registrations, service principals, their credentials and owners |
+| `Application.Read.All` | app registrations, service principals, their credentials, owners, descriptions and notes |
 | `Directory.Read.All` | directory objects |
-| `RoleManagement.Read.Directory` | privileged Entra roles held by service principals |
+| `RoleManagement.Read.Directory` | Entra roles held by service principals |
 | `AuditLog.Read.All` (+ Entra ID P1) | last sign-in of each service principal (dormancy rules; they are skipped when the report is unavailable or empty) |
 | `AgentIdentity.Read.All` | Entra Agent ID agent identities |
 
@@ -118,6 +118,26 @@ affected rules are skipped, never guessed.
 
 Findings are scored into a 0-100 hygiene score; the PDF explains the scoring and the limitations.
 
+## Identity record
+
+Findings are the judgment; the identity record is the fact. Every identity in the JSON payload carries a
+`record`, clean identities included, with everything the scan read about it:
+
+| Section | Content |
+|---|---|
+| `profile` | description, notes, sign-in audience, publisher domain |
+| `owners`, `sponsors` | each accountable object, whether it is a user or a service principal, whether its account is enabled, and where it is set |
+| `credentials` | every secret and certificate: key ID, type, name, validity dates, and whether it sits on the app registration or on the service principal (metadata only: secret values are never read) |
+| `graph_permissions` | application permissions on Microsoft Graph |
+| `directory_roles` | Entra roles assigned directly, with their scope |
+| `azure_roles` | Azure RBAC roles, with their scope |
+| `activity` | last sign-in |
+
+Each section states the reads it comes from (`sources`), when they finished (`read_at`) and its `status`:
+`read`, `not_read` (the scan could not read it: unknown, not empty) or `not_applicable`. A `note` says
+what the section does not cover yet. The record is new in contract version 2
+(`metadata.contract_version`); payloads written by 0.1.x are version 1 and still validate.
+
 ## Limitations
 
 - Point-in-time scan; identities and permissions change continuously. A clean result covers only the
@@ -144,7 +164,7 @@ workload exposure, and agents on non-Microsoft platforms. `zetah-scanner` is the
 
 ## For developers
 
-Pipeline: `collector.py` (Graph/ARM) → `snapshot.py` → `inventory.py` → `rules.py` → `models.py`
+Pipeline: `collector.py` (Graph/ARM) → `snapshot.py` → `inventory.py` (with `record.py`) → `rules.py` → `models.py`
 (`ZetahScanPayload`, validated with Pydantic) → JSON / PDF; `readiness.py` derives the Agent ID view
 from the payload. Each rule emits at most one finding per identity, so
 `finding_id = sha256(tenant_id + entity_id + rule_id)` is stable across scans. `--schema-out PATH`

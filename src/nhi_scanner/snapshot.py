@@ -16,6 +16,16 @@ _FRACTION = re.compile(r"(\.\d{6})\d+")
 # Start of the collection warning raised when Entra Agent ID identities cannot be listed.
 AGENT_ID_UNREADABLE = "Entra Agent ID identities not read"
 
+# The reads each part of a snapshot comes from. Identity records cite them as their sources.
+SRC_APPLICATIONS = "GET /v1.0/applications"
+SRC_SERVICE_PRINCIPALS = "GET /v1.0/servicePrincipals"
+SRC_AGENT_IDENTITIES = "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
+SRC_SPONSORS = "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
+SRC_GRAPH_PERMISSIONS = "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
+SRC_DIRECTORY_ROLES = "GET /v1.0/roleManagement/directory/roleAssignments"
+SRC_SIGNIN_ACTIVITY = "GET /beta/reports/servicePrincipalSignInActivities"
+SRC_AZURE_RBAC = "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
+
 
 def parse_graph_datetime(value: Optional[str]) -> Optional[datetime]:
     """Graph/ARM timestamps -> aware UTC datetime (handles 'Z' and 7-digit fractions)."""
@@ -24,6 +34,21 @@ def parse_graph_datetime(value: Optional[str]) -> Optional[datetime]:
     value = _FRACTION.sub(r"\1", value.replace("Z", "+00:00"))
     parsed = datetime.fromisoformat(value)
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
+
+
+def credential_metadata(obj: dict[str, Any]) -> list[dict[str, Any]]:
+    """Secrets and certificates of an application or service principal, normalised (metadata only)."""
+    out = []
+    for kind, key in (("client_secret", "passwordCredentials"), ("certificate", "keyCredentials")):
+        for c in obj.get(key) or []:
+            out.append({
+                "kind": kind,
+                "key_id": c.get("keyId"),
+                "display_name": c.get("displayName") or "",
+                "start": parse_graph_datetime(c.get("startDateTime")),
+                "end": parse_graph_datetime(c.get("endDateTime")),
+            })
+    return out
 
 
 @dataclass
@@ -52,3 +77,10 @@ class TenantSnapshot:
     # {"id", "principalId", "roleName", "scope"}. None when Azure was not scanned.
     azure_role_assignments: Optional[list[dict[str, Any]]]
     warnings: list[str] = field(default_factory=list)
+    # SRC_* -> when that read finished. Sources missing here fall back to ``collected_at``.
+    read_at: dict[str, datetime] = field(default_factory=dict)
+    # False when owners were read without their account status (accountEnabled)
+    owner_status_read: bool = True
+
+    def read_time(self, source: str) -> datetime:
+        return self.read_at.get(source, self.collected_at)
