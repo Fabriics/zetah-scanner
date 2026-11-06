@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from .models import EntityType, NHIEntity
+from .record import application_record, build_index, service_principal_record
 from .snapshot import TenantSnapshot, parse_graph_datetime
 
 MICROSOFT_TENANTS = {
@@ -97,6 +98,7 @@ def build_inventory(snap: TenantSnapshot) -> Inventory:
     signin = snap.signin_activity or {}
     sps_by_app_id: dict[str, dict[str, Any]] = {}
     entities: list[NHIEntity] = []
+    index = build_index(snap)
 
     for sp in snap.service_principals:
         first_party = sp.get("appOwnerOrganizationId") in MICROSOFT_TENANTS
@@ -160,6 +162,9 @@ def build_inventory(snap: TenantSnapshot) -> Inventory:
                 is_enabled=sp.get("accountEnabled", True),
                 owners=owners,
                 raw_metadata=raw,
+                record=service_principal_record(
+                    snap, sp, app, index, is_agent_id=is_agent_id, is_external_app=raw["is_external_app"],
+                ),
             )
         )
 
@@ -184,6 +189,7 @@ def build_inventory(snap: TenantSnapshot) -> Inventory:
                     "password_credential_count": len(app.get("passwordCredentials") or []),
                     "certificate_credential_count": len(app.get("keyCredentials") or []),
                 },
+                record=application_record(snap, app, has_local_sp=sp is not None),
             )
         )
 

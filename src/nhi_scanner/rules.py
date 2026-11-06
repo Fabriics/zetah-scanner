@@ -16,7 +16,8 @@ from typing import Any, Callable, Optional
 
 from .inventory import Inventory
 from .models import EntityType, FindingCategory, NHIEntity, SecurityFinding, Severity
-from .snapshot import TenantSnapshot, parse_graph_datetime
+from .snapshot import TenantSnapshot
+from .snapshot import credential_metadata as _credentials
 
 GRAPH_API = "https://graph.microsoft.com/v1.0"
 
@@ -241,21 +242,6 @@ def run_rules(ctx: RuleContext) -> tuple[list[SecurityFinding], list[str]]:
 # --------------------------------------------------------------------------- #
 # Helpers
 # --------------------------------------------------------------------------- #
-
-
-def _credentials(obj: dict[str, Any]) -> list[dict[str, Any]]:
-    """Secrets and certificates of an application or service principal, normalised."""
-    out = []
-    for kind, key in (("client_secret", "passwordCredentials"), ("certificate", "keyCredentials")):
-        for c in obj.get(key) or []:
-            out.append({
-                "kind": kind,
-                "key_id": c.get("keyId"),
-                "display_name": c.get("displayName") or "",
-                "start": parse_graph_datetime(c.get("startDateTime")),
-                "end": parse_graph_datetime(c.get("endDateTime")),
-            })
-    return out
 
 
 def _active(creds: list[dict[str, Any]], now: datetime) -> list[dict[str, Any]]:

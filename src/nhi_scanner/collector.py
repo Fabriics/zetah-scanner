@@ -19,27 +19,44 @@ from typing import Any, Callable, Iterator, Optional
 
 import requests
 
-from .snapshot import AGENT_ID_UNREADABLE, TenantSnapshot, parse_graph_datetime
+from .snapshot import (
+    AGENT_ID_UNREADABLE,
+    SRC_AGENT_IDENTITIES,
+    SRC_APPLICATIONS,
+    SRC_AZURE_RBAC,
+    SRC_DIRECTORY_ROLES,
+    SRC_GRAPH_PERMISSIONS,
+    SRC_SERVICE_PRINCIPALS,
+    SRC_SIGNIN_ACTIVITY,
+    SRC_SPONSORS,
+    TenantSnapshot,
+    parse_graph_datetime,
+)
 
 GRAPH = "https://graph.microsoft.com"
 ARM = "https://management.azure.com"
 MS_GRAPH_APP_ID = "00000003-0000-0000-c000-000000000000"
 
-_OWNER_EXPAND = "owners($select=id,userPrincipalName,displayName)"
+_OWNER_EXPAND = "owners($select=id,userPrincipalName,displayName,accountEnabled)"
 _APP_SELECT = (
     "id,appId,displayName,createdDateTime,signInAudience,tags,publisherDomain,"
-    "passwordCredentials,keyCredentials"
+    "passwordCredentials,keyCredentials,description,notes"
 )
 _SP_SELECT = (
     "id,appId,displayName,servicePrincipalType,accountEnabled,appOwnerOrganizationId,"
-    "tags,verifiedPublisher,alternativeNames,preferredSingleSignOnMode,passwordCredentials,keyCredentials"
+    "tags,verifiedPublisher,alternativeNames,preferredSingleSignOnMode,passwordCredentials,keyCredentials,"
+    "description,notes"
 )
+# The 0.1 reads, without owner account status, description and notes. Used only if Graph refuses the full ones.
+_OWNER_EXPAND_BASIC = "owners($select=id,userPrincipalName,displayName)"
+_APP_SELECT_BASIC = _APP_SELECT.removesuffix(",description,notes")
+_SP_SELECT_BASIC = _SP_SELECT.removesuffix(",description,notes")
 
 
 # Entra Agent ID: agent identities are service principals listed through their own type-cast
 # endpoint; the plain /servicePrincipals list is not documented to include them.
 AGENT_IDENTITIES = "/v1.0/servicePrincipals/microsoft.graph.agentIdentity"
-_SPONSOR_SELECT = "id,userPrincipalName,displayName"
+_SPONSOR_SELECT = "id,userPrincipalName,displayName,accountEnabled"
 
 
 class CollectionError(RuntimeError):
@@ -93,14 +110,22 @@ class _Http:
             page = self.get(nxt)
 
 
-def _merge_agent_identities(graph: _Http, sps: list[dict[str, Any]], warnings: list[str]) -> None:
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _merge_agent_identities(
+    graph: _Http, sps: list[dict[str, Any]], warnings: list[str], read_at: dict[str, datetime],
+    owner_expand: str = _OWNER_EXPAND,
+) -> None:
     """Add Entra Agent ID identities to ``sps`` (or enrich the ones already there), with their sponsors.
 
     Sponsors are the accountable humans of an agent identity. Each agent gets a ``sponsors`` list; when
     they cannot be read the key is left out, and the agent is then not reported as orphaned.
     """
     try:
-        agents = list(graph.paged(AGENT_IDENTITIES, {"$expand": _OWNER_EXPAND}))
+        agents = list(graph.paged(AGENT_IDENTITIES, {"$expand": owner_expand}))
+        read_at[SRC_AGENT_IDENTITIES] = _now()
     except CollectionError as exc:
         warnings.append(
             f"{AGENT_ID_UNREADABLE} (needs AgentIdentity.Read.All); agents created with "
@@ -128,6 +153,8 @@ def _merge_agent_identities(graph: _Http, sps: list[dict[str, Any]], warnings: l
             sps[index[agent["id"]]].update(agent)
         else:
             sps.append(agent)
+    if agents and sponsors_readable:
+        read_at[SRC_SPONSORS] = _now()
 
 
 def collect(
@@ -147,6 +174,7 @@ def collect(
     )
     graph = _Http(credential, f"{GRAPH}/.default", GRAPH, tenant_id)
     warnings: list[str] = []
+    read_at: dict[str, datetime] = {}
 
     progress("Tenant")
     try:
@@ -158,19 +186,27 @@ def collect(
         warnings.append(f"Tenant details not read; the tenant ID is used as its name. [{exc}]")
 
     # Every check starts from these two lists, so without them there is nothing to report
+    owner_expand = _OWNER_EXPAND
     try:
-        progress("App registrations")
-        apps = list(graph.paged("/v1.0/applications", {"$select": _APP_SELECT, "$expand": _OWNER_EXPAND}))
-
-        progress("Service principals")
-        sps = list(graph.paged("/v1.0/servicePrincipals", {"$select": _SP_SELECT, "$expand": _OWNER_EXPAND}))
+        try:
+            apps, sps = _read_directory(graph, progress, read_at, _APP_SELECT, _SP_SELECT, _OWNER_EXPAND)
+        except CollectionError as exc:
+            if " -> 400" not in str(exc):
+                raise
+            # A Graph that refuses the fuller select must not cost the whole scan: fall back to the 0.1 reads
+            owner_expand = _OWNER_EXPAND_BASIC
+            warnings.append(
+                "Owner account status, descriptions and notes not read (Graph refused the fuller query); "
+                f"identity records leave them empty. [{exc}]"
+            )
+            apps, sps = _read_directory(graph, progress, read_at, _APP_SELECT_BASIC, _SP_SELECT_BASIC, owner_expand)
     except CollectionError as exc:
         raise CollectionError(
             f"Cannot read app registrations and service principals (needs Application.Read.All). [{exc}]"
         ) from exc
 
     progress("Entra Agent ID identities")
-    _merge_agent_identities(graph, sps, warnings)
+    _merge_agent_identities(graph, sps, warnings, read_at, owner_expand)
 
     progress("Microsoft Graph application permissions")
     msgraph = next((sp for sp in sps if sp.get("appId") == MS_GRAPH_APP_ID), None)
@@ -184,6 +220,7 @@ def collect(
                 a for a in graph.paged(f"/v1.0/servicePrincipals/{msgraph['id']}/appRoleAssignedTo")
                 if a.get("principalType") == "ServicePrincipal"
             ]
+            read_at[SRC_GRAPH_PERMISSIONS] = _now()
         except CollectionError as exc:
             graph_assignments = None
             warnings.append(
@@ -207,6 +244,7 @@ def collect(
             a for a in graph.paged("/v1.0/roleManagement/directory/roleAssignments")
             if a.get("principalId") in sp_ids
         ]
+        read_at[SRC_DIRECTORY_ROLES] = _now()
     except CollectionError as exc:
         warnings.append(
             f"Entra directory roles not read (needs RoleManagement.Read.Directory); role rule skipped. [{exc}]"
@@ -219,6 +257,7 @@ def collect(
             row["appId"]: parse_graph_datetime((row.get("lastSignInActivity") or {}).get("lastSignInDateTime"))
             for row in graph.paged("/beta/reports/servicePrincipalSignInActivities")
         }
+        read_at[SRC_SIGNIN_ACTIVITY] = _now()
     except CollectionError as exc:
         signin = None
         warnings.append(
@@ -238,13 +277,14 @@ def collect(
         progress("Azure RBAC role assignments")
         try:
             azure = _collect_azure_rbac(_Http(credential, f"{ARM}/.default", ARM, tenant_id), warnings)
+            read_at[SRC_AZURE_RBAC] = _now()
         except Exception as exc:  # noqa: BLE001 — Azure is optional; never fail the Entra scan
             warnings.append(f"Azure RBAC not scanned: {exc}")
 
     return TenantSnapshot(
         tenant_id=org["id"],
         tenant_name=org.get("displayName") or org["id"],
-        collected_at=datetime.now(timezone.utc),
+        collected_at=_now(),
         applications=apps,
         service_principals=sps,
         graph_app_role_assignments=graph_assignments,
@@ -254,7 +294,23 @@ def collect(
         signin_activity=signin,
         azure_role_assignments=azure,
         warnings=warnings,
+        read_at=read_at,
+        owner_status_read=owner_expand == _OWNER_EXPAND,
     )
+
+
+def _read_directory(
+    graph: _Http, progress: Callable[[str], None], read_at: dict[str, datetime],
+    app_select: str, sp_select: str, owner_expand: str,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    progress("App registrations")
+    apps = list(graph.paged("/v1.0/applications", {"$select": app_select, "$expand": owner_expand}))
+    read_at[SRC_APPLICATIONS] = _now()
+
+    progress("Service principals")
+    sps = list(graph.paged("/v1.0/servicePrincipals", {"$select": sp_select, "$expand": owner_expand}))
+    read_at[SRC_SERVICE_PRINCIPALS] = _now()
+    return apps, sps
 
 
 def _collect_azure_rbac(arm: _Http, warnings: list[str]) -> list[dict[str, Any]]:
