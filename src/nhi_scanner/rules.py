@@ -20,6 +20,7 @@ from .snapshot import TenantSnapshot
 from .snapshot import credential_metadata as _credentials
 
 GRAPH_API = "https://graph.microsoft.com/v1.0"
+MS_GRAPH_APP_ID = "00000003-0000-0000-c000-000000000000"
 
 # --------------------------------------------------------------------------- #
 # Knowledge base
@@ -97,6 +98,24 @@ HYBRID_FIRST_PARTY_APPS = {
     "00000004-0000-0ff1-ce00-000000000000": "Skype for Business Online",
 }
 
+# Delegated permissions (scopes) on Microsoft Graph. They act as the signed-in user, so each one reaches
+# only what that user can reach, but for an AI client every consenting user is a path to their data.
+DELEGATED_READ_SCOPES = {
+    "Mail.Read", "Mail.ReadWrite", "Mail.Read.Shared", "Mail.ReadWrite.Shared", "Files.Read", "Files.ReadWrite",
+    "Files.Read.All", "Files.ReadWrite.All", "Sites.Read.All", "Sites.ReadWrite.All", "Sites.Manage.All",
+    "Sites.FullControl.All", "Chat.Read", "Chat.ReadWrite", "ChannelMessage.Read.All",
+}
+DELEGATED_EGRESS_SCOPES = {"Mail.Send", "Mail.Send.Shared", "Chat.ReadWrite", "ChatMessage.Send", "ChannelMessage.Send"}
+# Azure Resource Manager: manage Azure as the user
+ARM_APP_ID = "797f4846-ba00-4fd7-ba43-dac1f8f63013"
+ARM_IMPERSONATION = "Azure Resource Manager user_impersonation"
+DELEGATED_ACTION_SCOPES = DELEGATED_EGRESS_SCOPES | {
+    "Mail.ReadWrite", "Files.ReadWrite", "Files.ReadWrite.All", "Sites.ReadWrite.All", "Sites.Manage.All",
+    "Sites.FullControl.All", "Calendars.ReadWrite", "Contacts.ReadWrite", "Notes.ReadWrite.All", "User.ReadWrite.All",
+    "Group.ReadWrite.All", "Directory.AccessAsUser.All", ARM_IMPERSONATION,
+} | set(TIER0_GRAPH_PERMISSIONS)
+_SCOPE_NAMES = {n.lower(): n for n in DELEGATED_READ_SCOPES | DELEGATED_ACTION_SCOPES}
+
 AZURE_ACCESS_CONTROL_ROLES = {"Owner", "User Access Administrator", "Role Based Access Control Administrator"}
 MULTI_TENANT_AUDIENCES = {"AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount"}
 
@@ -124,6 +143,10 @@ class RuleContext:
     dir_roles: dict[str, list[dict[str, Any]]] = field(default_factory=dict)  # spId -> [{role, severity, ...}]
     azure_roles: dict[str, list[dict[str, Any]]] = field(default_factory=dict)  # spId -> [{role, scope, level, id}]
     privileged_sp_ids: set[str] = field(default_factory=set)
+    # client spId -> {"all_users": [grants], "users": {principalId: [grants]}}
+    consents: dict[str, dict[str, Any]] = field(default_factory=dict)
+    msgraph_sp_id: Optional[str] = None
+    arm_sp_id: Optional[str] = None
 
     def finding(self, entity: NHIEntity, rule_id: str, **fields: Any) -> SecurityFinding:
         return SecurityFinding.create(tenant_id=self.tenant_id, entity=entity, rule_id=rule_id, **fields)
@@ -178,6 +201,18 @@ def build_context(snap: TenantSnapshot, inv: Inventory, cfg: RuleConfig, now: da
         az[ra["principalId"]].append({**ra, "level": _scope_level(ra["scope"])})
     ctx.azure_roles = dict(az)
 
+    for sp in snap.service_principals:
+        if sp.get("appId") == MS_GRAPH_APP_ID:
+            ctx.msgraph_sp_id = sp["id"]
+        elif sp.get("appId") == ARM_APP_ID:
+            ctx.arm_sp_id = sp["id"]
+    for g in snap.delegated_permission_grants or []:
+        c = ctx.consents.setdefault(g["clientId"], {"all_users": [], "users": defaultdict(list)})
+        if g.get("consentType") == "AllPrincipals":
+            c["all_users"].append(g)
+        elif g.get("principalId"):
+            c["users"][g["principalId"]].append(g)
+
     for sp_id, plist in ctx.graph_perms.items():
         if any(p["permission"] in TIER0_GRAPH_PERMISSIONS for p in plist):
             ctx.privileged_sp_ids.add(sp_id)
@@ -201,7 +236,7 @@ RuleFn = Callable[[RuleContext], list[SecurityFinding]]
 class Rule:
     rule_id: str
     category: FindingCategory
-    requires: Optional[str]  # "signin" | "azure" | "graph_permissions" | "directory_roles" | None
+    requires: Optional[str]  # "signin" | "azure" | "graph_permissions" | "directory_roles" | "delegated_grants" | None
     title: str  # what the rule checks, for reports
     action: str  # the remediation in one line, for reports
     fn: RuleFn
@@ -225,6 +260,7 @@ def run_rules(ctx: RuleContext) -> tuple[list[SecurityFinding], list[str]]:
         "azure": ctx.snap.azure_role_assignments is not None,
         "graph_permissions": ctx.snap.graph_app_role_assignments is not None,
         "directory_roles": ctx.snap.directory_role_assignments is not None,
+        "delegated_grants": ctx.snap.delegated_permission_grants is not None,
     }
     findings: list[SecurityFinding] = []
     evaluated: list[str] = []
@@ -1075,5 +1111,176 @@ def agent_multi_tenant(ctx: RuleContext) -> list[SecurityFinding]:
             ),
             remediation_cli=f"az ad app update --id {entity.app_id} --sign-in-audience AzureADMyOrg",
             evidence={"sign_in_audience": audience},
+        ))
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# ai_agent_governance: delegated consents to AI clients
+# --------------------------------------------------------------------------- #
+
+_LISTED = 50  # grants and users listed in evidence and remediation; the counts stay exact
+
+
+@dataclass
+class _ConsentPath:
+    """The users for whom an AI client's consented scopes pass a test, and the grants that give them."""
+
+    all_users: bool
+    users: list[str]
+    scopes: set[str]
+    grants: list[dict[str, Any]]
+
+
+def _consent_scopes(ctx: RuleContext, grants: list[dict[str, Any]]) -> set[str]:
+    out: set[str] = set()
+    for g in grants:
+        for scope in (g.get("scope") or "").split():
+            low = scope.lower()
+            if low == "offline_access":
+                out.add("offline_access")
+            elif g.get("resourceId") == ctx.msgraph_sp_id:
+                out.add(_SCOPE_NAMES.get(low, scope))
+            elif g.get("resourceId") == ctx.arm_sp_id and low == "user_impersonation":
+                out.add(ARM_IMPERSONATION)
+    return out
+
+
+def _consent_path(
+    ctx: RuleContext, entity: NHIEntity, test: Callable[[set[str]], bool], relevant: set[str],
+) -> Optional[_ConsentPath]:
+    """A user's effective scopes are those consented for all users plus the ones they consented themselves.
+
+    ``grants`` keeps only the grants that carry a ``relevant`` scope: revoking them closes the path.
+    """
+    c = ctx.consents.get(entity.entity_id)
+    if not c:
+        return None
+    carries = lambda g: bool(_consent_scopes(ctx, [g]) & relevant)  # noqa: E731
+    tenant_scopes = _consent_scopes(ctx, c["all_users"])
+    all_users = test(tenant_scopes)
+    scopes = set(tenant_scopes) if all_users else set()
+    grants = [g for g in c["all_users"] if carries(g)]
+    users = []
+    for user, user_grants in sorted(c["users"].items()):
+        effective = tenant_scopes | _consent_scopes(ctx, user_grants)
+        if test(effective):
+            users.append(user)
+            scopes |= effective
+            grants += [g for g in user_grants if carries(g)]
+    if not all_users and not users:
+        return None
+    return _ConsentPath(all_users=all_users, users=users, scopes=scopes, grants=grants)
+
+
+def _who(path: _ConsentPath) -> str:
+    if path.all_users:
+        return "an administrator for every user of the tenant"
+    return f"{len(path.users)} user{'s' if len(path.users) != 1 else ''} for themselves"
+
+
+def _revoke_grants(entity: NHIEntity, grants: list[dict[str, Any]]) -> str:
+    lines = [
+        f"az rest --method DELETE --url {GRAPH_API}/oauth2PermissionGrants/{g['id']}"
+        + ("  # all users" if g.get("consentType") == "AllPrincipals" else f"  # user {g.get('principalId')}")
+        for g in grants[:_LISTED]
+    ]
+    if len(grants) > _LISTED:
+        lines.append(
+            f"# ...and {len(grants) - _LISTED} more. List them: az rest --url "
+            f"\"{GRAPH_API}/oauth2PermissionGrants?\\$filter=clientId eq '{entity.entity_id}'\""
+        )
+    lines += [
+        "# Access tokens already issued stay valid until they expire (usually within 90 minutes).",
+        "# To stop every sign-in of this app in the tenant at once instead:",
+        _hold(f"az ad sp update --id {entity.entity_id} --set accountEnabled=false"),
+    ]
+    return "\n".join(lines)
+
+
+def _consent_evidence(path: _ConsentPath, **extra: Any) -> dict[str, Any]:
+    return {
+        "all_users": path.all_users,
+        "user_count": len(path.users),
+        "user_ids": path.users[:_LISTED],
+        **extra,
+        "grant_ids": [g["id"] for g in path.grants[:_LISTED]],
+    }
+
+
+@rule(
+    "NHI-AGENT-006", FindingCategory.AI_AGENT_GOVERNANCE, requires="delegated_grants",
+    title="AI client with delegated read and send",
+    action="Revoke the consent, or split reading and sending across separate apps",
+)
+def agent_delegated_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]:
+    out = []
+    for entity in _agents(ctx):
+        path = _consent_path(ctx, entity, lambda s: bool(s & DELEGATED_READ_SCOPES and s & DELEGATED_EGRESS_SCOPES),
+                             DELEGATED_READ_SCOPES | DELEGATED_EGRESS_SCOPES)
+        if not path:
+            continue
+        reads = sorted(path.scopes & DELEGATED_READ_SCOPES)
+        egress = sorted(path.scopes & DELEGATED_EGRESS_SCOPES)
+        external = entity.raw_metadata.get("is_external_app") is True
+        out.append(ctx.finding(
+            entity, "NHI-AGENT-006",
+            category=FindingCategory.AI_AGENT_GOVERNANCE,
+            severity=Severity.HIGH if path.all_users else Severity.MEDIUM,
+            title="AI client can read users' data and send it out on their behalf",
+            description=(
+                f"AI client '{entity.display_name}' holds delegated permissions that combine reading data "
+                f"({', '.join(reads)}) with an egress channel ({', '.join(egress)}), consented by {_who(path)}."
+            ),
+            attack_path_context=(
+                "Indirect prompt injection: a mail or document with hidden instructions reaches the agent while it "
+                f"acts for a user; it reads that user's data via {reads[0]} and sends it out via {egress[0]}. Each "
+                "consenting user is one such path, limited to what that user can access."
+                + (" The app is published by another organization, so the data also passes through a third party."
+                   if external else "")
+            ),
+            remediation_cli=_revoke_grants(entity, path.grants),
+            evidence=_consent_evidence(path, read_scopes=reads, egress_scopes=egress, external_app=external),
+        ))
+    return out
+
+
+@rule(
+    "NHI-AGENT-008", FindingCategory.AI_AGENT_GOVERNANCE, requires="delegated_grants",
+    title="AI client with persistent delegated access",
+    action="Revoke the consent and require admin approval for AI apps",
+)
+def agent_persistent_delegated_access(ctx: RuleContext) -> list[SecurityFinding]:
+    sensitive = DELEGATED_READ_SCOPES | DELEGATED_ACTION_SCOPES
+    out = []
+    for entity in _agents(ctx):
+        path = _consent_path(ctx, entity, lambda s: "offline_access" in s and bool(s & sensitive),
+                             sensitive | {"offline_access"})
+        if not path:
+            continue
+        scopes = sorted(path.scopes & sensitive)
+        external = entity.raw_metadata.get("is_external_app") is True
+        out.append(ctx.finding(
+            entity, "NHI-AGENT-008",
+            category=FindingCategory.AI_AGENT_GOVERNANCE,
+            severity=Severity.HIGH if path.all_users or external or entity.is_orphaned else Severity.MEDIUM,
+            title="AI client keeps access to users' data while they are offline",
+            description=(
+                f"AI client '{entity.display_name}' holds offline_access with {', '.join(scopes)}, consented by "
+                f"{_who(path)}. It can keep renewing its tokens and act for those users while they are not signed in."
+            ),
+            attack_path_context=(
+                "A refresh token keeps the access alive until someone revokes it. Whoever holds it, an attacker who "
+                "stole it from the agent's runtime or a compromised vendor, reaches each user's data without the user."
+                + (" The app is published by another organization." if external else "")
+                + (" The app has no owner, so no one reviews these consents." if entity.is_orphaned else "")
+            ),
+            remediation_cli=(
+                _revoke_grants(entity, path.grants)
+                + "\n# Then require admin approval for new consents (Entra admin center > Enterprise apps > Consent "
+                  "and permissions)."
+            ),
+            evidence=_consent_evidence(path, scopes=["offline_access", *scopes], external_app=external,
+                                       orphaned=entity.is_orphaned),
         ))
     return out

@@ -99,6 +99,7 @@ def test_by_design_gaps_are_explained(payload):
 @pytest.mark.parametrize("field, section", [
     ("signin_activity", "activity"),
     ("graph_app_role_assignments", "graph_permissions"),
+    ("delegated_permission_grants", "delegated_permissions"),
     ("directory_role_assignments", "directory_roles"),
     ("azure_role_assignments", "azure_roles"),
 ])
