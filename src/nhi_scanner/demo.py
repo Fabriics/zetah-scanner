@@ -127,8 +127,12 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
                       app_id="00000002-0000-0ff1-ce00-000000000000", publisher="Microsoft Services",
                       sp_secrets=[secret("sync", 9, 720)])
     # Microsoft first-party SP without extra credentials: must be ignored by the inventory
-    external_sp("Microsoft Graph", "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
-                app_id="00000003-0000-0000-c000-000000000000", publisher="Microsoft Services")
+    msgraph = external_sp("Microsoft Graph", "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+                          app_id="00000003-0000-0000-c000-000000000000", publisher="Microsoft Services")
+    arm = external_sp("Windows Azure Service Management API", "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+                      app_id="797f4846-ba00-4fd7-ba43-dac1f8f63013", publisher="Microsoft Services")
+    # A third-party AI assistant that users connected to their mail and files themselves
+    nimbus = external_sp("Nimbus AI Assistant", "6d2b9c41-0000-4000-8000-0000000a1a10", publisher="Nimbus Labs")
     mi_func = managed_identity("func-invoice-processor", user_assigned=False,
                                resource=f"{rg}/rg-finance/providers/Microsoft.Web/sites/func-invoice-processor")
     mi_aks = managed_identity("id-aks-workload", user_assigned=True,
@@ -159,6 +163,26 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         {"id": _id("ara", sp, p), "principalId": sp, "principalType": "ServicePrincipal",
          "appRoleId": _id("approle", p), "resourceId": _id("sp", "Microsoft Graph")}
         for sp, plist in grants.items() for p in plist
+    ]
+
+    # --- delegated permission grants (consents) ---------------------------- #
+    def consent(client: str, resource: str, scope: str, user: Optional[str] = None) -> dict[str, Any]:
+        principal = _id("user", user) if user else None
+        return {"id": _id("grant", client, resource, user or "all"), "clientId": client, "resourceId": resource,
+                "consentType": "Principal" if user else "AllPrincipals", "principalId": principal, "scope": scope}
+
+    delegated = [
+        # every user of the tenant: the in-house helpdesk agent reads SharePoint, and keeps that access offline
+        consent(helpdesk, msgraph, "User.Read Sites.Read.All offline_access"),
+        consent(payments, msgraph, "User.Read"),
+        # three users connected the third-party assistant; one of them also let it manage Azure as them
+        consent(nimbus, msgraph, "openid profile offline_access User.Read Mail.Read Mail.Send",
+                "sales-lead@demo-corp.example"),
+        consent(nimbus, msgraph, "openid profile offline_access User.Read Mail.Read Mail.Send Files.Read.All",
+                "cfo@demo-corp.example"),
+        consent(nimbus, msgraph, "openid profile offline_access User.Read Calendars.Read",
+                "pm@demo-corp.example"),
+        consent(nimbus, arm, "user_impersonation", "cfo@demo-corp.example"),
     ]
 
     # --- Entra directory roles --------------------------------------------- #
@@ -195,7 +219,7 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
     # --- sign-in activity (appId -> last sign-in; absent = never) ---------- #
     by_sp = {sp["id"]: sp["appId"] for sp in sps}
     last_seen = {ci: 0, hr: 240, fin: 1, helpdesk: 3, idauto: 2, payments: 0, spmig: 4, backup: 0, exo: 0,
-                 mi_func: 0, mi_aks: 0, mi_agent: 1}
+                 nimbus: 0, mi_func: 0, mi_aks: 0, mi_agent: 1}
     signin = {by_sp[sp]: now - timedelta(days=d, hours=3) for sp, d in last_seen.items()}
 
     return TenantSnapshot(
@@ -211,4 +235,5 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         signin_activity=signin,
         azure_role_assignments=azure,
         warnings=[],
+        delegated_permission_grants=delegated,
     )

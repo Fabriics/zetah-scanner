@@ -1,8 +1,9 @@
 """Live collection from Microsoft Graph and Azure Resource Manager.
 
 Required permissions for the scanning identity (application permissions):
-  Microsoft Graph: Application.Read.All, Directory.Read.All,
-                   RoleManagement.Read.Directory, AuditLog.Read.All
+  Microsoft Graph: Application.Read.All, Directory.Read.All (also covers the
+                   delegated permission grants), RoleManagement.Read.Directory,
+                   AuditLog.Read.All
   Azure:           Reader at the root / management-group scope (optional)
 
 Authentication uses ``DefaultAzureCredential``: environment variables
@@ -24,6 +25,7 @@ from .snapshot import (
     SRC_AGENT_IDENTITIES,
     SRC_APPLICATIONS,
     SRC_AZURE_RBAC,
+    SRC_DELEGATED_GRANTS,
     SRC_DIRECTORY_ROLES,
     SRC_GRAPH_PERMISSIONS,
     SRC_SERVICE_PRINCIPALS,
@@ -230,6 +232,17 @@ def collect(
     else:
         warnings.append("Microsoft Graph service principal not found; permission rules skipped.")
 
+    progress("Delegated permission grants")
+    delegated: Optional[list[dict[str, Any]]] = None
+    try:
+        delegated = list(graph.paged("/v1.0/oauth2PermissionGrants"))
+        read_at[SRC_DELEGATED_GRANTS] = _now()
+    except CollectionError as exc:
+        warnings.append(
+            "Delegated permission grants not read (needs Directory.Read.All or DelegatedPermissionGrant.Read.All); "
+            f"consent rules skipped. [{exc}]"
+        )
+
     progress("Directory roles")
     role_defs: dict[str, dict[str, Any]] = {}
     role_assignments: Optional[list[dict[str, Any]]] = None
@@ -296,6 +309,7 @@ def collect(
         warnings=warnings,
         read_at=read_at,
         owner_status_read=owner_expand == _OWNER_EXPAND,
+        delegated_permission_grants=delegated,
     )
 
 
