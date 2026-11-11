@@ -38,23 +38,27 @@ def demo():
 
 def test_third_party_ai_client_with_read_and_send(demo):
     f = findings(demo, "NHI-AGENT-006")["Nimbus AI Assistant"]
-    assert f.severity is Severity.MEDIUM  # consented by users for themselves, not tenant-wide
-    assert (f.evidence["all_users"], f.evidence["user_count"]) == (False, 2)
+    # consented by users for themselves (medium), one of them a Global Administrator (one level up)
+    assert f.severity is Severity.HIGH
+    assert (f.evidence["all_users"], f.evidence["user_count"]) == (False, 3)
+    assert [(a["user"], a["roles"]) for a in f.evidence["admin_consenters"]] == [
+        ("it-admin@demo-corp.example", ["Global Administrator"])]
+    assert "acts with administrator rights" in f.attack_path_context
     assert f.evidence["read_scopes"] == ["Files.Read.All", "Mail.Read"]
     assert f.evidence["egress_scopes"] == ["Mail.Send"]
     assert f.evidence["external_app"] is True
     assert "third party" in f.attack_path_context
     # the Azure consent is not part of this path, so it is not revoked here
-    assert len(f.evidence["grant_ids"]) == 2 and f.remediation_cli.count("--method DELETE") == 2
+    assert len(f.evidence["grant_ids"]) == 3 and f.remediation_cli.count("--method DELETE") == 3
 
 
 def test_offline_access_on_sensitive_scopes(demo):
     hits = findings(demo, "NHI-AGENT-008")
     nimbus = hits["Nimbus AI Assistant"]
-    assert nimbus.severity is Severity.HIGH  # published by another organization
-    assert nimbus.evidence["user_count"] == 2  # the calendar-only user is not counted
+    assert nimbus.severity is Severity.CRITICAL  # another organization's app (high), and an admin consented
+    assert nimbus.evidence["user_count"] == 3  # the calendar-only user is not counted
     assert "Azure Resource Manager user_impersonation" in nimbus.evidence["scopes"]
-    assert len(nimbus.evidence["grant_ids"]) == 3
+    assert len(nimbus.evidence["grant_ids"]) == 4
 
     helpdesk = hits["Helpdesk Assistant"]
     assert helpdesk.severity is Severity.HIGH and helpdesk.evidence["all_users"] is True
@@ -100,6 +104,31 @@ def test_scope_names_are_case_insensitive_and_other_apis_do_not_count():
     assert not findings(p, "NHI-AGENT-006") and not findings(p, "NHI-AGENT-008")
 
 
+def test_admins_matter_only_when_they_are_on_the_path():
+    snap = build_demo_snapshot(NOW)
+    admin = next(iter(snap.consenting_user_roles))
+    snap.delegated_permission_grants = [grant(snap, "Nimbus AI Assistant", "Mail.Read Mail.Send", user="u-1"),
+                                        grant(snap, "Nimbus AI Assistant", "User.Read", user=admin)]
+    f = findings(run_scan(snap, now=NOW), "NHI-AGENT-006")["Nimbus AI Assistant"]
+    assert f.severity is Severity.MEDIUM and f.evidence["admin_consenters"] == []  # the admin only signed in
+
+
+def test_roles_scoped_to_an_administrative_unit_do_not_count():
+    snap = build_demo_snapshot(NOW)
+    for assignments in snap.consenting_user_roles.values():
+        for a in assignments:
+            a["directoryScopeId"] = "/administrativeUnits/au-1"
+    f = findings(run_scan(snap, now=NOW), "NHI-AGENT-006")["Nimbus AI Assistant"]
+    assert f.severity is Severity.MEDIUM
+
+
+def test_unread_roles_leave_the_findings_as_they_were():
+    snap = build_demo_snapshot(NOW)
+    snap.consenting_user_roles = None
+    f = findings(run_scan(snap, now=NOW), "NHI-AGENT-006")["Nimbus AI Assistant"]
+    assert f.severity is Severity.MEDIUM and f.evidence["admin_consenters"] == []
+
+
 @pytest.mark.parametrize("owners, severity", [(["it-ops@demo-corp.example"], Severity.MEDIUM), ([], Severity.HIGH)])
 def test_in_house_agent_severity_depends_on_its_owner(owners, severity):
     snap = build_demo_snapshot(NOW)
@@ -128,7 +157,7 @@ def test_record_aggregates_consents_per_scope(demo):
     nimbus = next(e for e in demo.entities if e.display_name == "Nimbus AI Assistant").record.delegated_permissions
     assert nimbus.status is SectionStatus.READ and "own access" in nimbus.note
     by_scope = {(d.resource, d.scope): (d.all_users, d.user_count) for d in nimbus.items}
-    assert by_scope[("Microsoft Graph", "offline_access")] == (False, 3)
+    assert by_scope[("Microsoft Graph", "offline_access")] == (False, 4)
     assert by_scope[("Microsoft Graph", "Files.Read.All")] == (False, 1)
     assert by_scope[("Windows Azure Service Management API", "user_impersonation")] == (False, 1)
     app = next(e for e in demo.entities

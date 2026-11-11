@@ -146,6 +146,8 @@ class RuleContext:
     privileged_sp_ids: set[str] = field(default_factory=set)
     # client spId -> {"all_users": [grants], "users": {principalId: [grants]}}
     consents: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # consenting user id -> privileged Entra roles they hold tenant-wide: [{"role", "severity"}]
+    admin_users: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
     msgraph_sp_id: Optional[str] = None
     arm_sp_id: Optional[str] = None
 
@@ -201,6 +203,14 @@ def build_context(snap: TenantSnapshot, inv: Inventory, cfg: RuleConfig, now: da
     for ra in snap.azure_role_assignments or []:
         az[ra["principalId"]].append({**ra, "level": _scope_level(ra["scope"])})
     ctx.azure_roles = dict(az)
+
+    for uid, assignments in (snap.consenting_user_roles or {}).items():
+        for a in assignments:
+            rdef = snap.directory_role_definitions.get(a["roleDefinitionId"], {})
+            template = rdef.get("templateId") or a["roleDefinitionId"]
+            if template in PRIVILEGED_DIRECTORY_ROLES and (a.get("directoryScopeId") or "/") == "/":
+                name, sev = PRIVILEGED_DIRECTORY_ROLES[template]
+                ctx.admin_users.setdefault(uid, []).append({"role": name, "severity": sev})
 
     for sp in snap.service_principals:
         if sp.get("appId") == MS_GRAPH_APP_ID:
@@ -1360,6 +1370,29 @@ def _consent_path(
     return _ConsentPath(all_users=all_users, users=users, scopes=scopes, grants=grants)
 
 
+def _admins(ctx: RuleContext, path: _ConsentPath) -> list[dict[str, Any]]:
+    """Consenting users on this path who hold a privileged Entra role: the agent acts with their rights."""
+    out = []
+    for uid in path.users:
+        roles = ctx.admin_users.get(uid)
+        if roles:
+            user = ctx.snap.consenting_users.get(uid, {})
+            out.append({"user": user.get("userPrincipalName") or uid, "id": uid,
+                        "roles": sorted({r["role"] for r in roles}), "account_enabled": user.get("accountEnabled")})
+    return out
+
+
+def _admin_sentence(admins: list[dict[str, Any]]) -> str:
+    if not admins:
+        return ""
+    names = "; ".join(f"{a['user']} ({', '.join(a['roles'])})" for a in admins[:5])
+    return (f" Among the consenting users {'is' if len(admins) == 1 else 'are'} {len(admins)} administrator"
+            f"{'' if len(admins) == 1 else 's'}: {names}. For them the agent acts with administrator rights.")
+
+
+_RAISE = {Severity.MEDIUM: Severity.HIGH, Severity.HIGH: Severity.CRITICAL}
+
+
 def _who(path: _ConsentPath) -> str:
     if path.all_users:
         return "an administrator for every user of the tenant"
@@ -1410,10 +1443,12 @@ def agent_delegated_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]
         reads = sorted(path.scopes & DELEGATED_READ_SCOPES)
         egress = sorted(path.scopes & DELEGATED_EGRESS_SCOPES)
         external = entity.raw_metadata.get("is_external_app") is True
+        admins = _admins(ctx, path)
+        severity = Severity.HIGH if path.all_users else Severity.MEDIUM
         out.append(ctx.finding(
             entity, "NHI-AGENT-006",
             category=FindingCategory.AI_AGENT_GOVERNANCE,
-            severity=Severity.HIGH if path.all_users else Severity.MEDIUM,
+            severity=_RAISE.get(severity, severity) if admins else severity,
             title="AI client can read users' data and send it out on their behalf",
             description=(
                 f"AI client '{entity.display_name}' holds delegated permissions that combine reading data "
@@ -1425,9 +1460,11 @@ def agent_delegated_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]
                 "consenting user is one such path, limited to what that user can access."
                 + (" The app is published by another organization, so the data also passes through a third party."
                    if external else "")
+                + _admin_sentence(admins)
             ),
             remediation_cli=_revoke_grants(entity, path.grants),
-            evidence=_consent_evidence(path, read_scopes=reads, egress_scopes=egress, external_app=external),
+            evidence=_consent_evidence(path, read_scopes=reads, egress_scopes=egress, external_app=external,
+                                       admin_consenters=admins),
         ))
     return out
 
@@ -1447,10 +1484,12 @@ def agent_persistent_delegated_access(ctx: RuleContext) -> list[SecurityFinding]
             continue
         scopes = sorted(path.scopes & sensitive)
         external = entity.raw_metadata.get("is_external_app") is True
+        admins = _admins(ctx, path)
+        severity = Severity.HIGH if path.all_users or external or entity.is_orphaned else Severity.MEDIUM
         out.append(ctx.finding(
             entity, "NHI-AGENT-008",
             category=FindingCategory.AI_AGENT_GOVERNANCE,
-            severity=Severity.HIGH if path.all_users or external or entity.is_orphaned else Severity.MEDIUM,
+            severity=_RAISE.get(severity, severity) if admins else severity,
             title="AI client keeps access to users' data while they are offline",
             description=(
                 f"AI client '{entity.display_name}' holds offline_access with {', '.join(scopes)}, consented by "
@@ -1461,6 +1500,7 @@ def agent_persistent_delegated_access(ctx: RuleContext) -> list[SecurityFinding]
                 "stole it from the agent's runtime or a compromised vendor, reaches each user's data without the user."
                 + (" The app is published by another organization." if external else "")
                 + (" The app has no owner, so no one reviews these consents." if entity.is_orphaned else "")
+                + _admin_sentence(admins)
             ),
             remediation_cli=(
                 _revoke_grants(entity, path.grants)
@@ -1468,6 +1508,6 @@ def agent_persistent_delegated_access(ctx: RuleContext) -> list[SecurityFinding]
                   "and permissions)."
             ),
             evidence=_consent_evidence(path, scopes=["offline_access", *scopes], external_app=external,
-                                       orphaned=entity.is_orphaned),
+                                       orphaned=entity.is_orphaned, admin_consenters=admins),
         ))
     return out
