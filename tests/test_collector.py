@@ -66,8 +66,13 @@ ROUTES = {
         {"id": "grant-1", "clientId": AGENT_SPONSORED, "consentType": "Principal", "principalId": "u9",
          "resourceId": GRAPH_SP, "scope": " openid offline_access Mail.Read Mail.Send "},
     ]},
-    "/v1.0/roleManagement/directory/roleDefinitions": {"value": []},
-    "/v1.0/roleManagement/directory/roleAssignments": {"value": []},
+    "/v1.0/roleManagement/directory/roleDefinitions": {"value": [
+        {"id": "ga-def", "displayName": "Global Administrator", "templateId": "62e90394-69f5-4237-9190-012177145e10"}]},
+    "/v1.0/roleManagement/directory/roleAssignments": {"value": [
+        {"id": "dra-u9", "principalId": "u9", "roleDefinitionId": "ga-def", "directoryScopeId": "/"},
+        {"id": "dra-u7", "principalId": "u7", "roleDefinitionId": "ga-def", "directoryScopeId": "/"},
+    ]},
+    "/v1.0/users/u9": {"id": "u9", "userPrincipalName": "admin@contoso.example", "accountEnabled": True},
     "/subscriptions": {"value": []},
 }
 
@@ -210,7 +215,10 @@ def test_delegated_grants_reach_the_record_and_the_consent_rules(fake_backend):
     assert [(d.scope, d.user_count, d.all_users) for d in agent.record.delegated_permissions.items] == [
         ("Mail.Read", 1, False), ("Mail.Send", 1, False), ("offline_access", 1, False), ("openid", 1, False)]
     hits = {(f.rule_id, f.severity.value) for f in payload.findings if f.entity_name == "hr-onboarding"}
-    assert {("NHI-AGENT-006", "MEDIUM"), ("NHI-AGENT-008", "MEDIUM")} <= hits
+    # u9, who consented, is a Global Administrator: both findings go up one level
+    assert {("NHI-AGENT-006", "HIGH"), ("NHI-AGENT-008", "HIGH")} <= hits
+    assert set(snap.consenting_user_roles) == {"u9"}  # u7 holds a role but consented to nothing
+    assert snap.consenting_users["u9"]["userPrincipalName"] == "admin@contoso.example"
 
 
 def test_unreadable_delegated_grants_skip_only_the_consent_rules(monkeypatch):

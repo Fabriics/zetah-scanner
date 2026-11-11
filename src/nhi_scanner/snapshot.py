@@ -99,6 +99,11 @@ class TenantSnapshot:
     # Azure OpenAI and AI Services accounts, flattened to {"id", "name", "kind", "location", "endpoint", "sku",
     # "disable_local_auth", "public_network_access", "network_default_action"}. None when Azure was not read.
     ai_accounts: Optional[list[dict[str, Any]]] = None
+    # Entra role assignments of the users who consented to an app for themselves: user id -> raw assignments
+    # ({"id", "roleDefinitionId", "directoryScopeId"}). None when directory roles could not be read.
+    consenting_user_roles: Optional[dict[str, list[dict[str, Any]]]] = None
+    # user id -> {"userPrincipalName", "accountEnabled"}, read only for consenting users who hold a role
+    consenting_users: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def read_time(self, source: str) -> datetime:
         return self.read_at.get(source, self.collected_at)
