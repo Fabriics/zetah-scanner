@@ -75,13 +75,14 @@ Microsoft Graph **read** permissions for the scanning identity (application or d
 
 | Permission | Used for |
 |---|---|
-| `Application.Read.All` | app registrations, service principals, their credentials, owners, descriptions and notes |
+| `Application.Read.All` | app registrations, service principals, their credentials (secrets, certificates and federated credentials), owners, descriptions and notes |
 | `Directory.Read.All` | directory objects, and the delegated permissions consented to each app (`oauth2PermissionGrants`) |
 | `RoleManagement.Read.Directory` | Entra roles held by service principals |
 | `AuditLog.Read.All` (+ Entra ID P1) | last sign-in of each service principal (dormancy rules; they are skipped when the report is unavailable or empty) |
 | `AgentIdentity.Read.All` | Entra Agent ID agent identities |
 
-Plus Azure `Reader` at root or management-group scope for the Azure RBAC rules. App registrations and
+Plus Azure `Reader` at root or management-group scope for the Azure RBAC rules and for the federated credentials
+of user-assigned managed identities. App registrations and
 service principals are required. Anything else the identity cannot read is reported as a warning and the
 affected rules are skipped, never guessed.
 
@@ -103,6 +104,7 @@ affected rules are skipped, never guessed.
 | NHI-SEC-003 | multiple active client secrets on one app |
 | NHI-SEC-004 | credentials added on the service principal object (critical on Microsoft first-party apps, except hybrid Exchange, SharePoint or Skype certificates, which are flagged for review) |
 | NHI-SEC-005 | all credentials expire within 30 days, no replacement in place |
+| NHI-SEC-006 | GitHub Actions federated credential bound too loosely: any pull request, a whole repository, a non-main branch, tags, an environment whose protection is not visible, or a flexible credential; raised one level on privileged identities |
 | NHI-DORM-001 | no sign-in for N days, but valid credentials |
 | NHI-DORM-002 | never signed in, but valid credentials |
 | NHI-PERM-001 | Graph permissions that allow tenant takeover |
@@ -130,6 +132,7 @@ Findings are the judgment; the identity record is the fact. Every identity in th
 | `profile` | description, notes, sign-in audience, publisher domain |
 | `owners`, `sponsors` | each accountable object, whether it is a user or a service principal, whether its account is enabled, and where it is set |
 | `credentials` | every secret and certificate: key ID, type, name, validity dates, and whether it sits on the app registration or on the service principal (metadata only: secret values are never read) |
+| `federated_credentials` | every trust in an external identity provider (GitHub Actions, Kubernetes, other clouds): issuer, subject, audiences, and whether it sits on the app registration or on a user-assigned managed identity |
 | `graph_permissions` | application permissions on Microsoft Graph |
 | `delegated_permissions` | delegated permissions (scopes) consented to the app, per API: for all users by an administrator, or by how many users for themselves |
 | `directory_roles` | Entra roles assigned directly, with their scope |
@@ -151,8 +154,10 @@ what the section does not cover yet. The record is new in contract version 2
   roles equivalent to Owner or Contributor are not evaluated yet.
 - Delegated permissions are read as consents. They act within each signed-in user's own access, which is
   not evaluated, and only consents to AI agents are judged by the checks.
-- Federated credentials and identities outside Microsoft (GitHub, AWS, MCP servers, LLM provider keys)
-  are not covered yet.
+- Federated credentials are judged for GitHub Actions only, and GitHub's own branch and environment
+  protection is not read. Flexible federated credentials are read through Graph v1.0, which does not return their
+  matching expression. App registrations are read one by one, so large tenants take longer.
+- Identities outside Microsoft (GitHub, AWS, MCP servers, LLM provider keys) are not covered yet.
 - AI agents that are not Entra Agent ID objects are found with heuristics. Generic names such as "agent"
   or "bot" count only next to an AI term, so unlabelled agents may be missing.
 - An app registration and its service principal are separate objects in Entra and are listed as two
@@ -163,7 +168,7 @@ what the section does not cover yet. The record is new in contract version 2
 
 ## Roadmap
 
-Federated credential trust (GitHub Actions), Azure OpenAI and AI Services with key authentication,
+Azure OpenAI and AI Services with key authentication,
 workload exposure, and agents on non-Microsoft platforms. `zetah-scanner` is the open-source engine of
 **Zetah**, which adds continuous monitoring, history and agent governance across platforms.
 

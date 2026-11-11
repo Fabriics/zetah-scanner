@@ -58,6 +58,10 @@ ROUTES = {
         {"id": "ara-1", "principalId": APP_SP, "principalType": "ServicePrincipal", "appRoleId": ROLE_ID},
         {"id": "ara-2", "principalId": "some-group", "principalType": "Group", "appRoleId": ROLE_ID},
     ]},
+    "/v1.0/applications/app-obj-1/federatedIdentityCredentials": {"value": [
+        {"id": "fic-1", "name": "github-prs", "issuer": "https://token.actions.githubusercontent.com",
+         "subject": "repo:contoso/etl:pull_request", "audiences": ["api://AzureADTokenExchange"]},
+    ]},
     "/v1.0/oauth2PermissionGrants": {"value": [
         {"id": "grant-1", "clientId": AGENT_SPONSORED, "consentType": "Principal", "principalId": "u9",
          "resourceId": GRAPH_SP, "scope": " openid offline_access Mail.Read Mail.Send "},

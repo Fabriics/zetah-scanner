@@ -9,6 +9,7 @@ stable across scans: the issue keeps its identity while it stays open.
 from __future__ import annotations
 
 import json
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -236,7 +237,7 @@ RuleFn = Callable[[RuleContext], list[SecurityFinding]]
 class Rule:
     rule_id: str
     category: FindingCategory
-    requires: Optional[str]  # "signin" | "azure" | "graph_permissions" | "directory_roles" | "delegated_grants" | None
+    requires: Optional[str]  # "signin" | "azure" | "graph_permissions" | "directory_roles" | "delegated_grants" | "federation" | None
     title: str  # what the rule checks, for reports
     action: str  # the remediation in one line, for reports
     fn: RuleFn
@@ -261,6 +262,7 @@ def run_rules(ctx: RuleContext) -> tuple[list[SecurityFinding], list[str]]:
         "graph_permissions": ctx.snap.graph_app_role_assignments is not None,
         "directory_roles": ctx.snap.directory_role_assignments is not None,
         "delegated_grants": ctx.snap.delegated_permission_grants is not None,
+        "federation": ctx.snap.app_federated_credentials is not None or ctx.snap.mi_federated_credentials is not None,
     }
     findings: list[SecurityFinding] = []
     evaluated: list[str] = []
@@ -608,6 +610,122 @@ def secrets_expiring_soon(ctx: RuleContext) -> list[SecurityFinding]:
 # --------------------------------------------------------------------------- #
 # dormant_nhi
 # --------------------------------------------------------------------------- #
+
+
+# --------------------------------------------------------------------------- #
+# secret_hygiene: workload identity federation
+# --------------------------------------------------------------------------- #
+
+GITHUB_ISSUER = "https://token.actions.githubusercontent.com"
+_GITHUB_SUBJECT = re.compile(r"^repo:(?P<repo>[^:]+)(?::(?P<rest>.*))?$")
+_MAIN_BRANCHES = {"main", "master"}
+_ESCALATE = {Severity.HIGH: Severity.CRITICAL, Severity.MEDIUM: Severity.HIGH}
+
+
+def github_subject_risk(subject: Optional[str]) -> Optional[tuple[Severity, str]]:
+    """How broadly a GitHub Actions federated credential admits workflows; None when it is bound to main/master."""
+    if not subject:
+        return Severity.HIGH, ("flexible credential: Graph v1.0 does not return its matching expression, so the "
+                               "repositories and branches it admits are unknown")
+    m = _GITHUB_SUBJECT.match(subject)
+    if not m:
+        return Severity.MEDIUM, "custom subject format: check which workflows it admits"
+    rest = m.group("rest")
+    if rest is None or rest == "":
+        return Severity.HIGH, "any workflow of the repository gets the token"
+    if rest == "pull_request":
+        return Severity.HIGH, "any pull request of the repository gets the token, from any branch a contributor pushes"
+    if rest.startswith("environment:"):
+        return Severity.MEDIUM, (f"environment '{rest.split(':', 1)[1]}': as safe as its deployment protection rules, "
+                                 "which live in GitHub and are not read")
+    if rest.startswith("ref:refs/heads/"):
+        branch = rest.removeprefix("ref:refs/heads/")
+        if branch in _MAIN_BRANCHES:
+            return None
+        return Severity.MEDIUM, f"branch '{branch}': anyone who can push to it gets the token unless it is protected"
+    if rest.startswith("ref:refs/tags/"):
+        return Severity.MEDIUM, "tags: anyone with write access can push one unless tag rulesets protect them"
+    return Severity.MEDIUM, "uncommon subject: check which workflows it admits"
+
+
+def _federation_targets(ctx: RuleContext) -> list[tuple[NHIEntity, list[dict[str, Any]], Optional[str], Optional[str]]]:
+    """(entity holding the credentials, credentials, service principal id that acts, app id for app registrations)."""
+    out = []
+    if ctx.snap.app_federated_credentials is not None:
+        for entity, app in _app_entities(ctx):
+            sp = ctx.inv.sp_entity_by_app_id.get(app["appId"])
+            out.append((entity, ctx.snap.app_federated_credentials.get(app["id"], []), sp.entity_id if sp else None, app["appId"]))
+    if ctx.snap.mi_federated_credentials is not None:
+        for entity in _sp_entities(ctx):
+            if _is_managed_identity(entity):
+                out.append((entity, ctx.snap.mi_federated_credentials.get(entity.entity_id, []), entity.entity_id, None))
+    return out
+
+
+def _federation_fix(app_id: Optional[str], f: dict[str, Any]) -> str:
+    better = "repo:<ORG>/<REPO>:environment:production"
+    if app_id and not f.get("subject"):
+        # a flexible credential has no subject to change: replace it with one bound to a single subject
+        params = json.dumps({"name": f"{f.get('name')}-bound", "issuer": f.get("issuer"), "subject": better,
+                             "audiences": f.get("audiences") or ["api://AzureADTokenExchange"]}, separators=(",", ":"))
+        return "\n".join([
+            f"# '{f.get('name')}' is flexible: create a bound credential, move the workflow to it, then delete the old one",
+            _hold(f"az ad app federated-credential create --id {app_id} --parameters '{params}'"),
+            _hold(f"az ad app federated-credential delete --id {app_id} --federated-credential-id {f.get('id')}"),
+        ])
+    if app_id:
+        params = json.dumps({"subject": better}, separators=(",", ":"))
+        return _hold(f"az ad app federated-credential update --id {app_id} --federated-credential-id {f.get('id')} "
+                     f"--parameters '{params}'")
+    parts = (f.get("identity_id") or "").split("/")
+    rg = parts[parts.index("resourceGroups") + 1] if "resourceGroups" in parts else "<RESOURCE_GROUP>"
+    rg = parts[parts.index("resourcegroups") + 1] if "resourcegroups" in parts else rg
+    return _hold(f"az identity federated-credential update --name {f.get('name')} --identity-name {parts[-1] or '<IDENTITY>'} "
+                 f"--resource-group {rg} --subject \"{better}\"")
+
+
+@rule(
+    "NHI-SEC-006", FindingCategory.SECRET_HYGIENE, requires="federation",
+    title="GitHub Actions trust bound too loosely",
+    action="Bind the federated credential to a protected environment or the main branch",
+)
+def loose_github_federation(ctx: RuleContext) -> list[SecurityFinding]:
+    out = []
+    for entity, creds, sp_id, app_id in _federation_targets(ctx):
+        risky = []
+        for f in creds:
+            if not str(f.get("issuer") or "").startswith(GITHUB_ISSUER):
+                continue
+            risk = github_subject_risk(f.get("subject"))
+            if risk:
+                risky.append((f, *risk))
+        if not risky:
+            continue
+        severity = max((sev for _, sev, _ in risky), key=lambda s: s.rank)
+        privileged = sp_id in ctx.privileged_sp_ids
+        if privileged:
+            severity = _ESCALATE.get(severity, severity)
+        lines = [f"{f.get('subject') or '(flexible)'}: {why}" for f, _, why in risky]
+        out.append(ctx.finding(
+            entity, "NHI-SEC-006",
+            category=FindingCategory.SECRET_HYGIENE,
+            severity=severity,
+            title=f"GitHub Actions can sign in as this identity from {len(risky)} loosely bound trust(s)",
+            description=(f"'{entity.display_name}' trusts GitHub Actions tokens with: " + "; ".join(lines) + "."),
+            attack_path_context=(
+                "Workload identity federation removes the secret, not the trust: a GitHub token whose subject matches "
+                "signs in as this identity, with no secret to steal. Whoever can open that pull request, push to that "
+                "branch or run in that environment gets the identity. " + _blast_radius(ctx, sp_id)
+            ),
+            remediation_cli="\n".join(
+                ["# Narrow each trust; change the workflow's environment or branch first, then the credential:"]
+                + [_federation_fix(app_id, f) for f, _, _ in risky]
+                + ["# In GitHub: require reviewers and protected branches on that environment."]
+            ),
+            evidence={"credentials": [{"name": f.get("name"), "issuer": f.get("issuer"), "subject": f.get("subject"),
+                                       "risk": why} for f, _, why in risky], "privileged": privileged},
+        ))
+    return out
 
 
 def _dormancy_targets(ctx: RuleContext) -> list[tuple[NHIEntity, list[dict[str, Any]], str]]:

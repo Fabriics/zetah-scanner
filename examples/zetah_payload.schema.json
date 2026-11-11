@@ -564,6 +564,123 @@
       "title": "EntityTypeCounts",
       "type": "object"
     },
+    "FederatedCredential": {
+      "additionalProperties": false,
+      "description": "Trust in an external identity provider (workload identity federation): no secret exists, but whoever can\nobtain a token from ``issuer`` with this ``subject`` signs in as the identity.",
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "issuer": {
+          "minLength": 1,
+          "title": "Issuer",
+          "type": "string"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject"
+        },
+        "audiences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Audiences",
+          "type": "array"
+        },
+        "held_on": {
+          "pattern": "^(application|managed_identity)$",
+          "title": "Held On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "issuer",
+        "held_on"
+      ],
+      "title": "FederatedCredential",
+      "type": "object"
+    },
+    "FederatedCredentialsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/FederatedCredential"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "FederatedCredentialsSection",
+      "type": "object"
+    },
     "FindingCategory": {
       "enum": [
         "secret_hygiene",
@@ -663,6 +780,9 @@
         "credentials": {
           "$ref": "#/$defs/CredentialsSection"
         },
+        "federated_credentials": {
+          "$ref": "#/$defs/FederatedCredentialsSection"
+        },
         "graph_permissions": {
           "$ref": "#/$defs/GraphPermissionsSection"
         },
@@ -684,6 +804,7 @@
         "owners",
         "sponsors",
         "credentials",
+        "federated_credentials",
         "graph_permissions",
         "delegated_permissions",
         "directory_roles",
