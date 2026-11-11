@@ -51,6 +51,8 @@ class EntityType(str, Enum):
     APP_REGISTRATION = "app_registration"
     MANAGED_IDENTITY = "managed_identity"
     AI_AGENT = "ai_agent"
+    # static keys that act as an identity for whoever holds them, e.g. the keys of an Azure OpenAI account
+    API_KEY = "api_key"
 
 
 class Severity(str, Enum):
@@ -87,6 +89,7 @@ class EntityTypeCounts(_Contract):
     app_registration: int = Field(0, ge=0)
     managed_identity: int = Field(0, ge=0)
     ai_agent: int = Field(0, ge=0)
+    api_key: int = Field(0, ge=0)
 
 
 class SummaryCounts(_Contract):
@@ -202,6 +205,7 @@ class SponsorsSection(_Section):
 class CredentialKind(str, Enum):
     CLIENT_SECRET = "client_secret"
     CERTIFICATE = "certificate"
+    API_KEY = "api_key"
 
 
 class Credential(_Contract):
@@ -212,7 +216,7 @@ class Credential(_Contract):
     display_name: Optional[str] = None
     start: Optional[UTCDateTime] = None
     end: Optional[UTCDateTime] = None
-    held_on: Annotated[str, StringConstraints(pattern=r"^(application|service_principal)$")]
+    held_on: Annotated[str, StringConstraints(pattern=r"^(application|service_principal|resource)$")]
 
 
 class CredentialsSection(_Section):
@@ -333,6 +337,7 @@ class NHIEntity(_Contract):
             or self.raw_metadata.get("is_microsoft_first_party") is True
             or self.raw_metadata.get("is_external_app") is True
             or self.raw_metadata.get("sponsors_unknown") is True
+            or self.raw_metadata.get("is_azure_resource") is True  # Azure resources have no owner field
         )
         orphaned = not self.owners and not ownerless_by_design
         if self.is_orphaned != orphaned:

@@ -226,6 +226,20 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
          "roleDefinitionId": "88d8e3e3-8f55-4a1e-953a-9b9898b8876b"},
     ]
 
+    # --- Azure OpenAI and AI Services accounts ------------------------------ #
+    def ai_account(name: str, kind: str, rg_name: str, *, local_auth: bool, public: bool) -> dict[str, Any]:
+        rid = f"{rg}/{rg_name}/providers/Microsoft.CognitiveServices/accounts/{name}"
+        return {"id": rid, "name": name, "kind": kind, "location": "westeurope", "sku": "S0",
+                "endpoint": f"https://{name}.openai.azure.com/" if kind == "OpenAI" else f"https://{name}.cognitiveservices.azure.com/",
+                "disable_local_auth": not local_auth, "public_network_access": "Enabled" if public else "Disabled",
+                "network_default_action": "Allow" if public else "Deny"}
+
+    ai_accounts = [
+        ai_account("oai-finance-copilot", "OpenAI", "rg-finance", local_auth=True, public=True),
+        ai_account("ais-research", "AIServices", "rg-ai", local_auth=True, public=False),
+        ai_account("oai-helpdesk", "OpenAI", "rg-ai", local_auth=False, public=True),
+    ]
+
     # --- Azure RBAC --------------------------------------------------------- #
     def ra(principal: str, role: str, scope: str) -> dict[str, Any]:
         return {"id": f"{scope}/providers/Microsoft.Authorization/roleAssignments/{_id('ra', principal, role, scope)}",
@@ -237,6 +251,8 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         ra(mi_func, "Owner", f"/subscriptions/{_SUB}"),
         ra(mi_aks, "Key Vault Secrets User", f"{rg}/rg-aks/providers/Microsoft.KeyVault/vaults/kv-aks"),
         ra(payments, "Contributor", f"{rg}/rg-payments"),
+        # the finance agent can list the keys of its own OpenAI account
+        ra(fin, "Cognitive Services User", ai_accounts[0]["id"]),
     ]
 
     # --- sign-in activity (appId -> last sign-in; absent = never) ---------- #
@@ -261,4 +277,5 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         delegated_permission_grants=delegated,
         app_federated_credentials=app_fic,
         mi_federated_credentials=mi_fic,
+        ai_accounts=ai_accounts,
     )

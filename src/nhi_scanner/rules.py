@@ -263,6 +263,7 @@ def run_rules(ctx: RuleContext) -> tuple[list[SecurityFinding], list[str]]:
         "directory_roles": ctx.snap.directory_role_assignments is not None,
         "delegated_grants": ctx.snap.delegated_permission_grants is not None,
         "federation": ctx.snap.app_federated_credentials is not None or ctx.snap.mi_federated_credentials is not None,
+        "ai_accounts": ctx.snap.ai_accounts is not None,
     }
     findings: list[SecurityFinding] = []
     evaluated: list[str] = []
@@ -299,7 +300,7 @@ def _app_entities(ctx: RuleContext) -> list[tuple[NHIEntity, dict[str, Any]]]:
 
 
 def _sp_entities(ctx: RuleContext) -> list[NHIEntity]:
-    return [e for e in ctx.inv.entities if e.entity_type is not EntityType.APP_REGISTRATION]
+    return [e for e in ctx.inv.entities if e.entity_type not in (EntityType.APP_REGISTRATION, EntityType.API_KEY)]
 
 
 def _is_managed_identity(entity: NHIEntity) -> bool:
@@ -724,6 +725,74 @@ def loose_github_federation(ctx: RuleContext) -> list[SecurityFinding]:
             ),
             evidence={"credentials": [{"name": f.get("name"), "issuer": f.get("issuer"), "subject": f.get("subject"),
                                        "risk": why} for f, _, why in risky], "privileged": privileged},
+        ))
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# secret_hygiene: static keys of AI accounts
+# --------------------------------------------------------------------------- #
+
+# Built-in roles whose actions cover Microsoft.CognitiveServices/accounts/listKeys/action (explicitly or by wildcard)
+KEY_READER_ROLES = {
+    "Owner", "Contributor", "Cognitive Services Contributor", "Cognitive Services User", "Azure AI Administrator",
+    "Cognitive Services Language Owner", "Foundry Owner", "Foundry Account Owner", "Foundry User",
+}
+
+
+def _key_readers(ctx: RuleContext, resource_id: str) -> list[dict[str, str]]:
+    """Non-human identities holding a role that can list the account's keys, at its scope or above."""
+    rid = resource_id.lower()
+    out = []
+    for sp_id, roles in ctx.azure_roles.items():
+        for ra in roles:
+            scope = ra["scope"].lower().rstrip("/")
+            if ra["roleName"] in KEY_READER_ROLES and (scope == "" or rid == scope or rid.startswith(scope + "/")):
+                e = ctx.inv.by_id.get(sp_id)
+                out.append({"identity": e.display_name if e else sp_id, "id": sp_id, "role": ra["roleName"], "scope": ra["scope"]})
+    return sorted(out, key=lambda r: (r["identity"], r["role"]))
+
+
+@rule(
+    "NHI-SEC-007", FindingCategory.SECRET_HYGIENE, requires="ai_accounts",
+    title="AI account accepts static keys",
+    action="Disable local authentication and use Entra ID with managed identities",
+)
+def ai_account_key_auth(ctx: RuleContext) -> list[SecurityFinding]:
+    out = []
+    for entity in ctx.inv.entities:
+        if entity.entity_type is not EntityType.API_KEY or not entity.raw_metadata.get("local_auth_enabled"):
+            continue
+        meta = entity.raw_metadata
+        public = meta.get("public_network_access") != "Disabled" and meta.get("network_default_action") != "Deny"
+        readers = _key_readers(ctx, meta["resource_id"])
+        name = entity.display_name.removesuffix(" (keys)")
+        out.append(ctx.finding(
+            entity, "NHI-SEC-007",
+            category=FindingCategory.SECRET_HYGIENE,
+            severity=Severity.HIGH if public else Severity.MEDIUM,
+            title=f"{meta.get('kind')} account accepts static API keys" + (" from the internet" if public else ""),
+            description=(
+                f"'{name}' has local authentication enabled: two account keys accept requests with no identity behind "
+                "them, no owner and no expiry." + (" Public network access is open, so a copied key works from anywhere."
+                                                   if public else " Network access is restricted, which limits where a key works.")
+                + (f" {len(readers)} non-human identit{'y' if len(readers) == 1 else 'ies'} can read the keys." if readers else "")
+            ),
+            attack_path_context=(
+                "LLMjacking: keys copied into environment variables, pipelines or tools leak, and the attacker runs "
+                "models on this account's quota and bill. A key cannot be traced to who used it, and every copy keeps "
+                "working until the key is regenerated."
+                + (f" Identities that can list the keys, and so mint that access: {', '.join(sorted({r['identity'] for r in readers}))}."
+                   if readers else "")
+            ),
+            remediation_cli="\n".join([
+                "# 1. Give each workload a managed identity with Cognitive Services OpenAI User, and switch it to Entra ID tokens.",
+                "# 2. Then turn the keys off (propagation can take up to several hours):",
+                _hold(f"az resource update --ids {meta['resource_id']} --set properties.disableLocalAuth=true"),
+                "# Enforce it everywhere with the Azure Policy 'Azure AI Services resources should have key access disabled'.",
+            ]),
+            evidence={"kind": meta.get("kind"), "endpoint": meta.get("endpoint"), "public_network_access": meta.get("public_network_access"),
+                      "network_default_action": meta.get("network_default_action"), "key_readers": readers},
         ))
     return out
 
