@@ -26,6 +26,7 @@ from .snapshot import (
     SRC_APPLICATIONS,
     SRC_AZURE_RBAC,
     SRC_DELEGATED_GRANTS,
+    SRC_AI_ACCOUNTS,
     SRC_DIRECTORY_ROLES,
     SRC_FEDERATED_APPS,
     SRC_FEDERATED_MI,
@@ -61,6 +62,8 @@ _SP_SELECT_BASIC = _SP_SELECT.removesuffix(",description,notes")
 # endpoint; the plain /servicePrincipals list is not documented to include them.
 AGENT_IDENTITIES = "/v1.0/servicePrincipals/microsoft.graph.agentIdentity"
 MANAGED_IDENTITY_API = "2024-11-30"
+COGNITIVE_SERVICES_API = "2024-10-01"
+AI_KINDS = {"OpenAI", "AIServices"}
 _SPONSOR_SELECT = "id,userPrincipalName,displayName,accountEnabled"
 
 
@@ -302,6 +305,7 @@ def collect(
 
     azure: Optional[list[dict[str, Any]]] = None
     mi_fic: Optional[dict[str, list[dict[str, Any]]]] = None
+    ai_accounts: Optional[list[dict[str, Any]]] = None
     if include_azure_rbac:
         progress("Azure RBAC role assignments")
         try:
@@ -315,6 +319,12 @@ def collect(
             read_at[SRC_FEDERATED_MI] = _now()
         except Exception as exc:  # noqa: BLE001 — same as Azure RBAC: optional
             warnings.append(f"Federated credentials of managed identities not read: {exc}")
+        progress("Azure OpenAI and AI Services accounts")
+        try:
+            ai_accounts = _collect_ai_accounts(_Http(credential, f"{ARM}/.default", ARM, tenant_id), warnings)
+            read_at[SRC_AI_ACCOUNTS] = _now()
+        except Exception as exc:  # noqa: BLE001 — optional
+            warnings.append(f"Azure OpenAI and AI Services accounts not read: {exc}")
 
     return TenantSnapshot(
         tenant_id=org["id"],
@@ -334,6 +344,7 @@ def collect(
         delegated_permission_grants=delegated,
         app_federated_credentials=app_fic,
         mi_federated_credentials=mi_fic,
+        ai_accounts=ai_accounts,
     )
 
 
@@ -375,6 +386,35 @@ def _collect_mi_federation(arm: _Http, warnings: list[str]) -> dict[str, list[di
         except CollectionError as exc:
             unreadable += 1
             warnings.append(f"Managed identity federated credentials not read for subscription {sub['subscriptionId']}. [{exc}]")
+    if subs and unreadable == len(subs):
+        raise CollectionError("no subscription could be read")
+    return out
+
+
+def _collect_ai_accounts(arm: _Http, warnings: list[str]) -> list[dict[str, Any]]:
+    """Azure OpenAI and AI Services accounts, with how they accept authentication. Keys themselves are never read."""
+    out: list[dict[str, Any]] = []
+    subs = list(arm.paged("/subscriptions", {"api-version": "2022-12-01"}))
+    unreadable = 0
+    for sub in subs:
+        try:
+            accounts = list(arm.paged(f"/subscriptions/{sub['subscriptionId']}/providers/Microsoft.CognitiveServices/accounts",
+                                      {"api-version": COGNITIVE_SERVICES_API}))
+        except CollectionError as exc:
+            unreadable += 1
+            warnings.append(f"AI accounts not read for subscription {sub['subscriptionId']}. [{exc}]")
+            continue
+        for a in accounts:
+            if a.get("kind") not in AI_KINDS:
+                continue
+            props = a.get("properties") or {}
+            out.append({
+                "id": a["id"], "name": a.get("name") or a["id"].rsplit("/", 1)[-1], "kind": a.get("kind"),
+                "location": a.get("location"), "endpoint": props.get("endpoint"), "sku": (a.get("sku") or {}).get("name"),
+                "disable_local_auth": props.get("disableLocalAuth") is True,
+                "public_network_access": props.get("publicNetworkAccess"),
+                "network_default_action": (props.get("networkAcls") or {}).get("defaultAction"),
+            })
     if subs and unreadable == len(subs):
         raise CollectionError("no subscription could be read")
     return out

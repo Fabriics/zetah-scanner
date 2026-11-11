@@ -81,6 +81,7 @@ TYPE_LABEL = {
     EntityType.APP_REGISTRATION: "App registration",
     EntityType.MANAGED_IDENTITY: "Managed identity",
     EntityType.AI_AGENT: "AI agent",
+    EntityType.API_KEY: "API keys",
 }
 CATEGORY_LABEL = {
     FindingCategory.SECRET_HYGIENE: "Secret hygiene",
@@ -119,6 +120,7 @@ REQUIREMENT_LABEL = {
     "directory_roles": "Skipped: directory roles not available",
     "delegated_grants": "Skipped: delegated consents not available",
     "federation": "Skipped: federated credentials not available",
+    "ai_accounts": "Skipped: Azure AI accounts not read",
 }
 
 PAGE_W, PAGE_H = A4
@@ -171,6 +173,9 @@ def _access_lines(e: NHIEntity, now: datetime) -> list[str]:
     r = e.record
     if r is None:
         return ["-"]
+    if e.entity_type is EntityType.API_KEY:
+        live = e.raw_metadata.get("local_auth_enabled")
+        return [f"{e.raw_metadata.get('kind')} account keys", "2 static keys accept requests" if live else "Keys disabled"]
     if e.entity_type is EntityType.APP_REGISTRATION:
         parts = ["Access: see its service principal"]
     else:
@@ -764,7 +769,8 @@ class _Report:
             f"<b>{_t(self.org)}</b> scored <b><font color='{_hex(color)}'>{md.hygiene_score}/100 ({band})</font></b>. "
             f"The assessment inventoried <b>{sc.total_entities}</b> non-human identities "
             f"({types.app_registration} app registrations, {types.service_principal} service principals, "
-            f"{types.managed_identity} managed identities, {types.ai_agent} AI agents) "
+            f"{types.managed_identity} managed identities, {types.ai_agent} AI agents"
+            + (f", {types.api_key} sets of AI account keys" if types.api_key else "") + ") "
             f"and raised <b>{sc.total_findings}</b> findings."
         ]
         crit = sc.by_severity.critical
@@ -1111,6 +1117,8 @@ class _Report:
             "Federated credentials are judged for GitHub Actions only. Branch and environment protection rules live in "
             "GitHub and are not read, so a credential bound to an environment is flagged for review. Flexible "
             "credentials are read through Graph v1.0, which does not return their matching expression.",
+            "Azure AI account keys are judged by whether they are accepted, not by their age or use. Who can list "
+            "them is computed from built-in roles only.",
             "Conditional Access for workload identities and activity inside other tenants are out of scope for this "
             "version.",
             "Sign-in activity is recorded per application, not per credential, and only covers sign-ins into this "
