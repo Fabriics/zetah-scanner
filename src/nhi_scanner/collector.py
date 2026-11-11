@@ -27,6 +27,8 @@ from .snapshot import (
     SRC_AZURE_RBAC,
     SRC_DELEGATED_GRANTS,
     SRC_DIRECTORY_ROLES,
+    SRC_FEDERATED_APPS,
+    SRC_FEDERATED_MI,
     SRC_GRAPH_PERMISSIONS,
     SRC_SERVICE_PRINCIPALS,
     SRC_SIGNIN_ACTIVITY,
@@ -58,6 +60,7 @@ _SP_SELECT_BASIC = _SP_SELECT.removesuffix(",description,notes")
 # Entra Agent ID: agent identities are service principals listed through their own type-cast
 # endpoint; the plain /servicePrincipals list is not documented to include them.
 AGENT_IDENTITIES = "/v1.0/servicePrincipals/microsoft.graph.agentIdentity"
+MANAGED_IDENTITY_API = "2024-11-30"
 _SPONSOR_SELECT = "id,userPrincipalName,displayName,accountEnabled"
 
 
@@ -232,6 +235,18 @@ def collect(
     else:
         warnings.append("Microsoft Graph service principal not found; permission rules skipped.")
 
+    progress("Federated credentials of app registrations")
+    app_fic: Optional[dict[str, list[dict[str, Any]]]] = {}
+    try:
+        # one read per app: Graph documents no $expand for this relationship, and $batch would be a POST
+        for app in apps:
+            app_fic[app["id"]] = list(graph.paged(f"/v1.0/applications/{app['id']}/federatedIdentityCredentials"))
+        read_at[SRC_FEDERATED_APPS] = _now()
+    except CollectionError as exc:
+        app_fic = None
+        warnings.append(f"Federated credentials of app registrations not read (needs Application.Read.All); "
+                        f"the federation rule skips them. [{exc}]")
+
     progress("Delegated permission grants")
     delegated: Optional[list[dict[str, Any]]] = None
     try:
@@ -286,6 +301,7 @@ def collect(
             )
 
     azure: Optional[list[dict[str, Any]]] = None
+    mi_fic: Optional[dict[str, list[dict[str, Any]]]] = None
     if include_azure_rbac:
         progress("Azure RBAC role assignments")
         try:
@@ -293,6 +309,12 @@ def collect(
             read_at[SRC_AZURE_RBAC] = _now()
         except Exception as exc:  # noqa: BLE001 — Azure is optional; never fail the Entra scan
             warnings.append(f"Azure RBAC not scanned: {exc}")
+        progress("Federated credentials of user-assigned managed identities")
+        try:
+            mi_fic = _collect_mi_federation(_Http(credential, f"{ARM}/.default", ARM, tenant_id), warnings)
+            read_at[SRC_FEDERATED_MI] = _now()
+        except Exception as exc:  # noqa: BLE001 — same as Azure RBAC: optional
+            warnings.append(f"Federated credentials of managed identities not read: {exc}")
 
     return TenantSnapshot(
         tenant_id=org["id"],
@@ -310,6 +332,8 @@ def collect(
         read_at=read_at,
         owner_status_read=owner_expand == _OWNER_EXPAND,
         delegated_permission_grants=delegated,
+        app_federated_credentials=app_fic,
+        mi_federated_credentials=mi_fic,
     )
 
 
@@ -325,6 +349,35 @@ def _read_directory(
     sps = list(graph.paged("/v1.0/servicePrincipals", {"$select": sp_select, "$expand": owner_expand}))
     read_at[SRC_SERVICE_PRINCIPALS] = _now()
     return apps, sps
+
+
+def _collect_mi_federation(arm: _Http, warnings: list[str]) -> dict[str, list[dict[str, Any]]]:
+    """Federated credentials of every user-assigned managed identity, keyed by its service principal id."""
+    out: dict[str, list[dict[str, Any]]] = {}
+    subs = list(arm.paged("/subscriptions", {"api-version": "2022-12-01"}))
+    unreadable = 0
+    for sub in subs:
+        try:
+            identities = list(arm.paged(
+                f"/subscriptions/{sub['subscriptionId']}/providers/Microsoft.ManagedIdentity/userAssignedIdentities",
+                {"api-version": MANAGED_IDENTITY_API}))
+            for mi in identities:
+                principal = (mi.get("properties") or {}).get("principalId")
+                if not principal:
+                    continue
+                out[principal] = [
+                    {"id": f.get("id") or f.get("name"), "name": f.get("name"), "identity_id": mi["id"],
+                     "issuer": (f.get("properties") or {}).get("issuer"),
+                     "subject": (f.get("properties") or {}).get("subject"),
+                     "audiences": (f.get("properties") or {}).get("audiences") or []}
+                    for f in arm.paged(f"{mi['id']}/federatedIdentityCredentials", {"api-version": MANAGED_IDENTITY_API})
+                ]
+        except CollectionError as exc:
+            unreadable += 1
+            warnings.append(f"Managed identity federated credentials not read for subscription {sub['subscriptionId']}. [{exc}]")
+    if subs and unreadable == len(subs):
+        raise CollectionError("no subscription could be read")
+    return out
 
 
 def _collect_azure_rbac(arm: _Http, warnings: list[str]) -> list[dict[str, Any]]:

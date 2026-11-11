@@ -22,6 +22,8 @@ from .models import (
     CredentialsSection,
     DelegatedPermission,
     DelegatedPermissionsSection,
+    FederatedCredential,
+    FederatedCredentialsSection,
     DirectoryRole,
     DirectoryRolesSection,
     GraphPermission,
@@ -38,6 +40,8 @@ from .snapshot import (
     SRC_AZURE_RBAC,
     SRC_DELEGATED_GRANTS,
     SRC_DIRECTORY_ROLES,
+    SRC_FEDERATED_APPS,
+    SRC_FEDERATED_MI,
     SRC_GRAPH_PERMISSIONS,
     SRC_SERVICE_PRINCIPALS,
     SRC_SIGNIN_ACTIVITY,
@@ -153,6 +157,21 @@ def _credentials(obj: dict[str, Any], held_on: str) -> list[Credential]:
     ]
 
 
+def _federated(items: list[dict[str, Any]], held_on: str) -> list[FederatedCredential]:
+    return [
+        FederatedCredential(id=f.get("id"), name=f.get("name"), issuer=f.get("issuer") or "unknown",
+                            subject=f.get("subject") or None, audiences=f.get("audiences") or [], held_on=held_on)
+        for f in sorted(items, key=lambda f: (f.get("issuer") or "", f.get("subject") or "", f.get("name") or ""))
+    ]
+
+
+def _app_federation(snap: TenantSnapshot, app: dict[str, Any]) -> FederatedCredentialsSection:
+    if snap.app_federated_credentials is None:
+        return FederatedCredentialsSection(status=NOT_READ, note="Federated credentials of app registrations could not be read.")
+    return FederatedCredentialsSection(**_read(snap, SRC_FEDERATED_APPS),
+                                       items=_federated(snap.app_federated_credentials.get(app["id"], []), "application"))
+
+
 def _activity(snap: TenantSnapshot, app_id: Optional[str], note: Optional[str] = None) -> ActivitySection:
     if snap.signin_activity is None:
         return ActivitySection(status=NOT_READ, note="The sign-in activity report could not be read in this scan.")
@@ -177,6 +196,7 @@ def application_record(snap: TenantSnapshot, app: dict[str, Any], has_local_sp: 
                              items=[_accountable(o, "application") for o in app.get("owners") or []]),
         sponsors=SponsorsSection(status=NOT_APPLICABLE),
         credentials=CredentialsSection(**_read(snap, SRC_APPLICATIONS), items=_credentials(app, "application")),
+        federated_credentials=_app_federation(snap, app),
         graph_permissions=GraphPermissionsSection(status=not_here[0], note=not_here[1]),
         delegated_permissions=DelegatedPermissionsSection(status=not_here[0], note=not_here[1]),
         directory_roles=DirectoryRolesSection(status=not_here[0], note=not_here[1]),
@@ -228,6 +248,24 @@ def service_principal_record(
         cred_note = "Credentials on the publisher's app registration are not visible from this tenant."
 
     sp_id = sp["id"]
+    user_assigned = any(n == "isExplicit=True" for n in sp.get("alternativeNames") or [])
+    if app:
+        federation = _app_federation(snap, app)
+    elif is_managed_identity and not user_assigned:
+        federation = FederatedCredentialsSection(
+            status=NOT_APPLICABLE, note="Only user-assigned managed identities can hold federated credentials.")
+    elif is_managed_identity:
+        federation = (FederatedCredentialsSection(status=NOT_READ, note="Azure was not scanned or the identity could not be read.")
+                      if snap.mi_federated_credentials is None else
+                      FederatedCredentialsSection(**_read(snap, SRC_FEDERATED_MI),
+                                                  items=_federated(snap.mi_federated_credentials.get(sp_id, []), "managed_identity")))
+    elif is_agent_id:
+        federation = FederatedCredentialsSection(
+            status=NOT_READ, note="Agent ID identities authenticate through their blueprint, whose credentials are not read yet.")
+    else:
+        federation = FederatedCredentialsSection(
+            status=NOT_APPLICABLE, note="Federated credentials live on the app registration, in the publisher's tenant.")
+
     if snap.graph_app_role_assignments is None:
         perms = GraphPermissionsSection(status=NOT_READ, note="Microsoft Graph application permissions could not be read.")
     else:
@@ -268,6 +306,7 @@ def service_principal_record(
                              note=_join(by_design, None if snap.owner_status_read else _OWNER_STATUS_NOT_READ)),
         sponsors=sponsors,
         credentials=CredentialsSection(**_read(snap, *directory), items=creds, note=cred_note),
+        federated_credentials=federation,
         graph_permissions=perms,
         delegated_permissions=consents,
         directory_roles=roles,

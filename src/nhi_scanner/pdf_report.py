@@ -118,6 +118,7 @@ REQUIREMENT_LABEL = {
     "graph_permissions": "Skipped: Graph permissions not available",
     "directory_roles": "Skipped: directory roles not available",
     "delegated_grants": "Skipped: delegated consents not available",
+    "federation": "Skipped: federated credentials not available",
 }
 
 PAGE_W, PAGE_H = A4
@@ -194,6 +195,9 @@ def _access_lines(e: NHIEntity, now: datetime) -> list[str]:
         parts.append(f"{len(creds)} credential(s), all expired")
     else:
         parts.append(f"{len(creds)} credential(s)" + (f", next expiry {_date(live[0])}" if live else ""))
+    federated = r.federated_credentials.items
+    if federated:
+        parts[-1] += f" · {len(federated)} federated"
     return parts
 
 
@@ -1104,8 +1108,11 @@ class _Report:
             "identities, so identity counts are higher than the number of applications.",
             "Delegated permissions are read as consents in this tenant. They act within each user's own access, "
             "which is not evaluated, and only consents to AI agents are judged by the checks.",
-            "Conditional Access for workload identities, federated credentials and activity inside other tenants "
-            "are out of scope for this version.",
+            "Federated credentials are judged for GitHub Actions only. Branch and environment protection rules live in "
+            "GitHub and are not read, so a credential bound to an environment is flagged for review. Flexible "
+            "credentials are read through Graph v1.0, which does not return their matching expression.",
+            "Conditional Access for workload identities and activity inside other tenants are out of scope for this "
+            "version.",
             "Sign-in activity is recorded per application, not per credential, and only covers sign-ins into this "
             "tenant; multi-tenant apps are excluded from dormancy checks for that reason.",
             "Only the Microsoft global cloud is supported.",
