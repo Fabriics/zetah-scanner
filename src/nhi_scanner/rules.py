@@ -152,6 +152,8 @@ class RuleContext:
     arm_sp_id: Optional[str] = None
 
     def finding(self, entity: NHIEntity, rule_id: str, **fields: Any) -> SecurityFinding:
+        if "remediation_cli" in fields:
+            fields["remediation_cli"] = safe_remediation(fields["remediation_cli"])
         return SecurityFinding.create(tenant_id=self.tenant_id, entity=entity, rule_id=rule_id, **fields)
 
     def perms(self, entity: NHIEntity) -> set[str]:
@@ -328,8 +330,38 @@ def _sp_cred_delete(sp_id: str, cred: dict[str, Any]) -> str:
 
 
 def _hold(command: str) -> str:
-    """Comment a command out: pasting a whole block must never remove a credential still in use."""
-    return f"# {command}"
+    """Comment a command out: pasting a whole block must never remove a credential still in use.
+
+    Every line is commented, so a value carrying a line break cannot start a live command.
+    """
+    return "\n".join(f"# {line}" for line in command.splitlines() or [""])
+
+
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+_CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
+_UNSAFE_LIVE = re.compile(r"[;|&`]|\$\(|[\x00-\x1f\x7f-\x9f]")
+
+
+def _name(value: Optional[str], placeholder: str) -> str:
+    """A tenant-chosen name goes into a command only if it is a plain Azure name; otherwise a placeholder."""
+    return value if value and _SAFE_NAME.match(value) else placeholder
+
+
+def safe_remediation(text: str) -> str:
+    """Last line of defence for every finding: a runnable line must be a plain `az` command.
+
+    Comments may quote tenant data, but lose control characters. A runnable line that does not start with `az `,
+    contains a shell separator, a substitution or a control character, or leaves a quote open is commented out.
+    """
+    out = []
+    for line in text.splitlines():
+        if line.startswith("#"):
+            out.append(_CONTROL.sub("?", line))
+        elif line.startswith("az ") and not _UNSAFE_LIVE.search(line) and line.count("'") % 2 == 0 and line.count('"') % 2 == 0:
+            out.append(line)
+        else:
+            out.append("# [blocked: unsafe value from the tenant] " + _CONTROL.sub("?", line))
+    return "\n".join(out)
 
 
 _FEDERATED_EXAMPLE = json.dumps({
@@ -677,10 +709,11 @@ def _federation_fix(app_id: Optional[str], f: dict[str, Any]) -> str:
     better = "repo:<ORG>/<REPO>:environment:production"
     if app_id and not f.get("subject"):
         # a flexible credential has no subject to change: replace it with one bound to a single subject
-        params = json.dumps({"name": f"{f.get('name')}-bound", "issuer": f.get("issuer"), "subject": better,
+        params = json.dumps({"name": f"{_name(f.get('name'), 'github')}-bound", "issuer": GITHUB_ISSUER, "subject": better,
                              "audiences": f.get("audiences") or ["api://AzureADTokenExchange"]}, separators=(",", ":"))
         return "\n".join([
-            f"# '{f.get('name')}' is flexible: create a bound credential, move the workflow to it, then delete the old one",
+            f"# '{_name(f.get('name'), 'this credential')}' is flexible: create a bound credential, move the workflow to it, "
+            "then delete the old one",
             _hold(f"az ad app federated-credential create --id {app_id} --parameters '{params}'"),
             _hold(f"az ad app federated-credential delete --id {app_id} --federated-credential-id {f.get('id')}"),
         ])
@@ -689,10 +722,11 @@ def _federation_fix(app_id: Optional[str], f: dict[str, Any]) -> str:
         return _hold(f"az ad app federated-credential update --id {app_id} --federated-credential-id {f.get('id')} "
                      f"--parameters '{params}'")
     parts = (f.get("identity_id") or "").split("/")
-    rg = parts[parts.index("resourceGroups") + 1] if "resourceGroups" in parts else "<RESOURCE_GROUP>"
-    rg = parts[parts.index("resourcegroups") + 1] if "resourcegroups" in parts else rg
-    return _hold(f"az identity federated-credential update --name {f.get('name')} --identity-name {parts[-1] or '<IDENTITY>'} "
-                 f"--resource-group {rg} --subject \"{better}\"")
+    lower = [p.lower() for p in parts]
+    rg = parts[lower.index("resourcegroups") + 1] if "resourcegroups" in lower[:-1] else None
+    return _hold(f"az identity federated-credential update --name {_name(f.get('name'), '<CREDENTIAL_NAME>')} "
+                 f"--identity-name {_name(parts[-1], '<IDENTITY_NAME>')} "
+                 f"--resource-group {_name(rg, '<RESOURCE_GROUP>')} --subject \"{better}\"")
 
 
 @rule(

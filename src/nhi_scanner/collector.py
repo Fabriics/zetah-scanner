@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Iterator, Optional
 
 import requests
+from requests.compat import urlsplit  # the read-only test bans urllib imports: only requests talks to the network
 
 from .snapshot import (
     AGENT_ID_UNREADABLE,
@@ -88,9 +89,17 @@ class _Http:
             self._token = self._credential.get_token(self._scope, **kwargs)
         return {"Authorization": f"Bearer {self._token.token}"}
 
-    def get(self, url: str, params: Optional[dict[str, str]] = None) -> dict[str, Any]:
-        if url.startswith("/"):
+    def _resolve(self, url: str) -> str:
+        """Absolute URL on this API's host. Paging links and ids come from responses: never send the token elsewhere."""
+        if url.startswith("/") and not url.startswith("//"):
             url = self._base + url
+        target, base = urlsplit(url), urlsplit(self._base)
+        if (target.scheme, target.hostname, target.port) != (base.scheme, base.hostname, base.port) or target.username or target.password:
+            raise CollectionError(f"refusing to send the token to host {target.hostname or url!r}: only {base.hostname} is allowed")
+        return url
+
+    def get(self, url: str, params: Optional[dict[str, str]] = None) -> dict[str, Any]:
+        url = self._resolve(url)
         failure = ""
         for attempt in range(6):
             try:
