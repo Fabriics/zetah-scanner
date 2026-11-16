@@ -183,6 +183,8 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         consent(nimbus, msgraph, "openid profile offline_access User.Read Calendars.Read",
                 "pm@demo-corp.example"),
         consent(nimbus, arm, "user_impersonation", "cfo@demo-corp.example"),
+        # an administrator connected it too: for them the assistant acts as a Global Administrator
+        consent(nimbus, msgraph, "openid offline_access User.Read Mail.Read Mail.Send", "it-admin@demo-corp.example"),
     ]
 
     # --- federated credentials (workload identity federation) ------------- #
@@ -210,6 +212,8 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
 
     # --- Entra directory roles --------------------------------------------- #
     role_defs = {
+        "62e90394-69f5-4237-9190-012177145e10": {"displayName": "Global Administrator",
+                                                 "templateId": "62e90394-69f5-4237-9190-012177145e10"},
         "e8611ab8-c189-46e8-94e1-60213ab1f814": {"displayName": "Privileged Role Administrator",
                                                  "templateId": "e8611ab8-c189-46e8-94e1-60213ab1f814"},
         "fe930be7-5e62-47db-91af-98c3a49a38b1": {"displayName": "User Administrator",
@@ -275,6 +279,11 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         azure_role_assignments=azure,
         warnings=[],
         delegated_permission_grants=delegated,
+        consenting_user_roles={_id("user", "it-admin@demo-corp.example"): [
+            {"id": _id("dra", "it-admin"), "principalId": _id("user", "it-admin@demo-corp.example"),
+             "roleDefinitionId": "62e90394-69f5-4237-9190-012177145e10", "directoryScopeId": "/"}]},
+        consenting_users={_id("user", "it-admin@demo-corp.example"): {
+            "userPrincipalName": "it-admin@demo-corp.example", "accountEnabled": True}},
         app_federated_credentials=app_fic,
         mi_federated_credentials=mi_fic,
         ai_accounts=ai_accounts,

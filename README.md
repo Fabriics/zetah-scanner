@@ -76,8 +76,8 @@ Microsoft Graph **read** permissions for the scanning identity (application or d
 | Permission | Used for |
 |---|---|
 | `Application.Read.All` | app registrations, service principals, their credentials (secrets, certificates and federated credentials), owners, descriptions and notes |
-| `Directory.Read.All` | directory objects, and the delegated permissions consented to each app (`oauth2PermissionGrants`) |
-| `RoleManagement.Read.Directory` | Entra roles held by service principals |
+| `Directory.Read.All` | directory objects, the delegated permissions consented to each app (`oauth2PermissionGrants`), and the name of consenting users who hold an Entra role |
+| `RoleManagement.Read.Directory` | Entra roles held by service principals, and by users who consented to an app |
 | `AuditLog.Read.All` (+ Entra ID P1) | last sign-in of each service principal (dormancy rules; they are skipped when the report is unavailable or empty) |
 | `AgentIdentity.Read.All` | Entra Agent ID agent identities |
 
@@ -121,6 +121,9 @@ affected rules are skipped, never guessed.
 | NHI-AGENT-005 | multi-tenant AI agent app |
 | NHI-AGENT-006 | AI client whose delegated consents let it read users' data and send it out (mail, chat) |
 | NHI-AGENT-008 | AI client with `offline_access` on mail, files, chats or write scopes: it keeps acting for users while they are offline |
+
+NHI-AGENT-006 and NHI-AGENT-008 go up one level when a user who consented holds a privileged Entra role across the
+tenant: for that user, the agent acts with administrator rights.
 
 Findings are scored into a 0-100 hygiene score; the PDF explains the scoring and the limitations.
 

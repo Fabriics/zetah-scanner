@@ -264,6 +264,7 @@ def collect(
     progress("Directory roles")
     role_defs: dict[str, dict[str, Any]] = {}
     role_assignments: Optional[list[dict[str, Any]]] = None
+    user_roles: Optional[dict[str, list[dict[str, Any]]]] = None
     try:
         role_defs = {
             d["id"]: {"displayName": d["displayName"], "templateId": d.get("templateId")}
@@ -271,15 +272,26 @@ def collect(
                                  {"$select": "id,displayName,templateId"})
         }
         sp_ids = {sp["id"] for sp in sps}
-        role_assignments = [
-            a for a in graph.paged("/v1.0/roleManagement/directory/roleAssignments")
-            if a.get("principalId") in sp_ids
-        ]
+        assignments = list(graph.paged("/v1.0/roleManagement/directory/roleAssignments"))
+        role_assignments = [a for a in assignments if a.get("principalId") in sp_ids]
+        # a user who consents to an app lends it their own rights: keep the roles of those users too
+        consenters = {g["principalId"] for g in delegated or [] if g.get("consentType") == "Principal" and g.get("principalId")}
+        user_roles = {}
+        for a in assignments:
+            if a.get("principalId") in consenters:
+                user_roles.setdefault(a["principalId"], []).append(a)
         read_at[SRC_DIRECTORY_ROLES] = _now()
     except CollectionError as exc:
         warnings.append(
             f"Entra directory roles not read (needs RoleManagement.Read.Directory); role rule skipped. [{exc}]"
         )
+
+    consenting_users: dict[str, dict[str, Any]] = {}
+    for uid in sorted(user_roles or {}):
+        try:  # a handful of reads: only consenting users who hold a role
+            consenting_users[uid] = graph.get(f"/v1.0/users/{uid}", {"$select": "id,userPrincipalName,accountEnabled"})
+        except CollectionError:
+            pass  # the id still identifies them
 
     progress("Service principal sign-in activity")
     signin: Optional[dict[str, Optional[datetime]]]
@@ -345,6 +357,8 @@ def collect(
         app_federated_credentials=app_fic,
         mi_federated_credentials=mi_fic,
         ai_accounts=ai_accounts,
+        consenting_user_roles=user_roles,
+        consenting_users=consenting_users,
     )
 
 
