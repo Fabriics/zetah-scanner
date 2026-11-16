@@ -24,9 +24,12 @@ from .readiness import agent_readiness
 from .rules import RuleConfig
 
 
+# A secret is the credential the scanner warns about, so it is not what the help suggests: an interactive login, or an
+# identity that has no secret at all (managed identity, workload identity federation).
 SIGN_IN_HELP = (
-    "Could not sign in to Microsoft Entra. Run `az login --tenant <TENANT_GUID>` first, or set AZURE_TENANT_ID, "
-    "AZURE_CLIENT_ID and AZURE_CLIENT_SECRET, then try again."
+    "Could not sign in to Microsoft Entra. Run `az login --tenant <TENANT_GUID>` first, or run the scanner where a "
+    "managed identity or workload identity federation is available (set AZURE_CLIENT_ID for a user-assigned "
+    "identity), then try again."
 )
 
 

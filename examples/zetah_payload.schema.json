@@ -1088,7 +1088,7 @@
           "type": "string"
         },
         "scanner_version": {
-          "default": "0.2.0.dev0",
+          "default": "0.2.0",
           "minLength": 1,
           "title": "Scanner Version",
           "type": "string"
