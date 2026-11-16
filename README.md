@@ -185,8 +185,8 @@ what the section does not cover yet. The record is new in contract version 2
 
 ## Roadmap
 
-Keys of other LLM providers,
-workload exposure, and agents on non-Microsoft platforms. `zetah-scanner` is the open-source engine of
+Under consideration, not promised: keys of other LLM providers, workload exposure, and agents on non-Microsoft
+platforms. Changes by version are in [CHANGELOG.md](CHANGELOG.md). `zetah-scanner` is the open-source engine of
 **Zetah**, which adds continuous monitoring, history and agent governance across platforms.
 
 ## For developers

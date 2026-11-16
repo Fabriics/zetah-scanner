@@ -179,3 +179,10 @@ def test_score_bands_match_how_a_ciso_reads_them():
     assert score(critical=1) == 74  # any takeover path keeps the tenant out of "Good"
     assert score(low=30) >= 90 and score(medium=10) >= 80  # hygiene noise does not dominate
     assert score(critical=3, high=10) < score(high=10) < score(high=5)
+
+
+def test_the_sign_in_help_never_suggests_a_secret():
+    """The scanner flags long-lived client secrets: its own help must not ask for one."""
+    from src.nhi_scanner.cli import SIGN_IN_HELP
+
+    assert "SECRET" not in SIGN_IN_HELP.upper() and "managed identity" in SIGN_IN_HELP
