@@ -20,6 +20,8 @@ from .models import (
     AzureRolesSection,
     Credential,
     CredentialsSection,
+    DelegatedPermission,
+    DelegatedPermissionsSection,
     DirectoryRole,
     DirectoryRolesSection,
     GraphPermission,
@@ -34,6 +36,7 @@ from .snapshot import (
     SRC_AGENT_IDENTITIES,
     SRC_APPLICATIONS,
     SRC_AZURE_RBAC,
+    SRC_DELEGATED_GRANTS,
     SRC_DIRECTORY_ROLES,
     SRC_GRAPH_PERMISSIONS,
     SRC_SERVICE_PRINCIPALS,
@@ -57,6 +60,7 @@ class RecordIndex:
     """Per-principal lookups over the snapshot, built once per scan."""
 
     graph_permissions: dict[str, list[GraphPermission]] = field(default_factory=dict)
+    delegated_permissions: dict[str, list[DelegatedPermission]] = field(default_factory=dict)
     directory_roles: dict[str, list[DirectoryRole]] = field(default_factory=dict)
     azure_roles: dict[str, list[AzureRole]] = field(default_factory=dict)
 
@@ -67,6 +71,26 @@ def build_index(snap: TenantSnapshot) -> RecordIndex:
         # an app role Microsoft Graph no longer lists is still a grant: keep its id
         name = snap.graph_app_roles.get(a["appRoleId"]) or a["appRoleId"]
         perms[a["principalId"]].append(GraphPermission(permission=name, assignment_id=a["id"]))
+
+    # client -> (resource, scope) -> [consented for all users, users who consented themselves]
+    consents: dict[str, dict[tuple[str, str], list[Any]]] = defaultdict(dict)
+    for g in snap.delegated_permission_grants or []:
+        for scope in (g.get("scope") or "").split():
+            entry = consents[g["clientId"]].setdefault((g["resourceId"], scope), [False, set()])
+            if g.get("consentType") == "AllPrincipals":
+                entry[0] = True
+            elif g.get("principalId"):
+                entry[1].add(g["principalId"])
+    names = {sp["id"]: sp.get("displayName") or sp["id"] for sp in snap.service_principals}
+    delegated = {
+        client: [
+            DelegatedPermission(resource=names.get(res, res), resource_id=res, scope=scope,
+                                all_users=all_users, user_count=len(users))
+            for (res, scope), (all_users, users) in per_scope.items()
+            if all_users or users
+        ]
+        for client, per_scope in consents.items()
+    }
 
     roles: dict[str, list[DirectoryRole]] = defaultdict(list)
     for a in snap.directory_role_assignments or []:
@@ -87,6 +111,7 @@ def build_index(snap: TenantSnapshot) -> RecordIndex:
 
     return RecordIndex(
         graph_permissions=ordered(perms, lambda p: (p.permission, p.assignment_id)),
+        delegated_permissions=ordered(delegated, lambda d: (d.resource, d.scope.lower())),
         directory_roles=ordered(roles, lambda r: (r.role, r.directory_scope, r.assignment_id)),
         azure_roles=ordered(azure, lambda r: (r.scope, r.role, r.assignment_id)),
     )
@@ -153,6 +178,7 @@ def application_record(snap: TenantSnapshot, app: dict[str, Any], has_local_sp: 
         sponsors=SponsorsSection(status=NOT_APPLICABLE),
         credentials=CredentialsSection(**_read(snap, SRC_APPLICATIONS), items=_credentials(app, "application")),
         graph_permissions=GraphPermissionsSection(status=not_here[0], note=not_here[1]),
+        delegated_permissions=DelegatedPermissionsSection(status=not_here[0], note=not_here[1]),
         directory_roles=DirectoryRolesSection(status=not_here[0], note=not_here[1]),
         azure_roles=AzureRolesSection(status=not_here[0], note=not_here[1]),
         activity=_activity(
@@ -207,7 +233,15 @@ def service_principal_record(
     else:
         perms = GraphPermissionsSection(
             **_read(snap, SRC_GRAPH_PERMISSIONS), items=index.graph_permissions.get(sp_id, []),
-            note="Application permissions on Microsoft Graph only: delegated consents and other APIs are not read yet.",
+            note="Application permissions on Microsoft Graph only: other APIs are not read yet.",
+        )
+    if snap.delegated_permission_grants is None:
+        consents = DelegatedPermissionsSection(status=NOT_READ, note="Delegated permission grants could not be read.")
+    else:
+        consents = DelegatedPermissionsSection(
+            **_read(snap, SRC_DELEGATED_GRANTS), items=index.delegated_permissions.get(sp_id, []),
+            note="Consents in this tenant. A delegated permission acts as the signed-in user, within that user's "
+                 "own access, which this scan does not evaluate.",
         )
     if snap.directory_role_assignments is None:
         roles = DirectoryRolesSection(status=NOT_READ, note="Entra directory role assignments could not be read.")
@@ -235,6 +269,7 @@ def service_principal_record(
         sponsors=sponsors,
         credentials=CredentialsSection(**_read(snap, *directory), items=creds, note=cred_note),
         graph_permissions=perms,
+        delegated_permissions=consents,
         directory_roles=roles,
         azure_roles=azure,
         activity=_activity(snap, sp.get("appId")),

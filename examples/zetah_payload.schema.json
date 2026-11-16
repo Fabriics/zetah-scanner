@@ -341,6 +341,97 @@
       "title": "CredentialsSection",
       "type": "object"
     },
+    "DelegatedPermission": {
+      "additionalProperties": false,
+      "description": "A delegated permission (scope) consented to this client app: it acts as the signed-in user, within\nthat user's own access.",
+      "properties": {
+        "resource": {
+          "minLength": 1,
+          "title": "Resource",
+          "type": "string"
+        },
+        "resource_id": {
+          "minLength": 1,
+          "title": "Resource Id",
+          "type": "string"
+        },
+        "scope": {
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        },
+        "all_users": {
+          "title": "All Users",
+          "type": "boolean"
+        },
+        "user_count": {
+          "minimum": 0,
+          "title": "User Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "resource",
+        "resource_id",
+        "scope",
+        "all_users",
+        "user_count"
+      ],
+      "title": "DelegatedPermission",
+      "type": "object"
+    },
+    "DelegatedPermissionsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/DelegatedPermission"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "DelegatedPermissionsSection",
+      "type": "object"
+    },
     "DirectoryRole": {
       "additionalProperties": false,
       "properties": {
@@ -575,6 +666,9 @@
         "graph_permissions": {
           "$ref": "#/$defs/GraphPermissionsSection"
         },
+        "delegated_permissions": {
+          "$ref": "#/$defs/DelegatedPermissionsSection"
+        },
         "directory_roles": {
           "$ref": "#/$defs/DirectoryRolesSection"
         },
@@ -591,6 +685,7 @@
         "sponsors",
         "credentials",
         "graph_permissions",
+        "delegated_permissions",
         "directory_roles",
         "azure_roles",
         "activity"

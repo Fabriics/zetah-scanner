@@ -15,9 +15,9 @@ NOW = datetime(2026, 10, 26, 12, tzinfo=timezone.utc)
 
 def test_demo_tenant_readiness():
     r = agent_readiness(run_scan(build_demo_snapshot(NOW), now=NOW))
-    assert len(r.agents) == 5
-    assert (r.count("agent_id"), r.count("legacy")) == (2, 3)
-    assert (r.accountable, r.unaccountable, r.unknown) == (2, 3, 0)
+    assert len(r.agents) == 6
+    assert (r.count("agent_id"), r.count("legacy")) == (2, 4)
+    assert (r.accountable, r.unaccountable, r.unknown) == (2, 4, 0)
     first = r.govern_first()
     assert [a.kind for a in first] == ["legacy"] * len(first)
     assert first[0].entity.display_name == "Finance Copilot Agent"  # critical and the most findings

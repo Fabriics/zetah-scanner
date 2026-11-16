@@ -228,6 +228,29 @@ class GraphPermissionsSection(_Section):
     items: list[GraphPermission] = Field(default_factory=list)
 
 
+class DelegatedPermission(_Contract):
+    """A delegated permission (scope) consented to this client app: it acts as the signed-in user, within
+    that user's own access."""
+
+    resource: NonEmptyStr  # display name of the API, e.g. "Microsoft Graph"
+    resource_id: NonEmptyStr  # object ID of the API's service principal
+    scope: NonEmptyStr  # e.g. "Mail.Read", "offline_access"
+    # an administrator consented for every user of the tenant (consentType "AllPrincipals")
+    all_users: bool
+    # users who consented for themselves (consentType "Principal")
+    user_count: int = Field(ge=0)
+
+    @model_validator(mode="after")
+    def _someone_consented(self) -> DelegatedPermission:
+        if not self.all_users and self.user_count == 0:
+            raise ValueError("a delegated permission is consented for all users or for at least one user")
+        return self
+
+
+class DelegatedPermissionsSection(_Section):
+    items: list[DelegatedPermission] = Field(default_factory=list)
+
+
 class DirectoryRole(_Contract):
     role: NonEmptyStr
     role_template_id: Optional[str] = None
@@ -260,6 +283,7 @@ class IdentityRecord(_Contract):
     sponsors: SponsorsSection
     credentials: CredentialsSection
     graph_permissions: GraphPermissionsSection
+    delegated_permissions: DelegatedPermissionsSection
     directory_roles: DirectoryRolesSection
     azure_roles: AzureRolesSection
     activity: ActivitySection

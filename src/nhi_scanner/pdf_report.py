@@ -117,6 +117,7 @@ REQUIREMENT_LABEL = {
     "azure": "Skipped: Azure RBAC not scanned",
     "graph_permissions": "Skipped: Graph permissions not available",
     "directory_roles": "Skipped: directory roles not available",
+    "delegated_grants": "Skipped: delegated consents not available",
 }
 
 PAGE_W, PAGE_H = A4
@@ -173,10 +174,11 @@ def _access_lines(e: NHIEntity, now: datetime) -> list[str]:
         parts = ["Access: see its service principal"]
     else:
         parts = []
-        for section, label in ((r.graph_permissions, "Graph permission(s)"), (r.directory_roles, "Entra role(s)"),
-                               (r.azure_roles, "Azure role(s)")):
+        for section, label in ((r.graph_permissions, "Graph permission(s)"),
+                               (r.delegated_permissions, "delegated scope(s)"),
+                               (r.directory_roles, "Entra role(s)"), (r.azure_roles, "Azure role(s)")):
             if section.status is SectionStatus.NOT_READ:
-                parts.append(f"{label.split(' ')[0]} not read")
+                parts.append(f"{label.split(' ')[0].capitalize()} not read")
             elif section.status is SectionStatus.READ and section.items:
                 parts.append(f"{len(section.items)} {label}")
         parts = [" · ".join(parts) or "No permissions or roles"]
@@ -449,6 +451,7 @@ class _Report:
         self.signins_known = any(r.startswith("NHI-DORM") for r in self.md.rules_evaluated)
         self.azure_known = any(r.startswith("NHI-RBAC") for r in self.md.rules_evaluated)
         self.permissions_known = "NHI-PERM-001" in self.md.rules_evaluated
+        self.consents_known = "NHI-AGENT-006" in self.md.rules_evaluated
         self.roles_known = "NHI-PERM-003" in self.md.rules_evaluated
 
     # ---- small builders -------------------------------------------------- #
@@ -779,7 +782,8 @@ class _Report:
                 f"<b>{len(agents)} AI agent{'s' if len(agents) != 1 else ''}</b> were identified; "
                 f"{risky} carr{'y' if risky != 1 else 'ies'} governance or privilege findings."
             )
-        missing = [n for n, ok in (("Graph permissions", self.permissions_known), ("directory roles", self.roles_known),
+        missing = [n for n, ok in (("Graph permissions", self.permissions_known),
+                                   ("delegated consents", self.consents_known), ("directory roles", self.roles_known),
                                    ("sign-in activity", self.signins_known), ("Azure RBAC", self.azure_known)) if not ok]
         if missing:
             parts.append(
@@ -1021,6 +1025,9 @@ class _Report:
             [self.para("Microsoft Graph · permissions", "cellb"),
              self.para("Application permissions on Microsoft Graph", "cell"),
              self.para(ok if self.permissions_known else ko, "cell")],
+            [self.para("Microsoft Graph · consents", "cellb"),
+             self.para("Delegated permissions consented to client apps, for all users or per user", "cell"),
+             self.para(ok if self.consents_known else ko, "cell")],
             [self.para("Microsoft Graph · roles", "cellb"),
              self.para("Entra directory role assignments, directly to service principals", "cell"),
              self.para(ok if self.roles_known else ko, "cell")],
@@ -1095,8 +1102,10 @@ class _Report:
             "unlabelled agents may be missing. The matched signals are recorded for every agent.",
             "An app registration and its service principal are separate objects in Entra and are listed as two "
             "identities, so identity counts are higher than the number of applications.",
-            "Delegated (user-consented) permissions, Conditional Access for workload identities, federated "
-            "credentials and activity inside other tenants are out of scope for this version.",
+            "Delegated permissions are read as consents in this tenant. They act within each user's own access, "
+            "which is not evaluated, and only consents to AI agents are judged by the checks.",
+            "Conditional Access for workload identities, federated credentials and activity inside other tenants "
+            "are out of scope for this version.",
             "Sign-in activity is recorded per application, not per credential, and only covers sign-ins into this "
             "tenant; multi-tenant apps are excluded from dormancy checks for that reason.",
             "Only the Microsoft global cloud is supported.",

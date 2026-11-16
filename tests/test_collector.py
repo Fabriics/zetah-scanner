@@ -58,6 +58,10 @@ ROUTES = {
         {"id": "ara-1", "principalId": APP_SP, "principalType": "ServicePrincipal", "appRoleId": ROLE_ID},
         {"id": "ara-2", "principalId": "some-group", "principalType": "Group", "appRoleId": ROLE_ID},
     ]},
+    "/v1.0/oauth2PermissionGrants": {"value": [
+        {"id": "grant-1", "clientId": AGENT_SPONSORED, "consentType": "Principal", "principalId": "u9",
+         "resourceId": GRAPH_SP, "scope": " openid offline_access Mail.Read Mail.Send "},
+    ]},
     "/v1.0/roleManagement/directory/roleDefinitions": {"value": []},
     "/v1.0/roleManagement/directory/roleAssignments": {"value": []},
     "/subscriptions": {"value": []},
@@ -191,6 +195,29 @@ def test_missing_graph_permission_data_skips_only_its_rules(monkeypatch):
     evaluated = run_scan(snap).metadata.rules_evaluated
     assert not {"NHI-PERM-001", "NHI-PERM-002", "NHI-AGENT-002", "NHI-AGENT-003"} & set(evaluated)
     assert {"NHI-PERM-003", "NHI-SEC-002"} <= set(evaluated)
+
+
+def test_delegated_grants_reach_the_record_and_the_consent_rules(fake_backend):
+    snap = collector.collect()
+    assert [g["id"] for g in snap.delegated_permission_grants] == ["grant-1"]
+    assert collector.SRC_DELEGATED_GRANTS in snap.read_at
+    payload = run_scan(snap)
+    agent = _agents(payload)["hr-onboarding"]
+    assert [(d.scope, d.user_count, d.all_users) for d in agent.record.delegated_permissions.items] == [
+        ("Mail.Read", 1, False), ("Mail.Send", 1, False), ("offline_access", 1, False), ("openid", 1, False)]
+    hits = {(f.rule_id, f.severity.value) for f in payload.findings if f.entity_name == "hr-onboarding"}
+    assert {("NHI-AGENT-006", "MEDIUM"), ("NHI-AGENT-008", "MEDIUM")} <= hits
+
+
+def test_unreadable_delegated_grants_skip_only_the_consent_rules(monkeypatch):
+    _backend(monkeypatch, forbidden=("/oauth2PermissionGrants",))
+    snap = collector.collect()
+    assert snap.delegated_permission_grants is None
+    assert any("Delegated permission grants not read" in w for w in snap.warnings)
+    payload = run_scan(snap)
+    assert not {"NHI-AGENT-006", "NHI-AGENT-008"} & set(payload.metadata.rules_evaluated)
+    assert "NHI-PERM-001" in payload.metadata.rules_evaluated
+    assert _agents(payload)["hr-onboarding"].record.delegated_permissions.status.value == "not_read"
 
 
 def test_missing_directory_roles_skip_only_the_role_rule(monkeypatch):

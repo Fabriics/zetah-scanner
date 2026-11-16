@@ -76,7 +76,7 @@ Microsoft Graph **read** permissions for the scanning identity (application or d
 | Permission | Used for |
 |---|---|
 | `Application.Read.All` | app registrations, service principals, their credentials, owners, descriptions and notes |
-| `Directory.Read.All` | directory objects |
+| `Directory.Read.All` | directory objects, and the delegated permissions consented to each app (`oauth2PermissionGrants`) |
 | `RoleManagement.Read.Directory` | Entra roles held by service principals |
 | `AuditLog.Read.All` (+ Entra ID P1) | last sign-in of each service principal (dormancy rules; they are skipped when the report is unavailable or empty) |
 | `AgentIdentity.Read.All` | Entra Agent ID agent identities |
@@ -115,6 +115,8 @@ affected rules are skipped, never guessed.
 | NHI-AGENT-003 | AI agent that can read data and send it out: an exfiltration path |
 | NHI-AGENT-004 | AI agent authenticating with static client secrets |
 | NHI-AGENT-005 | multi-tenant AI agent app |
+| NHI-AGENT-006 | AI client whose delegated consents let it read users' data and send it out (mail, chat) |
+| NHI-AGENT-008 | AI client with `offline_access` on mail, files, chats or write scopes: it keeps acting for users while they are offline |
 
 Findings are scored into a 0-100 hygiene score; the PDF explains the scoring and the limitations.
 
@@ -129,6 +131,7 @@ Findings are the judgment; the identity record is the fact. Every identity in th
 | `owners`, `sponsors` | each accountable object, whether it is a user or a service principal, whether its account is enabled, and where it is set |
 | `credentials` | every secret and certificate: key ID, type, name, validity dates, and whether it sits on the app registration or on the service principal (metadata only: secret values are never read) |
 | `graph_permissions` | application permissions on Microsoft Graph |
+| `delegated_permissions` | delegated permissions (scopes) consented to the app, per API: for all users by an administrator, or by how many users for themselves |
 | `directory_roles` | Entra roles assigned directly, with their scope |
 | `azure_roles` | Azure RBAC roles, with their scope |
 | `activity` | last sign-in |
@@ -146,8 +149,10 @@ what the section does not cover yet. The record is new in contract version 2
   Exchange Online `full_access_as_app` or SharePoint Online, are not read yet.
 - Entra roles held through role-assignable groups, Azure roles held through groups, and custom Azure
   roles equivalent to Owner or Contributor are not evaluated yet.
-- Delegated (user-consented) permission grants, federated credentials and identities outside
-  Microsoft (GitHub, AWS, MCP servers, LLM provider keys) are not covered yet.
+- Delegated permissions are read as consents. They act within each signed-in user's own access, which is
+  not evaluated, and only consents to AI agents are judged by the checks.
+- Federated credentials and identities outside Microsoft (GitHub, AWS, MCP servers, LLM provider keys)
+  are not covered yet.
 - AI agents that are not Entra Agent ID objects are found with heuristics. Generic names such as "agent"
   or "bot" count only next to an AI term, so unlabelled agents may be missing.
 - An app registration and its service principal are separate objects in Entra and are listed as two
@@ -158,7 +163,7 @@ what the section does not cover yet. The record is new in contract version 2
 
 ## Roadmap
 
-Delegated permission grants to AI and MCP clients, federated credential trust (GitHub Actions),
+Federated credential trust (GitHub Actions), Azure OpenAI and AI Services with key authentication,
 workload exposure, and agents on non-Microsoft platforms. `zetah-scanner` is the open-source engine of
 **Zetah**, which adds continuous monitoring, history and agent governance across platforms.
 

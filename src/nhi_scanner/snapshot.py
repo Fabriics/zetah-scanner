@@ -22,6 +22,7 @@ SRC_SERVICE_PRINCIPALS = "GET /v1.0/servicePrincipals"
 SRC_AGENT_IDENTITIES = "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
 SRC_SPONSORS = "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
 SRC_GRAPH_PERMISSIONS = "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
+SRC_DELEGATED_GRANTS = "GET /v1.0/oauth2PermissionGrants"
 SRC_DIRECTORY_ROLES = "GET /v1.0/roleManagement/directory/roleAssignments"
 SRC_SIGNIN_ACTIVITY = "GET /beta/reports/servicePrincipalSignInActivities"
 SRC_AZURE_RBAC = "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
@@ -81,6 +82,10 @@ class TenantSnapshot:
     read_at: dict[str, datetime] = field(default_factory=dict)
     # False when owners were read without their account status (accountEnabled)
     owner_status_read: bool = True
+    # GET /oauth2PermissionGrants — delegated permissions consented to client apps, for all users
+    # (consentType "AllPrincipals") or for one user ("Principal"). None when they could not be read;
+    # the consent rules are then skipped.
+    delegated_permission_grants: Optional[list[dict[str, Any]]] = None
 
     def read_time(self, source: str) -> datetime:
         return self.read_at.get(source, self.collected_at)
