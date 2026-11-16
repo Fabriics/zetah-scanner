@@ -116,7 +116,7 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
     for f in payload.findings:
         fnd.add_row(
             Text(f.severity.value, style=SEVERITY_STYLE[f.severity]),
-            f.rule_id,
+            Group(Text(f.rule_id), Text(" ".join(f.owasp), style="dim")) if f.owasp else f.rule_id,
             escape(f.entity_name),
             Group(Text(plain(f.title), style="bold"), Text(plain(f.attack_path_context), style="dim")),
         )

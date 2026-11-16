@@ -1188,6 +1188,36 @@
           "additionalProperties": true,
           "title": "Evidence",
           "type": "object"
+        },
+        "owasp": {
+          "items": {
+            "enum": [
+              "NHI1:2025",
+              "NHI2:2025",
+              "NHI3:2025",
+              "NHI4:2025",
+              "NHI5:2025",
+              "NHI6:2025",
+              "NHI7:2025",
+              "NHI8:2025",
+              "NHI9:2025",
+              "NHI10:2025",
+              "ASI01:2026",
+              "ASI02:2026",
+              "ASI03:2026",
+              "ASI04:2026",
+              "ASI05:2026",
+              "ASI06:2026",
+              "ASI07:2026",
+              "ASI08:2026",
+              "ASI09:2026",
+              "ASI10:2026"
+            ],
+            "type": "string"
+          },
+          "maxItems": 6,
+          "title": "Owasp",
+          "type": "array"
         }
       },
       "required": [

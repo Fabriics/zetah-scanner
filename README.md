@@ -98,29 +98,34 @@ affected rules are skipped, never guessed.
 
 ## What it checks
 
-| Rule | Detects |
-|---|---|
-| NHI-SEC-001 | expired secrets or certificates still attached |
-| NHI-SEC-002 | client secrets valid for more than 365 days |
-| NHI-SEC-003 | multiple active client secrets on one app |
-| NHI-SEC-004 | credentials added on the service principal object (critical on Microsoft first-party apps, except hybrid Exchange, SharePoint or Skype certificates, which are flagged for review) |
-| NHI-SEC-005 | all credentials expire within 30 days, no replacement in place |
-| NHI-SEC-007 | Azure OpenAI or AI Services account that still accepts static API keys (high when reachable from the internet), with the non-human identities whose roles can list those keys |
-| NHI-SEC-006 | GitHub Actions federated credential bound too loosely: any pull request, a whole repository, a non-main branch, tags, an environment whose protection is not visible, or a flexible credential; raised one level on privileged identities |
-| NHI-DORM-001 | no sign-in for N days, but valid credentials |
-| NHI-DORM-002 | never signed in, but valid credentials |
-| NHI-PERM-001 | Graph permissions that allow tenant takeover |
-| NHI-PERM-002 | tenant-wide data access (mail, files, chats...) |
-| NHI-PERM-003 | privileged Entra directory roles |
-| NHI-RBAC-001 | Owner / User Access Administrator / RBAC Administrator in Azure |
-| NHI-RBAC-002 | Contributor at subscription or management-group scope |
-| NHI-AGENT-001 | AI agent with no owner and no sponsor |
-| NHI-AGENT-002 | AI agent with tenant-wide permissions to act (send, write, change) |
-| NHI-AGENT-003 | AI agent that can read data and send it out: an exfiltration path |
-| NHI-AGENT-004 | AI agent authenticating with static client secrets |
-| NHI-AGENT-005 | multi-tenant AI agent app |
-| NHI-AGENT-006 | AI client whose delegated consents let it read users' data and send it out (mail, chat) |
-| NHI-AGENT-008 | AI client with `offline_access` on mail, files, chats or write scopes: it keeps acting for users while they are offline |
+| Rule | Detects | OWASP |
+|---|---|---|
+| NHI-SEC-001 | expired secrets or certificates still attached | NHI1 |
+| NHI-SEC-002 | client secrets valid for more than 365 days | NHI7 |
+| NHI-SEC-003 | multiple active client secrets on one app | NHI2 |
+| NHI-SEC-004 | credentials added on the service principal object (critical on Microsoft first-party apps, except hybrid Exchange, SharePoint or Skype certificates, which are flagged for review) | NHI3 |
+| NHI-SEC-005 | all credentials expire within 30 days, no replacement in place | — |
+| NHI-SEC-007 | Azure OpenAI or AI Services account that still accepts static API keys (high when reachable from the internet), with the non-human identities whose roles can list those keys | NHI4, NHI7, ASI03 |
+| NHI-SEC-006 | GitHub Actions federated credential bound too loosely: any pull request, a whole repository, a non-main branch, tags, an environment whose protection is not visible, or a flexible credential; raised one level on privileged identities | NHI6 |
+| NHI-DORM-001 | no sign-in for N days, but valid credentials | NHI1 |
+| NHI-DORM-002 | never signed in, but valid credentials | NHI1 |
+| NHI-PERM-001 | Graph permissions that allow tenant takeover | NHI5 |
+| NHI-PERM-002 | tenant-wide data access (mail, files, chats...) | NHI5 |
+| NHI-PERM-003 | privileged Entra directory roles | NHI5 |
+| NHI-RBAC-001 | Owner / User Access Administrator / RBAC Administrator in Azure | NHI5 |
+| NHI-RBAC-002 | Contributor at subscription or management-group scope | NHI5 |
+| NHI-AGENT-001 | AI agent with no owner and no sponsor | NHI1 |
+| NHI-AGENT-002 | AI agent with tenant-wide permissions to act (send, write, change) | NHI5, ASI03 |
+| NHI-AGENT-003 | AI agent that can read data and send it out: an exfiltration path | NHI5, ASI02 |
+| NHI-AGENT-004 | AI agent authenticating with static client secrets | NHI2, ASI03 |
+| NHI-AGENT-005 | multi-tenant AI agent app | NHI9, ASI04 |
+| NHI-AGENT-006 | AI client whose delegated consents let it read users' data and send it out (mail, chat) | NHI5, ASI01, ASI02 |
+| NHI-AGENT-008 | AI client with `offline_access` on mail, files, chats or write scopes: it keeps acting for users while they are offline | NHI7, ASI03 |
+
+The OWASP column names the entries of the [OWASP Top 10 Non-Human Identities Risks 2025](https://owasp.org/www-project-non-human-identities-top-10/2025/) (NHI1-NHI10) and of the
+[OWASP Top 10 for Agentic Applications 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/) (ASI01-ASI10) that each finding
+is an instance of. Every finding carries them in the `owasp` field of the JSON payload, and the PDF shows them.
+NHI-SEC-005 names none: an outage caused by expiring credentials is not one of the listed risks.
 
 NHI-AGENT-006 and NHI-AGENT-008 go up one level when a user who consented holds a privileged Entra role across the
 tenant: for that user, the agent acts with administrator rights.

@@ -1,9 +1,9 @@
 {
   "metadata": {
     "contract_version": 2,
-    "scan_id": "2c2afd10-4604-45dd-a6a7-9ed568846211",
+    "scan_id": "99b573e0-783d-4d4b-8843-610e2333251e",
     "tenant_id": "demo-tenant-0000",
-    "scan_timestamp": "2026-11-11T18:33:29Z",
+    "scan_timestamp": "2026-11-12T14:52:06Z",
     "scanner_version": "0.2.0.dev0",
     "hygiene_score": 1,
     "summary_counts": {
@@ -55,8 +55,8 @@
       "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
       "display_name": "Finance Copilot Agent",
       "entity_type": "ai_agent",
-      "created_datetime": "2026-04-15T18:33:29Z",
-      "last_sign_in": "2026-11-10T15:33:29Z",
+      "created_datetime": "2026-04-16T14:52:06Z",
+      "last_sign_in": "2026-11-11T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -81,7 +81,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -94,7 +94,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -111,15 +111,15 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
               "kind": "client_secret",
               "display_name": "prod",
-              "start": "2026-04-25T18:33:29Z",
-              "end": "2028-04-24T18:33:29Z",
+              "start": "2026-04-26T14:52:06Z",
+              "end": "2028-04-25T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -129,7 +129,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -138,7 +138,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -160,7 +160,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -169,7 +169,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -178,7 +178,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -193,9 +193,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-10T15:33:29Z"
+          "last_sign_in": "2026-11-11T11:52:06Z"
         }
       }
     },
@@ -204,8 +204,8 @@
       "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
       "display_name": "Helpdesk Assistant",
       "entity_type": "ai_agent",
-      "created_datetime": "2026-07-14T18:33:29Z",
-      "last_sign_in": "2026-11-08T15:33:29Z",
+      "created_datetime": "2026-07-15T14:52:06Z",
+      "last_sign_in": "2026-11-09T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "it-ops@demo-corp.example"
@@ -234,7 +234,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -247,7 +247,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -273,7 +273,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -282,7 +282,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -291,7 +291,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -309,7 +309,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": [
             {
@@ -340,7 +340,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -349,7 +349,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -358,9 +358,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-08T15:33:29Z"
+          "last_sign_in": "2026-11-09T11:52:06Z"
         }
       }
     },
@@ -370,7 +370,7 @@
       "display_name": "id-foundry-research-agent",
       "entity_type": "ai_agent",
       "created_datetime": null,
-      "last_sign_in": "2026-11-10T15:33:29Z",
+      "last_sign_in": "2026-11-11T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -396,7 +396,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -408,7 +408,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "A managed identity is bound to an Azure resource and has no owners by design.",
           "items": []
         },
@@ -424,7 +424,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Managed identity credentials are handled by Azure and never listed.",
           "items": []
         },
@@ -433,7 +433,7 @@
           "sources": [
             "GET ARM .../userAssignedIdentities/{name}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -453,7 +453,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -471,7 +471,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -480,7 +480,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -489,7 +489,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -498,9 +498,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-10T15:33:29Z"
+          "last_sign_in": "2026-11-11T11:52:06Z"
         }
       }
     },
@@ -510,7 +510,7 @@
       "display_name": "Nimbus AI Assistant",
       "entity_type": "ai_agent",
       "created_datetime": null,
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -536,7 +536,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -548,7 +548,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Published by another organization: its owners and app credentials live in that tenant.",
           "items": []
         },
@@ -564,7 +564,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Credentials on the publisher's app registration are not visible from this tenant.",
           "items": []
         },
@@ -580,7 +580,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -589,7 +589,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": [
             {
@@ -662,7 +662,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -671,7 +671,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -680,9 +680,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -723,7 +723,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -735,7 +735,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -744,7 +744,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -762,7 +762,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -778,7 +778,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -792,7 +792,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -801,7 +801,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -810,7 +810,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -819,7 +819,7 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "last_sign_in": null
         }
@@ -858,7 +858,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -870,7 +870,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -879,7 +879,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -888,7 +888,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -904,7 +904,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -918,7 +918,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -927,7 +927,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -936,7 +936,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -945,7 +945,7 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "last_sign_in": null
         }
@@ -977,7 +977,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Endpoint https://ais-research.cognitiveservices.azure.com/; public network access disabled; network default action Deny.",
           "description": "AIServices account in westeurope",
           "notes": null,
@@ -1003,7 +1003,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Two account keys accept requests while local authentication is enabled. Their values and age are never read.",
           "items": [
             {
@@ -1094,7 +1094,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Endpoint https://oai-finance-copilot.openai.azure.com/; public network access enabled; network default action Allow.",
           "description": "OpenAI account in westeurope",
           "notes": null,
@@ -1120,7 +1120,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Two account keys accept requests while local authentication is enabled. Their values and age are never read.",
           "items": [
             {
@@ -1211,7 +1211,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Endpoint https://oai-helpdesk.openai.azure.com/; public network access enabled; network default action Allow.",
           "description": "OpenAI account in westeurope",
           "notes": null,
@@ -1237,7 +1237,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Local authentication is disabled: the account keys cannot authenticate.",
           "items": []
         },
@@ -1290,8 +1290,8 @@
       "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
       "display_name": "ci-deploy-pipeline",
       "entity_type": "app_registration",
-      "created_datetime": "2024-05-25T18:33:29Z",
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "created_datetime": "2024-05-26T14:52:06Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "devops-lead@demo-corp.example"
@@ -1311,7 +1311,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1323,7 +1323,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -1348,15 +1348,15 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "d12787a1-899f-5adf-abe1-7d48511537f4",
               "kind": "client_secret",
               "display_name": "github-actions",
-              "start": "2025-10-07T18:33:29Z",
-              "end": "2027-10-07T18:33:29Z",
+              "start": "2025-10-08T14:52:06Z",
+              "end": "2027-10-08T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -1366,7 +1366,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -1424,9 +1424,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -1435,8 +1435,8 @@
       "app_id": "d5aea2f1-96ea-57c8-9073-7420aec22627",
       "display_name": "Finance Copilot Agent",
       "entity_type": "app_registration",
-      "created_datetime": "2026-04-15T18:33:29Z",
-      "last_sign_in": "2026-11-10T15:33:29Z",
+      "created_datetime": "2026-04-16T14:52:06Z",
+      "last_sign_in": "2026-11-11T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -1454,7 +1454,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1466,7 +1466,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1482,15 +1482,15 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
               "kind": "client_secret",
               "display_name": "prod",
-              "start": "2026-04-25T18:33:29Z",
-              "end": "2028-04-24T18:33:29Z",
+              "start": "2026-04-26T14:52:06Z",
+              "end": "2028-04-25T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -1500,7 +1500,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1537,9 +1537,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-10T15:33:29Z"
+          "last_sign_in": "2026-11-11T11:52:06Z"
         }
       }
     },
@@ -1548,8 +1548,8 @@
       "app_id": "b546d1a2-b2bd-5644-b647-b4517d6241dd",
       "display_name": "Helpdesk Assistant",
       "entity_type": "app_registration",
-      "created_datetime": "2026-07-14T18:33:29Z",
-      "last_sign_in": "2026-11-08T15:33:29Z",
+      "created_datetime": "2026-07-15T14:52:06Z",
+      "last_sign_in": "2026-11-09T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "it-ops@demo-corp.example"
@@ -1571,7 +1571,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1583,7 +1583,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -1608,7 +1608,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1617,7 +1617,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1654,9 +1654,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-08T15:33:29Z"
+          "last_sign_in": "2026-11-09T11:52:06Z"
         }
       }
     },
@@ -1665,8 +1665,8 @@
       "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
       "display_name": "Identity Automation",
       "entity_type": "app_registration",
-      "created_datetime": "2024-12-11T18:33:29Z",
-      "last_sign_in": "2026-11-09T15:33:29Z",
+      "created_datetime": "2024-12-12T14:52:06Z",
+      "last_sign_in": "2026-11-10T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "iam-team@demo-corp.example"
@@ -1686,7 +1686,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1698,7 +1698,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -1723,31 +1723,31 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "e1ec685a-ba27-5f53-b7ab-6f1bfd1300e3",
               "kind": "client_secret",
               "display_name": "runner-a",
-              "start": "2026-08-03T18:33:29Z",
-              "end": "2027-08-03T18:33:29Z",
+              "start": "2026-08-04T14:52:06Z",
+              "end": "2027-08-04T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "77bcbd70-5028-5caf-a97d-a59342edc937",
               "kind": "client_secret",
               "display_name": "runner-b",
-              "start": "2026-09-12T18:33:29Z",
-              "end": "2027-09-12T18:33:29Z",
+              "start": "2026-09-13T14:52:06Z",
+              "end": "2027-09-13T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "b66b95c9-c0ce-52b6-bb19-7c54b8348583",
               "kind": "client_secret",
               "display_name": "old-runner",
-              "start": "2025-12-26T18:33:29Z",
-              "end": "2026-12-26T18:33:29Z",
+              "start": "2025-12-27T14:52:06Z",
+              "end": "2026-12-27T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -1757,7 +1757,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -1805,9 +1805,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-09T15:33:29Z"
+          "last_sign_in": "2026-11-10T11:52:06Z"
         }
       }
     },
@@ -1816,8 +1816,8 @@
       "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
       "display_name": "legacy-hr-sync",
       "entity_type": "app_registration",
-      "created_datetime": "2022-06-25T18:33:29Z",
-      "last_sign_in": "2026-03-16T15:33:29Z",
+      "created_datetime": "2022-06-26T14:52:06Z",
+      "last_sign_in": "2026-03-17T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -1835,7 +1835,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1847,7 +1847,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1863,31 +1863,31 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "f24e500e-4aa7-5b25-9393-f9707246da17",
               "kind": "client_secret",
               "display_name": "hr-2022",
-              "start": "2023-07-30T18:33:29Z",
-              "end": "2025-09-25T18:33:29Z",
+              "start": "2023-07-31T14:52:06Z",
+              "end": "2025-09-26T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
               "kind": "client_secret",
               "display_name": "hr-2024",
-              "start": "2025-03-21T18:33:29Z",
-              "end": "2026-08-08T18:33:29Z",
+              "start": "2025-03-22T14:52:06Z",
+              "end": "2026-08-09T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "963474b3-2d0d-587c-9259-420036e153b1",
               "kind": "client_secret",
               "display_name": "hr-2025",
-              "start": "2026-01-15T18:33:29Z",
-              "end": "2028-01-15T18:33:29Z",
+              "start": "2026-01-16T14:52:06Z",
+              "end": "2028-01-16T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -1897,7 +1897,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -1934,9 +1934,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-03-16T15:33:29Z"
+          "last_sign_in": "2026-03-17T11:52:06Z"
         }
       }
     },
@@ -1945,7 +1945,7 @@
       "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
       "display_name": "marketing-analytics-poc",
       "entity_type": "app_registration",
-      "created_datetime": "2026-01-15T18:33:29Z",
+      "created_datetime": "2026-01-16T14:52:06Z",
       "last_sign_in": null,
       "is_enabled": true,
       "owners": [
@@ -1966,7 +1966,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -1978,7 +1978,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2003,15 +2003,15 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "bc38e086-30be-53cd-a622-463c5565243f",
               "kind": "client_secret",
               "display_name": "poc",
-              "start": "2026-05-27T18:33:29Z",
-              "end": "2026-11-23T18:33:29Z",
+              "start": "2026-05-28T14:52:06Z",
+              "end": "2026-11-24T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -2021,7 +2021,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2069,7 +2069,7 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "last_sign_in": null
         }
@@ -2080,8 +2080,8 @@
       "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
       "display_name": "payments-api",
       "entity_type": "app_registration",
-      "created_datetime": "2025-06-29T18:33:29Z",
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "created_datetime": "2025-06-30T14:52:06Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "payments-team@demo-corp.example"
@@ -2101,7 +2101,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2113,7 +2113,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2138,15 +2138,15 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "6d560095-1456-5db5-9b1b-069d8a3a6e64",
               "kind": "certificate",
               "display_name": "payments-2026",
-              "start": "2026-08-13T18:33:29Z",
-              "end": "2027-08-13T18:33:29Z",
+              "start": "2026-08-14T14:52:06Z",
+              "end": "2027-08-14T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -2156,7 +2156,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2204,9 +2204,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -2215,8 +2215,8 @@
       "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
       "display_name": "sharepoint-migration-tool",
       "entity_type": "app_registration",
-      "created_datetime": "2025-09-17T18:33:29Z",
-      "last_sign_in": "2026-11-07T15:33:29Z",
+      "created_datetime": "2025-09-18T14:52:06Z",
+      "last_sign_in": "2026-11-08T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "m365-admins@demo-corp.example"
@@ -2236,7 +2236,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2248,7 +2248,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2273,7 +2273,7 @@
           "sources": [
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -2282,7 +2282,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -2319,9 +2319,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-07T15:33:29Z"
+          "last_sign_in": "2026-11-08T11:52:06Z"
         }
       }
     },
@@ -2331,7 +2331,7 @@
       "display_name": "func-invoice-processor",
       "entity_type": "managed_identity",
       "created_datetime": null,
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -2354,7 +2354,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2366,7 +2366,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "A managed identity is bound to an Azure resource and has no owners by design.",
           "items": []
         },
@@ -2382,7 +2382,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Managed identity credentials are handled by Azure and never listed.",
           "items": []
         },
@@ -2398,7 +2398,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -2407,7 +2407,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -2416,7 +2416,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -2425,7 +2425,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2440,9 +2440,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -2452,7 +2452,7 @@
       "display_name": "id-aks-workload",
       "entity_type": "managed_identity",
       "created_datetime": null,
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -2475,7 +2475,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2487,7 +2487,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "A managed identity is bound to an Azure resource and has no owners by design.",
           "items": []
         },
@@ -2503,7 +2503,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Managed identity credentials are handled by Azure and never listed.",
           "items": []
         },
@@ -2512,7 +2512,7 @@
           "sources": [
             "GET ARM .../userAssignedIdentities/{name}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2532,7 +2532,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -2541,7 +2541,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -2550,7 +2550,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -2559,7 +2559,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2574,9 +2574,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -2586,7 +2586,7 @@
       "display_name": "Acme Cloud Backup",
       "entity_type": "service_principal",
       "created_datetime": null,
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -2609,7 +2609,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2621,7 +2621,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Published by another organization: its owners and app credentials live in that tenant.",
           "items": []
         },
@@ -2637,7 +2637,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Credentials on the publisher's app registration are not visible from this tenant.",
           "items": []
         },
@@ -2653,7 +2653,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -2671,7 +2671,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -2680,7 +2680,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -2689,7 +2689,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -2698,9 +2698,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -2709,8 +2709,8 @@
       "app_id": "721f86b6-720c-5b98-9376-f38c527dee54",
       "display_name": "ci-deploy-pipeline",
       "entity_type": "service_principal",
-      "created_datetime": "2024-05-25T18:33:29Z",
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "created_datetime": "2024-05-26T14:52:06Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "devops-lead@demo-corp.example"
@@ -2734,7 +2734,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2747,7 +2747,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2773,15 +2773,15 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "d12787a1-899f-5adf-abe1-7d48511537f4",
               "kind": "client_secret",
               "display_name": "github-actions",
-              "start": "2025-10-07T18:33:29Z",
-              "end": "2027-10-07T18:33:29Z",
+              "start": "2025-10-08T14:52:06Z",
+              "end": "2027-10-08T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -2791,7 +2791,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2821,7 +2821,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -2830,7 +2830,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -2839,7 +2839,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -2848,7 +2848,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2868,9 +2868,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -2879,8 +2879,8 @@
       "app_id": "4bda9395-9b53-52ca-8633-32d74601e2f9",
       "display_name": "Identity Automation",
       "entity_type": "service_principal",
-      "created_datetime": "2024-12-11T18:33:29Z",
-      "last_sign_in": "2026-11-09T15:33:29Z",
+      "created_datetime": "2024-12-12T14:52:06Z",
+      "last_sign_in": "2026-11-10T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "iam-team@demo-corp.example"
@@ -2904,7 +2904,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -2917,7 +2917,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2943,31 +2943,31 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "e1ec685a-ba27-5f53-b7ab-6f1bfd1300e3",
               "kind": "client_secret",
               "display_name": "runner-a",
-              "start": "2026-08-03T18:33:29Z",
-              "end": "2027-08-03T18:33:29Z",
+              "start": "2026-08-04T14:52:06Z",
+              "end": "2027-08-04T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "77bcbd70-5028-5caf-a97d-a59342edc937",
               "kind": "client_secret",
               "display_name": "runner-b",
-              "start": "2026-09-12T18:33:29Z",
-              "end": "2027-09-12T18:33:29Z",
+              "start": "2026-09-13T14:52:06Z",
+              "end": "2027-09-13T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "b66b95c9-c0ce-52b6-bb19-7c54b8348583",
               "kind": "client_secret",
               "display_name": "old-runner",
-              "start": "2025-12-26T18:33:29Z",
-              "end": "2026-12-26T18:33:29Z",
+              "start": "2025-12-27T14:52:06Z",
+              "end": "2026-12-27T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -2977,7 +2977,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -2997,7 +2997,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -3019,7 +3019,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -3028,7 +3028,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": [
             {
@@ -3044,7 +3044,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3053,9 +3053,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-09T15:33:29Z"
+          "last_sign_in": "2026-11-10T11:52:06Z"
         }
       }
     },
@@ -3064,8 +3064,8 @@
       "app_id": "eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45",
       "display_name": "legacy-hr-sync",
       "entity_type": "service_principal",
-      "created_datetime": "2022-06-25T18:33:29Z",
-      "last_sign_in": "2026-03-16T15:33:29Z",
+      "created_datetime": "2022-06-26T14:52:06Z",
+      "last_sign_in": "2026-03-17T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": true,
@@ -3087,7 +3087,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -3100,7 +3100,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3117,31 +3117,31 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "f24e500e-4aa7-5b25-9393-f9707246da17",
               "kind": "client_secret",
               "display_name": "hr-2022",
-              "start": "2023-07-30T18:33:29Z",
-              "end": "2025-09-25T18:33:29Z",
+              "start": "2023-07-31T14:52:06Z",
+              "end": "2025-09-26T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
               "kind": "client_secret",
               "display_name": "hr-2024",
-              "start": "2025-03-21T18:33:29Z",
-              "end": "2026-08-08T18:33:29Z",
+              "start": "2025-03-22T14:52:06Z",
+              "end": "2026-08-09T14:52:06Z",
               "held_on": "application"
             },
             {
               "key_id": "963474b3-2d0d-587c-9259-420036e153b1",
               "kind": "client_secret",
               "display_name": "hr-2025",
-              "start": "2026-01-15T18:33:29Z",
-              "end": "2028-01-15T18:33:29Z",
+              "start": "2026-01-16T14:52:06Z",
+              "end": "2028-01-16T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -3151,7 +3151,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3160,7 +3160,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -3178,7 +3178,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -3187,7 +3187,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": [
             {
@@ -3203,7 +3203,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3212,9 +3212,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-03-16T15:33:29Z"
+          "last_sign_in": "2026-03-17T11:52:06Z"
         }
       }
     },
@@ -3223,7 +3223,7 @@
       "app_id": "f82dda04-e8f5-5cea-91b4-5da750927a8c",
       "display_name": "marketing-analytics-poc",
       "entity_type": "service_principal",
-      "created_datetime": "2026-01-15T18:33:29Z",
+      "created_datetime": "2026-01-16T14:52:06Z",
       "last_sign_in": null,
       "is_enabled": true,
       "owners": [
@@ -3248,7 +3248,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -3261,7 +3261,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3287,15 +3287,15 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "bc38e086-30be-53cd-a622-463c5565243f",
               "kind": "client_secret",
               "display_name": "poc",
-              "start": "2026-05-27T18:33:29Z",
-              "end": "2026-11-23T18:33:29Z",
+              "start": "2026-05-28T14:52:06Z",
+              "end": "2026-11-24T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -3305,7 +3305,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3325,7 +3325,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -3334,7 +3334,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -3343,7 +3343,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -3352,7 +3352,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3361,7 +3361,7 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "last_sign_in": null
         }
@@ -3373,7 +3373,7 @@
       "display_name": "Office 365 Exchange Online",
       "entity_type": "service_principal",
       "created_datetime": null,
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [],
       "is_orphaned": false,
@@ -3396,7 +3396,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -3408,7 +3408,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Published by another organization: its owners and app credentials live in that tenant.",
           "items": []
         },
@@ -3424,15 +3424,15 @@
           "sources": [
             "GET /v1.0/servicePrincipals"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Credentials on the publisher's app registration are not visible from this tenant.",
           "items": [
             {
               "key_id": "9f73ea88-83ff-5dac-8a48-4d53e2396408",
               "kind": "client_secret",
               "display_name": "sync",
-              "start": "2026-11-02T18:33:29Z",
-              "end": "2028-10-31T18:33:29Z",
+              "start": "2026-11-03T14:52:06Z",
+              "end": "2028-11-01T14:52:06Z",
               "held_on": "service_principal"
             }
           ]
@@ -3449,7 +3449,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": []
         },
@@ -3458,7 +3458,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -3467,7 +3467,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -3476,7 +3476,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3485,9 +3485,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -3496,8 +3496,8 @@
       "app_id": "e70a900c-9e74-58e9-b109-aa2e3b029cf1",
       "display_name": "payments-api",
       "entity_type": "service_principal",
-      "created_datetime": "2025-06-29T18:33:29Z",
-      "last_sign_in": "2026-11-11T15:33:29Z",
+      "created_datetime": "2025-06-30T14:52:06Z",
+      "last_sign_in": "2026-11-12T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "payments-team@demo-corp.example"
@@ -3521,7 +3521,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -3534,7 +3534,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3560,15 +3560,15 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "6d560095-1456-5db5-9b1b-069d8a3a6e64",
               "kind": "certificate",
               "display_name": "payments-2026",
-              "start": "2026-08-13T18:33:29Z",
-              "end": "2027-08-13T18:33:29Z",
+              "start": "2026-08-14T14:52:06Z",
+              "end": "2027-08-14T14:52:06Z",
               "held_on": "application"
             }
           ]
@@ -3578,7 +3578,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3598,7 +3598,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -3612,7 +3612,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": [
             {
@@ -3629,7 +3629,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": [
             {
@@ -3645,7 +3645,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3660,9 +3660,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-11T15:33:29Z"
+          "last_sign_in": "2026-11-12T11:52:06Z"
         }
       }
     },
@@ -3671,8 +3671,8 @@
       "app_id": "c012c9f8-1c39-59a4-bbe2-66cf10d0f4f0",
       "display_name": "sharepoint-migration-tool",
       "entity_type": "service_principal",
-      "created_datetime": "2025-09-17T18:33:29Z",
-      "last_sign_in": "2026-11-07T15:33:29Z",
+      "created_datetime": "2025-09-18T14:52:06Z",
+      "last_sign_in": "2026-11-08T11:52:06Z",
       "is_enabled": true,
       "owners": [
         "m365-admins@demo-corp.example"
@@ -3696,7 +3696,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "description": null,
           "notes": null,
@@ -3709,7 +3709,7 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
@@ -3735,15 +3735,15 @@
             "GET /v1.0/servicePrincipals",
             "GET /v1.0/applications"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": [
             {
               "key_id": "e1b7c172-abef-58b4-abf5-ace4be0381f2",
               "kind": "client_secret",
               "display_name": "added-via-graph",
-              "start": "2026-10-21T18:33:29Z",
-              "end": "2028-10-20T18:33:29Z",
+              "start": "2026-10-22T14:52:06Z",
+              "end": "2028-10-21T14:52:06Z",
               "held_on": "service_principal"
             }
           ]
@@ -3753,7 +3753,7 @@
           "sources": [
             "GET /v1.0/applications/{id}/federatedIdentityCredentials"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3762,7 +3762,7 @@
           "sources": [
             "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Application permissions on Microsoft Graph only: other APIs are not read yet.",
           "items": [
             {
@@ -3776,7 +3776,7 @@
           "sources": [
             "GET /v1.0/oauth2PermissionGrants"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Consents in this tenant. A delegated permission acts as the signed-in user, within that user's own access, which this scan does not evaluate.",
           "items": []
         },
@@ -3785,7 +3785,7 @@
           "sources": [
             "GET /v1.0/roleManagement/directory/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": "Direct assignments only: roles held through groups and PIM eligibility are not read yet.",
           "items": []
         },
@@ -3794,7 +3794,7 @@
           "sources": [
             "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
           "items": []
         },
@@ -3803,9 +3803,9 @@
           "sources": [
             "GET /beta/reports/servicePrincipalSignInActivities"
           ],
-          "read_at": "2026-11-11T18:33:29Z",
+          "read_at": "2026-11-12T14:52:06Z",
           "note": null,
-          "last_sign_in": "2026-11-07T15:33:29Z"
+          "last_sign_in": "2026-11-08T11:52:06Z"
         }
       }
     }
@@ -3830,7 +3830,11 @@
         "egress_permissions": [
           "Mail.Send"
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025",
+        "ASI02:2026"
+      ]
     },
     {
       "finding_id": "202f58a1b6e49528cf0b7cb8a4370278f48801661a7dc07028998abc86aae017",
@@ -3850,7 +3854,11 @@
         "egress_permissions": [
           "Mail.Send"
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025",
+        "ASI02:2026"
+      ]
     },
     {
       "finding_id": "609340038e183194effefa9ab7ce8660de7ba6875e881cf4d769bb55b3ecfb48",
@@ -3896,7 +3904,11 @@
           "4b8200bc-8bb5-5b29-83f1-917a26511151",
           "a3a3b519-04ca-53c7-80bc-6d115a744be2"
         ]
-      }
+      },
+      "owasp": [
+        "NHI7:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "f41a41a8f98a0c7dce1006c005f4f653192476e98835f5456e5f7df3162ebe59",
@@ -3925,7 +3937,10 @@
           }
         ],
         "orphaned": false
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "81557c37a1c1d001fde9aeb77ea236422d4b0de0bc984abfe739e805b6139c2b",
@@ -3949,7 +3964,10 @@
           }
         ],
         "orphaned": true
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "ab096b0dbaeedf2c1bd720db3ee7ac3350e7d2df56cd8a5ba440eb36b96ae632",
@@ -3971,7 +3989,10 @@
             "directory_scope": "/"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "9ea5f8a2f1d2c1c9ed1d2bc104a2cf238af9dd3411d9d04648f377ca999de06b",
@@ -3993,7 +4014,10 @@
             "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/c68c5f90-9f24-51b9-8f0d-11a38ff3ebda"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "bc1cd12f1e87e2963ec0875a267dc27e24d8d643bc09e1511f4dd26dee6c98a3",
@@ -4013,11 +4037,14 @@
             "kind": "client_secret",
             "key_id": "9f73ea88-83ff-5dac-8a48-4d53e2396408",
             "display_name": "sync",
-            "created": "2026-11-02T18:33:29Z",
-            "expires_on": "2028-10-31T18:33:29Z"
+            "created": "2026-11-03T14:52:06Z",
+            "expires_on": "2028-11-01T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI3:2025"
+      ]
     },
     {
       "finding_id": "39044f43170bf8bf6702cfd24f007a5625760dd4cb20e68eb59a07de0c283a3b",
@@ -4040,7 +4067,10 @@
           }
         ],
         "privileged": true
-      }
+      },
+      "owasp": [
+        "NHI6:2025"
+      ]
     },
     {
       "finding_id": "8f88b67c3fe85845ae33b2a7d02b86a258890b0f3e548494d4d5e844946b31eb",
@@ -4062,7 +4092,10 @@
           "Mail.Read",
           "Mail.Send"
         ]
-      }
+      },
+      "owasp": [
+        "NHI1:2025"
+      ]
     },
     {
       "finding_id": "002e84b5b8a78edf7a2d64ef24a467184c66c38bff0401a7b5d7a23a0bce535d",
@@ -4082,7 +4115,10 @@
         "permissions": [
           "User.Read.All"
         ]
-      }
+      },
+      "owasp": [
+        "NHI1:2025"
+      ]
     },
     {
       "finding_id": "2afd61a99d4db5d9e5d6b40305899e82fa378ad51776d395784fb713c730862b",
@@ -4099,7 +4135,11 @@
         "action_permissions": [
           "Mail.Send"
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "1c5fa85184a7b0a0f22311989d9d6a2fddee1ea7655fabef45ca0f30ab285ef4",
@@ -4116,7 +4156,11 @@
         "action_permissions": [
           "Mail.Send"
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "b2e5274ff930f12d54588d61c3beccb6a55dbf52b32d7c1dd00471ac0e947261",
@@ -4131,7 +4175,11 @@
       "remediation_cli": "az ad app update --id d5aea2f1-96ea-57c8-9073-7420aec22627 --sign-in-audience AzureADMyOrg",
       "evidence": {
         "sign_in_audience": "AzureADMultipleOrgs"
-      }
+      },
+      "owasp": [
+        "NHI9:2025",
+        "ASI04:2026"
+      ]
     },
     {
       "finding_id": "6e084441ebf4f42e3d1d7624cff0cdd7a087ab0b1b8408ffa218191a44a71290",
@@ -4175,7 +4223,12 @@
           "ef8cf9d3-6050-5b66-9bb0-2b43bbf2a738",
           "4b8200bc-8bb5-5b29-83f1-917a26511151"
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025",
+        "ASI01:2026",
+        "ASI02:2026"
+      ]
     },
     {
       "finding_id": "dbd68916179e081bb335c747134b084baf3e53879cb8e07c31baa09a12bc918f",
@@ -4202,7 +4255,11 @@
         "grant_ids": [
           "2ac88595-6630-51cd-b61b-333da9417bfe"
         ]
-      }
+      },
+      "owasp": [
+        "NHI7:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "6d748ab76eaf77572887d1b1c6f4a625eb5915dcdd2f3308bacfb1d4a7ecc1b1",
@@ -4216,12 +4273,15 @@
       "attack_path_context": "Dormant identities with live credentials are prime targets: their activity is not baselined, so an attacker using a leaked secret blends in. Whoever holds it inherits Graph Directory.ReadWrite.All; directory role(s) User Administrator — a direct privilege-escalation path.",
       "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id 59cf3713-48f3-5dce-8d5e-97c546a0e41f --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id eb1e81d4-3c80-5f0b-bbf5-b20d1eebbd45 --key-id 963474b3-2d0d-587c-9259-420036e153b1",
       "evidence": {
-        "last_sign_in": "2026-03-16T15:33:29Z",
+        "last_sign_in": "2026-03-17T11:52:06Z",
         "days_inactive": 240,
         "threshold_days": 90,
         "active_credentials": 1,
         "privileged": true
-      }
+      },
+      "owasp": [
+        "NHI1:2025"
+      ]
     },
     {
       "finding_id": "c65316621ab526c319aaea9b8ccb7c7a2983fe949358d06006a5100a7f237e5a",
@@ -4249,7 +4309,10 @@
             "assignment_id": "8a4c1438-4606-54ea-b6d9-2ca124a71664"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "af4e0ea022bf92ef91e85126df7f1a59a2cb0b2e9a63fbdcd11930a502cba0e6",
@@ -4282,7 +4345,10 @@
             "assignment_id": "df5b0f44-06e8-5579-816f-ddec1e9596c2"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "6f062e193c697f94fd6116dae419f4f8d944c877622b9bb3c7693555b239ebd2",
@@ -4305,7 +4371,10 @@
             "assignment_id": "d9db69ed-94e0-5c8c-af1f-f32062e0f4f3"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "4bcc80fa942c32fbe904787cd196cf04e25acf7257f23e3fab2bb4724d325f8d",
@@ -4333,7 +4402,10 @@
             "assignment_id": "e54b8281-20c3-5fe5-85c1-d957fa432cf9"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "c6e913f428464d90682eab8ea61de902ca3ad1bff63e093d3f593cb0aaf67a35",
@@ -4356,7 +4428,10 @@
             "assignment_id": "0270b4da-dc73-5891-9b07-7ccebea0f7de"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "d8e1095451f997168bac2d8e435a4f7cde04c4b546fb1dbded95bd9f6ee923d8",
@@ -4378,7 +4453,10 @@
             "directory_scope": "/"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "bd5dfbd95baacca844df70accf28a3782d8092f0fa2b6e6582abe344e8ce3f38",
@@ -4400,7 +4478,10 @@
             "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/resourceGroups/rg-platform/providers/Microsoft.Authorization/roleAssignments/4e333a9b-cf76-50bd-87c3-69cab9ad868e"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "266b412a17624627a2a604a11089b7412a28366e341fbc4475fb3a8b37a7075a",
@@ -4422,7 +4503,10 @@
             "assignment_id": "/subscriptions/00000000-0000-4000-8000-0000000000a1/providers/Microsoft.Authorization/roleAssignments/affb713d-bc71-563e-9fe5-db669f591de4"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI5:2025"
+      ]
     },
     {
       "finding_id": "c5532c3cbd3042573116e33ad816028bd049af3365363a9b14b4a0c570d9072c",
@@ -4443,10 +4527,13 @@
             "key_id": "d12787a1-899f-5adf-abe1-7d48511537f4",
             "display_name": "github-actions",
             "lifetime_days": 730,
-            "expires_on": "2027-10-07T18:33:29Z"
+            "expires_on": "2027-10-08T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI7:2025"
+      ]
     },
     {
       "finding_id": "0e5f9a6f558bee11c24a5ebd0a3526141d4355738a17b3e6c3514aef2dd80ebb",
@@ -4467,10 +4554,13 @@
             "key_id": "963474b3-2d0d-587c-9259-420036e153b1",
             "display_name": "hr-2025",
             "lifetime_days": 730,
-            "expires_on": "2028-01-15T18:33:29Z"
+            "expires_on": "2028-01-16T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI7:2025"
+      ]
     },
     {
       "finding_id": "254b249f26e5ab48e1c28076d5708d8153ca5a0914e3a02c49ab55f68232e824",
@@ -4490,11 +4580,14 @@
             "kind": "client_secret",
             "key_id": "e1b7c172-abef-58b4-abf5-ace4be0381f2",
             "display_name": "added-via-graph",
-            "created": "2026-10-21T18:33:29Z",
-            "expires_on": "2028-10-20T18:33:29Z"
+            "created": "2026-10-22T14:52:06Z",
+            "expires_on": "2028-10-21T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI3:2025"
+      ]
     },
     {
       "finding_id": "5573879cd38046b6e080c278a6c6fbdee2878df1bcad83218fc1ecf1e54da29d",
@@ -4517,7 +4610,10 @@
           }
         ],
         "privileged": true
-      }
+      },
+      "owasp": [
+        "NHI6:2025"
+      ]
     },
     {
       "finding_id": "2f630a43edd22bcdf6d3c59a02f9c42dd5bc82079bd2b093404418da50347fe7",
@@ -4540,7 +4636,10 @@
           }
         ],
         "privileged": false
-      }
+      },
+      "owasp": [
+        "NHI6:2025"
+      ]
     },
     {
       "finding_id": "09acc232fc39d4a04cb670e6a9c3875516371418cd96adab7fcc6ee29e346f4d",
@@ -4578,7 +4677,12 @@
             "scope": "/subscriptions/00000000-0000-4000-8000-0000000000a1"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI4:2025",
+        "NHI7:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "75947b44f47e9a1b43835674f28c9faaed4815df7c9fb986ef099abe05d947db",
@@ -4595,10 +4699,14 @@
         "client_secrets": [
           {
             "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
-            "expires_on": "2028-04-24T18:33:29Z"
+            "expires_on": "2028-04-25T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI2:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "5c4247a69c54163b89edb93bfbc2baf0f4f1d422288a54c451ae2408d9d1f9f0",
@@ -4612,11 +4720,14 @@
       "attack_path_context": "Unused identities with credentials and permissions are free attack surface: first use by an attacker raises no anomaly because there is no history. Whoever holds it inherits every permission granted to the identity.",
       "remediation_cli": "# 1. Disable the identity. This is reversible: set accountEnabled=true to undo it.\naz ad sp update --id eaa48941-65f2-5b21-870c-3437fe8dd9c5 --set accountEnabled=false\n# 2. After an observation period with no impact, remove its credentials:\n# az ad app credential delete --id f82dda04-e8f5-5cea-91b4-5da750927a8c --key-id bc38e086-30be-53cd-a622-463c5565243f",
       "evidence": {
-        "created": "2026-01-15T18:33:29Z",
+        "created": "2026-01-16T14:52:06Z",
         "age_days": 300,
         "active_credentials": 1,
         "privileged": false
-      }
+      },
+      "owasp": [
+        "NHI1:2025"
+      ]
     },
     {
       "finding_id": "8c1499e19aad22c5eba789fb4109ac62e7aa8bb2807c28ccc3b96763ab1db9ba",
@@ -4637,10 +4748,13 @@
             "key_id": "5436ed7a-ccad-568e-a6d4-7125229b20e6",
             "display_name": "prod",
             "lifetime_days": 730,
-            "expires_on": "2028-04-24T18:33:29Z"
+            "expires_on": "2028-04-25T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI7:2025"
+      ]
     },
     {
       "finding_id": "0ed91d3a79442553f7e62047ec94c016a8231b03f27b9a7eee17e65912e92a41",
@@ -4660,7 +4774,10 @@
           "77bcbd70-5028-5caf-a97d-a59342edc937",
           "b66b95c9-c0ce-52b6-bb19-7c54b8348583"
         ]
-      }
+      },
+      "owasp": [
+        "NHI2:2025"
+      ]
     },
     {
       "finding_id": "0e401a87343c1e7f250c01e7e924ec9dd16b204e7e6e09a98d3d8fbdacc199be",
@@ -4683,7 +4800,10 @@
           }
         ],
         "privileged": false
-      }
+      },
+      "owasp": [
+        "NHI6:2025"
+      ]
     },
     {
       "finding_id": "dd317966f1006bf1a6ddb7f133f2a7850ee922e57ba50d51648772d207bb105b",
@@ -4715,7 +4835,12 @@
             "scope": "/subscriptions/00000000-0000-4000-8000-0000000000a1"
           }
         ]
-      }
+      },
+      "owasp": [
+        "NHI4:2025",
+        "NHI7:2025",
+        "ASI03:2026"
+      ]
     },
     {
       "finding_id": "fa60657ff82f6e7ad7182227fea0df61181ac15a9868006462f2709e23883749",
@@ -4734,19 +4859,22 @@
             "kind": "client_secret",
             "key_id": "f24e500e-4aa7-5b25-9393-f9707246da17",
             "display_name": "hr-2022",
-            "expired_on": "2025-09-25T18:33:29Z",
+            "expired_on": "2025-09-26T14:52:06Z",
             "days_expired": 412
           },
           {
             "kind": "client_secret",
             "key_id": "bc9cbb91-7eb6-5c93-bdaa-a8c0e3a78805",
             "display_name": "hr-2024",
-            "expired_on": "2026-08-08T18:33:29Z",
+            "expired_on": "2026-08-09T14:52:06Z",
             "days_expired": 95
           }
         ],
         "max_days_expired": 412
-      }
+      },
+      "owasp": [
+        "NHI1:2025"
+      ]
     },
     {
       "finding_id": "683559f4ce1a883be7332a77fccacfa72ff581ca2692280a3d75477016f6f377",
@@ -4758,16 +4886,17 @@
       "title": "All credentials expire within 11 days",
       "description": "Every valid credential of 'marketing-analytics-poc' expires within 30 days and no replacement exists yet. Unplanned expiry causes outages and rushed, insecure rotations.",
       "attack_path_context": "Emergency rotations are when secrets get pasted into tickets and chats, or issued with multi-year lifetimes 'to avoid this next time'.",
-      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id f82dda04-e8f5-5cea-91b4-5da750927a8c --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# or, if a new secret is unavoidable, store it in Key Vault so it never reaches the terminal:\n# az keyvault secret set --vault-name \"<VAULT_NAME>\" --name rotated-f82dda04-e8f5-5cea-91b4-5da750927a8c -o none --value \"$(az ad app credential reset --id f82dda04-e8f5-5cea-91b4-5da750927a8c --append --display-name rotated --end-date 2027-05-10 --query password -o tsv)\"",
+      "remediation_cli": "# 1. Add a federated credential for the workload. Adapt issuer and subject (GitHub Actions example):\n# az ad app federated-credential create --id f82dda04-e8f5-5cea-91b4-5da750927a8c --parameters '{\"name\":\"github-main\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:<ORG>/<REPO>:ref:refs/heads/main\",\"audiences\":[\"api://AzureADTokenExchange\"]}'\n# 2. Switch the workload to it and confirm it signs in.\n# or, if a new secret is unavoidable, store it in Key Vault so it never reaches the terminal:\n# az keyvault secret set --vault-name \"<VAULT_NAME>\" --name rotated-f82dda04-e8f5-5cea-91b4-5da750927a8c -o none --value \"$(az ad app credential reset --id f82dda04-e8f5-5cea-91b4-5da750927a8c --append --display-name rotated --end-date 2027-05-11 --query password -o tsv)\"",
       "evidence": {
         "days_until_expiry": 11,
         "credentials": [
           {
             "key_id": "bc38e086-30be-53cd-a622-463c5565243f",
-            "expires_on": "2026-11-23T18:33:29Z"
+            "expires_on": "2026-11-24T14:52:06Z"
           }
         ]
-      }
+      },
+      "owasp": []
     }
   ]
 }

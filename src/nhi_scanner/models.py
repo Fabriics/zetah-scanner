@@ -25,7 +25,7 @@ from pydantic import (
     model_validator,
 )
 
-from . import __version__
+from . import __version__, owasp
 
 
 def _to_utc(value: datetime) -> datetime:
@@ -40,6 +40,9 @@ UTCDateTime = Annotated[
 ]
 NonEmptyStr = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 RuleId = Annotated[str, StringConstraints(pattern=r"^NHI-[A-Z]+-\d{3}$")]
+# OWASP entries a finding is an instance of (see owasp.py): known codes only, no repeats, canonical order.
+OwaspId = Literal[tuple(owasp.ENTRIES)]  # type: ignore[valid-type]  # the enum in the JSON Schema
+OwaspIds = Annotated[list[OwaspId], Field(max_length=owasp.MAX_PER_FINDING), AfterValidator(owasp.check)]
 
 
 class _Contract(BaseModel):
@@ -363,6 +366,8 @@ class SecurityFinding(_Contract):
     attack_path_context: NonEmptyStr
     remediation_cli: NonEmptyStr
     evidence: dict[str, Any] = Field(default_factory=dict)
+    # Contract version 2: set from the rule that emitted the finding, never by the finding itself.
+    owasp: OwaspIds = Field(default_factory=list)
 
     @classmethod
     def create(cls, *, tenant_id: str, entity: NHIEntity, rule_id: str, **fields: Any) -> SecurityFinding:
@@ -392,6 +397,8 @@ class ZetahScanPayload(_Contract):
             raise ValueError("contract version 2 requires a record on every entity")
         if self.metadata.contract_version == 1 and with_record:
             raise ValueError("contract version 1 payloads carry no identity record")
+        if self.metadata.contract_version == 1 and any(f.owasp for f in self.findings):
+            raise ValueError("contract version 1 payloads carry no OWASP mapping")
 
         known = set(entity_ids)
         tenant = self.metadata.tenant_id

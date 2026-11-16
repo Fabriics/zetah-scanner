@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
 from .inventory import Inventory
+from .owasp import order as owasp_order
 from .models import EntityType, FindingCategory, NHIEntity, SecurityFinding, Severity
 from .snapshot import TenantSnapshot
 from .snapshot import credential_metadata as _credentials
@@ -253,6 +254,8 @@ class Rule:
     title: str  # what the rule checks, for reports
     action: str  # the remediation in one line, for reports
     fn: RuleFn
+    # OWASP entries every finding of this rule is an instance of (owasp.py); empty when none fits, never a loose match
+    owasp: tuple[str, ...] = ()
 
 
 RULES: list[Rule] = []
@@ -260,9 +263,14 @@ RULES: list[Rule] = []
 
 def rule(
     rule_id: str, category: FindingCategory, requires: Optional[str] = None, *, title: str, action: str,
+    owasp: tuple[str, ...],
 ) -> Callable[[RuleFn], RuleFn]:
+    # every rule states its OWASP mapping, even when it is empty, so a new rule cannot forget it; an unknown entry
+    # fails here, at import, before the rule is registered
+    codes = tuple(owasp_order(list(owasp)))
+
     def deco(fn: RuleFn) -> RuleFn:
-        RULES.append(Rule(rule_id, category, requires, title, action, fn))
+        RULES.append(Rule(rule_id, category, requires, title, action, fn, codes))
         return fn
     return deco
 
@@ -285,6 +293,7 @@ def run_rules(ctx: RuleContext) -> tuple[list[SecurityFinding], list[str]]:
         evaluated.append(r.rule_id)
         for f in r.fn(ctx):
             assert f.rule_id == r.rule_id and f.category is r.category, f"rule {r.rule_id} emitted inconsistent finding"
+            f.owasp = list(r.owasp)  # validated on assignment
             findings.append(f)
     findings.sort(key=lambda f: (-f.severity.rank, f.rule_id, f.entity_name))
     return findings, evaluated
@@ -411,6 +420,7 @@ def _blast_radius(ctx: RuleContext, sp_id: Optional[str]) -> str:
     "NHI-SEC-001", FindingCategory.SECRET_HYGIENE,
     title="Expired credentials still attached",
     action="Delete expired secrets and certificates",
+    owasp=("NHI1:2025",),
 )
 def expired_credentials(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -448,6 +458,7 @@ def expired_credentials(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-SEC-002", FindingCategory.SECRET_HYGIENE,
     title="Long-lived client secrets",
     action="Replace with workload identity federation, or rotate to secrets of 180 days or less",
+    owasp=("NHI7:2025",),
 )
 def long_lived_secrets(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -499,6 +510,7 @@ def long_lived_secrets(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-SEC-003", FindingCategory.SECRET_HYGIENE,
     title="Multiple active client secrets",
     action="Keep the one secret in use and delete the others",
+    owasp=("NHI2:2025",),
 )
 def multiple_active_secrets(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -533,6 +545,7 @@ def multiple_active_secrets(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-SEC-004", FindingCategory.SECRET_HYGIENE,
     title="Credentials on the service principal object",
     action="Remove the credentials and investigate who added them",
+    owasp=("NHI3:2025",),
 )
 def credentials_on_service_principal(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -609,6 +622,7 @@ def credentials_on_service_principal(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-SEC-005", FindingCategory.SECRET_HYGIENE,
     title="All credentials expire soon",
     action="Plan the rotation now, preferably to federated credentials",
+    owasp=(),
 )
 def secrets_expiring_soon(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -733,6 +747,7 @@ def _federation_fix(app_id: Optional[str], f: dict[str, Any]) -> str:
     "NHI-SEC-006", FindingCategory.SECRET_HYGIENE, requires="federation",
     title="GitHub Actions trust bound too loosely",
     action="Bind the federated credential to a protected environment or the main branch",
+    owasp=("NHI6:2025",),
 )
 def loose_github_federation(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -801,6 +816,7 @@ def _key_readers(ctx: RuleContext, resource_id: str) -> list[dict[str, str]]:
     "NHI-SEC-007", FindingCategory.SECRET_HYGIENE, requires="ai_accounts",
     title="AI account accepts static keys",
     action="Disable local authentication and use Entra ID with managed identities",
+    owasp=("NHI4:2025", "NHI7:2025", "ASI03:2026"),
 )
 def ai_account_key_auth(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -889,6 +905,7 @@ def _disable_cmds(entity: NHIEntity, sp_id: str, creds: list[dict[str, Any]]) ->
     "NHI-DORM-001", FindingCategory.DORMANT_NHI, requires="signin",
     title="Dormant identity with valid credentials",
     action="Disable the identity, then remove its credentials once nothing breaks",
+    owasp=("NHI1:2025",),
 )
 def dormant_with_credentials(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -924,6 +941,7 @@ def dormant_with_credentials(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-DORM-002", FindingCategory.DORMANT_NHI, requires="signin",
     title="Never-used identity with valid credentials",
     action="Confirm the business purpose; otherwise disable it, then remove its credentials",
+    owasp=("NHI1:2025",),
 )
 def never_used_with_credentials(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -972,6 +990,7 @@ def _revoke_app_roles(sp_id: str, assignments: list[dict[str, str]]) -> str:
     "NHI-PERM-001", FindingCategory.EXCESSIVE_GRAPH_PERMISSIONS, requires="graph_permissions",
     title="Tenant-takeover Graph permissions",
     action="Revoke the permission and grant a least-privileged alternative",
+    owasp=("NHI5:2025",),
 )
 def tier0_graph_permissions(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1004,6 +1023,7 @@ def tier0_graph_permissions(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-PERM-002", FindingCategory.EXCESSIVE_GRAPH_PERMISSIONS, requires="graph_permissions",
     title="Tenant-wide data access",
     action="Scope access down with resource-specific consent or access policies",
+    owasp=("NHI5:2025",),
 )
 def high_impact_graph_permissions(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1035,6 +1055,7 @@ def high_impact_graph_permissions(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-PERM-003", FindingCategory.EXCESSIVE_GRAPH_PERMISSIONS, requires="directory_roles",
     title="Privileged Entra directory role",
     action="Remove the role or replace it with a narrowly scoped one",
+    owasp=("NHI5:2025",),
 )
 def privileged_directory_roles(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1079,6 +1100,7 @@ def privileged_directory_roles(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-RBAC-001", FindingCategory.AZURE_RBAC_PRIVILEGE, requires="azure",
     title="Azure access-control role",
     action="Remove Owner / User Access Administrator; grant narrower roles",
+    owasp=("NHI5:2025",),
 )
 def azure_access_control_roles(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1114,6 +1136,7 @@ def azure_access_control_roles(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-RBAC-002", FindingCategory.AZURE_RBAC_PRIVILEGE, requires="azure",
     title="Broad Azure Contributor",
     action="Re-scope Contributor to the resource groups actually needed",
+    owasp=("NHI5:2025",),
 )
 def azure_broad_contributor(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1161,6 +1184,7 @@ def _agents(ctx: RuleContext) -> list[NHIEntity]:
     "NHI-AGENT-001", FindingCategory.AI_AGENT_GOVERNANCE,
     title="Orphaned AI agent",
     action="Assign an accountable owner or, for Entra Agent ID identities, a sponsor",
+    owasp=("NHI1:2025",),
 )
 def orphaned_agent(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1207,6 +1231,7 @@ def orphaned_agent(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-AGENT-002", FindingCategory.AI_AGENT_GOVERNANCE, requires="graph_permissions",
     title="AI agent with excessive agency",
     action="Replace tenant-wide application permissions with delegated or scoped access",
+    owasp=("NHI5:2025", "ASI03:2026"),
 )
 def agent_excessive_agency(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1240,6 +1265,7 @@ def agent_excessive_agency(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-AGENT-003", FindingCategory.AI_AGENT_GOVERNANCE, requires="graph_permissions",
     title="AI agent data-exfiltration path",
     action="Remove the egress permission or split read and send capabilities",
+    owasp=("NHI5:2025", "ASI02:2026"),
 )
 def agent_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1276,6 +1302,7 @@ def agent_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-AGENT-004", FindingCategory.AI_AGENT_GOVERNANCE,
     title="AI agent using static secrets",
     action="Move the agent to a managed identity or federated credentials",
+    owasp=("NHI2:2025", "ASI03:2026"),
 )
 def agent_static_secret(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1319,6 +1346,7 @@ def agent_static_secret(ctx: RuleContext) -> list[SecurityFinding]:
     "NHI-AGENT-005", FindingCategory.AI_AGENT_GOVERNANCE,
     title="Multi-tenant AI agent",
     action="Restrict the sign-in audience to this organization",
+    owasp=("NHI9:2025", "ASI04:2026"),
 )
 def agent_multi_tenant(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1466,6 +1494,7 @@ def _consent_evidence(path: _ConsentPath, **extra: Any) -> dict[str, Any]:
     "NHI-AGENT-006", FindingCategory.AI_AGENT_GOVERNANCE, requires="delegated_grants",
     title="AI client with delegated read and send",
     action="Revoke the consent, or split reading and sending across separate apps",
+    owasp=("NHI5:2025", "ASI01:2026", "ASI02:2026"),
 )
 def agent_delegated_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]:
     out = []
@@ -1507,6 +1536,7 @@ def agent_delegated_exfiltration_path(ctx: RuleContext) -> list[SecurityFinding]
     "NHI-AGENT-008", FindingCategory.AI_AGENT_GOVERNANCE, requires="delegated_grants",
     title="AI client with persistent delegated access",
     action="Revoke the consent and require admin approval for AI apps",
+    owasp=("NHI7:2025", "ASI03:2026"),
 )
 def agent_persistent_delegated_access(ctx: RuleContext) -> list[SecurityFinding]:
     sensitive = DELEGATED_READ_SCOPES | DELEGATED_ACTION_SCOPES

@@ -36,7 +36,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from . import __version__
+from . import __version__, owasp
 from .engine import CRITICAL_CEILING, SCORE_PENALTIES
 from .models import EntityType, FindingCategory, NHIEntity, SectionStatus, SecurityFinding, Severity, ZetahScanPayload
 from .readiness import agent_readiness
@@ -906,7 +906,8 @@ class _Report:
                 self.para(f"<b>{PRIORITY[f.severity]}</b><br/><font size=6.5 color='{_hex(MUTED)}'>"
                           f"{PRIORITY_HINT[f.severity]}</font>", "cell"),
                 self.para(f"<font color='{_hex(MUTED)}'>{i:02d}</font> {_t(f.title)}<br/>"
-                          f"<font size=6.5 color='{_hex(MUTED)}'>{_t(f.rule_id)}</font>", "cell"),
+                          f"<font size=6.5 color='{_hex(MUTED)}'>{_t(' · '.join([f.rule_id, *f.owasp]))}</font>",
+                          "cell"),
                 self.para(self.entity_label(self.entities[f.entity_id]), "cell"),
                 self.para(_t(rule.action if rule else "See detailed findings"), "cell"),
             ])
@@ -949,7 +950,8 @@ class _Report:
                 f"<b>{_t(e.display_name)}</b> · {TYPE_LABEL[e.entity_type]} · Object ID {_t(e.entity_id)}"
                 + (f" · App ID {_t(e.app_id)}" if e.app_id else "")
                 + f"<br/>Rule {_t(f.rule_id)} · {CATEGORY_LABEL[f.category]} · Priority {PRIORITY[f.severity]} "
-                  f"({PRIORITY_HINT[f.severity].lower()}) · Finding ID {f.finding_id[:16]}",
+                  f"({PRIORITY_HINT[f.severity].lower()}) · Finding ID {f.finding_id[:16]}"
+                + (f"<br/>OWASP {_t(' · '.join(owasp.label(c) for c in f.owasp))}" if f.owasp else ""),
                 "small",
             )
             attack = Table(
@@ -1069,10 +1071,18 @@ class _Report:
                 status = f"<font color='{_hex(MUTED)}'>{_t(REQUIREMENT_LABEL.get(r.requires or '', 'Skipped'))}</font>"
             rule_rows.append([
                 self.para(_t(r.rule_id), "cellb"), self.para(CATEGORY_LABEL[r.category], "cell"),
-                self.para(_t(r.title), "cell"), self.para(status, "cell"),
+                self.para(_t(r.title), "cell"),
+                self.para("<br/>".join(_t(c) for c in r.owasp) if r.owasp else f"<font color='{_hex(MUTED)}'>None</font>", "cell"),
+                self.para(status, "cell"),
             ])
-        out.append(self.data_table(["Rule", "Category", "Check", "Result"], rule_rows,
-                                   [w * 0.17, w * 0.25, w * 0.34, w * 0.24]))
+        out.append(self.data_table(["Rule", "Category", "Check", "OWASP", "Result"], rule_rows,
+                                   [w * 0.16, w * 0.21, w * 0.29, w * 0.14, w * 0.20]))
+        out.append(self.para(
+            f"OWASP codes refer to the <link href='{owasp.NHI_URL}' color='{_hex(NAVY_2)}'>{owasp.NHI_LIST}</link> "
+            f"(NHI1 to NHI10) and the <link href='{owasp.ASI_URL}' color='{_hex(NAVY_2)}'>{owasp.ASI_LIST}</link> "
+            "(ASI01 to ASI10). A check names an entry only when each of its findings is an instance of that risk; "
+            "agentic entries are named only by checks on AI agents and AI accounts. None means that no entry "
+            "describes the risk, not that the check is less important.", "small"))
 
         out.append(self.para("Hygiene score", "h2"))
         caps = ", ".join(f"{sev.value.lower()} up to {int(cap)}" for sev, (_each, cap) in SCORE_PENALTIES.items())
