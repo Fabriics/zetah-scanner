@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Optional
 
 from rich.console import Console
-from rich.markup import escape
+from .report import escape
 
 from . import __version__
 from .engine import run_scan

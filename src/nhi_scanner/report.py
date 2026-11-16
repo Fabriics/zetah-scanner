@@ -5,12 +5,26 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from rich.console import Console, Group
-from rich.markup import escape
+import re
+
+from rich.markup import escape as _markup_escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
 from .models import EntityType, Severity, ZetahScanPayload
+
+_CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
+
+
+def plain(text: object) -> str:
+    """Tenant text for a terminal: no escape sequences (links, titles, cursor moves), no bells, no NUL."""
+    return _CONTROL.sub("?", str(text))
+
+
+def escape(text: object) -> str:
+    """Plain, then markup-escaped: neither the terminal nor rich may interpret what the tenant wrote."""
+    return _markup_escape(plain(text))
 
 SEVERITY_STYLE = {
     Severity.CRITICAL: "bold white on red",
@@ -104,6 +118,6 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
             Text(f.severity.value, style=SEVERITY_STYLE[f.severity]),
             f.rule_id,
             escape(f.entity_name),
-            Group(Text(f.title, style="bold"), Text(f.attack_path_context, style="dim")),
+            Group(Text(plain(f.title), style="bold"), Text(plain(f.attack_path_context), style="dim")),
         )
     console.print(fnd)
