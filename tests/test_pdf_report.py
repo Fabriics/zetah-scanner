@@ -176,3 +176,21 @@ def test_output_files_are_utf8_on_every_platform(tmp_path, monkeypatch):
     monkeypatch.setattr(Path, "write_text", spy)
     assert main(["--demo", "--quiet", "--json", str(tmp_path / "s.json"), "--schema-out", str(tmp_path / "x.json")]) == 0
     assert encodings == ["utf-8", "utf-8"]
+
+
+def test_inventory_shows_access_and_credentials_of_every_identity(tmp_path):
+    from datetime import datetime, timezone
+
+    from pypdf import PdfReader
+
+    from src.nhi_scanner.demo import build_demo_snapshot
+    from src.nhi_scanner.engine import run_scan
+    from src.nhi_scanner.pdf_report import write_pdf_report
+
+    now = datetime(2026, 10, 26, 12, 0, tzinfo=timezone.utc)
+    out = write_pdf_report(run_scan(build_demo_snapshot(now), now=now), tmp_path / "r.pdf")
+    text = " ".join(" ".join(p.extract_text() for p in PdfReader(str(out)).pages).split())
+    assert "Access & credentials" in text
+    assert "Credentials managed by Azure" in text
+    assert "1 owner account(s) disabled" in text
+    assert "Publisher's credentials not visible here" in text

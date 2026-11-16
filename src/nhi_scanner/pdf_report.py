@@ -38,7 +38,7 @@ from reportlab.platypus import (
 
 from . import __version__
 from .engine import CRITICAL_CEILING, SCORE_PENALTIES
-from .models import EntityType, FindingCategory, NHIEntity, SecurityFinding, Severity, ZetahScanPayload
+from .models import EntityType, FindingCategory, NHIEntity, SectionStatus, SecurityFinding, Severity, ZetahScanPayload
 from .readiness import agent_readiness
 from .rules import RULES
 
@@ -162,6 +162,37 @@ def _owners_label(owners: list[str], limit: int = 3) -> str:
     """Shortened owner list: reportlab cannot split a table row taller than a page."""
     extra = len(owners) - limit
     return ", ".join(owners[:limit]) + (f" and {extra} more" if extra > 0 else "")
+
+
+def _access_lines(e: NHIEntity, now: datetime) -> list[str]:
+    """What the identity can do and with which keys, from its record (contract version 2)."""
+    r = e.record
+    if r is None:
+        return ["-"]
+    if e.entity_type is EntityType.APP_REGISTRATION:
+        parts = ["Access: see its service principal"]
+    else:
+        parts = []
+        for section, label in ((r.graph_permissions, "Graph permission(s)"), (r.directory_roles, "Entra role(s)"),
+                               (r.azure_roles, "Azure role(s)")):
+            if section.status is SectionStatus.NOT_READ:
+                parts.append(f"{label.split(' ')[0]} not read")
+            elif section.status is SectionStatus.READ and section.items:
+                parts.append(f"{len(section.items)} {label}")
+        parts = [" · ".join(parts) or "No permissions or roles"]
+    creds = r.credentials.items
+    live = sorted(c.end for c in creds if c.end and c.end > now)
+    if e.raw_metadata.get("servicePrincipalType") == "ManagedIdentity":
+        parts.append("Credentials managed by Azure")
+    elif not creds and e.raw_metadata.get("is_external_app"):
+        parts.append("Publisher's credentials not visible here")
+    elif not creds:
+        parts.append("No credentials")
+    elif not live and all(c.end for c in creds):
+        parts.append(f"{len(creds)} credential(s), all expired")
+    else:
+        parts.append(f"{len(creds)} credential(s)" + (f", next expiry {_date(live[0])}" if live else ""))
+    return parts
 
 
 def _humanize_key(key: str) -> str:
@@ -944,6 +975,10 @@ class _Report:
             worst = self.worst(fs)
             owner = (f"<font color='{_hex(SEV_COLOR[Severity.CRITICAL])}'><b>Orphaned</b></font>" if e.is_orphaned
                      else _t(_owners_label(e.owners) or "n/a (by design)"))
+            disabled = sum(o.account_enabled is False for o in (e.record.owners.items if e.record else []))
+            if disabled and not e.is_orphaned:
+                owner += (f"<br/><font color='{_hex(SEV_COLOR[Severity.HIGH])}'><b>{disabled} owner account(s) "
+                          f"disabled</b></font>")
             no_local_sp = e.entity_type is EntityType.APP_REGISTRATION and not e.raw_metadata.get("service_principal_id")
             last = "n/a" if not self.signins_known or no_local_sp else (_date(e.last_sign_in) if e.last_sign_in else "Never")
             sev_text = (f"<font color='{_hex(SEV_COLOR[worst])}'><b>{len(fs)} · {worst.value}</b></font>"
@@ -953,13 +988,16 @@ class _Report:
                           f"{_t(e.app_id or e.entity_id)}</font>", "cell"),
                 self.para(TYPE_LABEL[e.entity_type], "cell"),
                 self.para(owner, "cell"),
+                self.para(f"<font size=6>{'<br/>'.join(map(_t, _access_lines(e, self.md.scan_timestamp)))}</font>",
+                          "cell"),
                 self.para(_t(last), "cell"),
                 self.para("Enabled" if e.is_enabled else "Disabled", "cell"),
                 self.para(sev_text, "cell"),
             ])
         w = CONTENT_W
-        out.append(self.data_table(["Identity", "Type", "Owner(s)", "Last sign-in", "Status", "Findings"], rows,
-                                   [w * 0.27, w * 0.14, w * 0.28, w * 0.12, w * 0.08, w * 0.11]))
+        out.append(self.data_table(["Identity", "Type", "Owner(s)", "Access & credentials", "Last sign-in", "Status",
+                                    "Findings"], rows,
+                                   [w * 0.21, w * 0.11, w * 0.2, w * 0.2, w * 0.1, w * 0.08, w * 0.1]))
         return out
 
     def methodology(self) -> list[Flowable]:

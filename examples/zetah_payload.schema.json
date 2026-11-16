@@ -1,5 +1,437 @@
 {
   "$defs": {
+    "Accountable": {
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {
+          "minLength": 1,
+          "title": "Object Id",
+          "type": "string"
+        },
+        "object_type": {
+          "$ref": "#/$defs/AccountableObjectType"
+        },
+        "user_principal_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Principal Name"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "account_enabled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Account Enabled"
+        },
+        "held_on": {
+          "anyOf": [
+            {
+              "pattern": "^(application|service_principal)$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Held On"
+        }
+      },
+      "required": [
+        "object_id",
+        "object_type"
+      ],
+      "title": "Accountable",
+      "type": "object"
+    },
+    "AccountableObjectType": {
+      "enum": [
+        "user",
+        "service_principal",
+        "other"
+      ],
+      "title": "AccountableObjectType",
+      "type": "string"
+    },
+    "ActivitySection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "last_sign_in": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Sign In"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ActivitySection",
+      "type": "object"
+    },
+    "AzureRole": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "scope": {
+          "minLength": 1,
+          "title": "Scope",
+          "type": "string"
+        },
+        "assignment_id": {
+          "minLength": 1,
+          "title": "Assignment Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "scope",
+        "assignment_id"
+      ],
+      "title": "AzureRole",
+      "type": "object"
+    },
+    "AzureRolesSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/AzureRole"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "AzureRolesSection",
+      "type": "object"
+    },
+    "Credential": {
+      "additionalProperties": false,
+      "description": "Credential metadata only: secret values are never read.",
+      "properties": {
+        "key_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Key Id"
+        },
+        "kind": {
+          "$ref": "#/$defs/CredentialKind"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "start": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start"
+        },
+        "end": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End"
+        },
+        "held_on": {
+          "pattern": "^(application|service_principal)$",
+          "title": "Held On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "held_on"
+      ],
+      "title": "Credential",
+      "type": "object"
+    },
+    "CredentialKind": {
+      "enum": [
+        "client_secret",
+        "certificate"
+      ],
+      "title": "CredentialKind",
+      "type": "string"
+    },
+    "CredentialsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Credential"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "CredentialsSection",
+      "type": "object"
+    },
+    "DirectoryRole": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "minLength": 1,
+          "title": "Role",
+          "type": "string"
+        },
+        "role_template_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role Template Id"
+        },
+        "directory_scope": {
+          "default": "/",
+          "minLength": 1,
+          "title": "Directory Scope",
+          "type": "string"
+        },
+        "assignment_id": {
+          "minLength": 1,
+          "title": "Assignment Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "assignment_id"
+      ],
+      "title": "DirectoryRole",
+      "type": "object"
+    },
+    "DirectoryRolesSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/DirectoryRole"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "DirectoryRolesSection",
+      "type": "object"
+    },
     "EntityType": {
       "enum": [
         "service_principal",
@@ -51,6 +483,120 @@
       ],
       "title": "FindingCategory",
       "type": "string"
+    },
+    "GraphPermission": {
+      "additionalProperties": false,
+      "properties": {
+        "permission": {
+          "minLength": 1,
+          "title": "Permission",
+          "type": "string"
+        },
+        "assignment_id": {
+          "minLength": 1,
+          "title": "Assignment Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "permission",
+        "assignment_id"
+      ],
+      "title": "GraphPermission",
+      "type": "object"
+    },
+    "GraphPermissionsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/GraphPermission"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "GraphPermissionsSection",
+      "type": "object"
+    },
+    "IdentityRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "$ref": "#/$defs/ProfileSection"
+        },
+        "owners": {
+          "$ref": "#/$defs/OwnersSection"
+        },
+        "sponsors": {
+          "$ref": "#/$defs/SponsorsSection"
+        },
+        "credentials": {
+          "$ref": "#/$defs/CredentialsSection"
+        },
+        "graph_permissions": {
+          "$ref": "#/$defs/GraphPermissionsSection"
+        },
+        "directory_roles": {
+          "$ref": "#/$defs/DirectoryRolesSection"
+        },
+        "azure_roles": {
+          "$ref": "#/$defs/AzureRolesSection"
+        },
+        "activity": {
+          "$ref": "#/$defs/ActivitySection"
+        }
+      },
+      "required": [
+        "profile",
+        "owners",
+        "sponsors",
+        "credentials",
+        "graph_permissions",
+        "directory_roles",
+        "azure_roles",
+        "activity"
+      ],
+      "title": "IdentityRecord",
+      "type": "object"
     },
     "NHIEntity": {
       "additionalProperties": false,
@@ -125,6 +671,17 @@
           "additionalProperties": true,
           "title": "Raw Metadata",
           "type": "object"
+        },
+        "record": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdentityRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -135,9 +692,163 @@
       "title": "NHIEntity",
       "type": "object"
     },
+    "OwnersSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Accountable"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "OwnersSection",
+      "type": "object"
+    },
+    "ProfileSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "sign_in_audience": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sign In Audience"
+        },
+        "publisher_domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Publisher Domain"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ProfileSection",
+      "type": "object"
+    },
     "ScanMetadata": {
       "additionalProperties": false,
       "properties": {
+        "contract_version": {
+          "default": 1,
+          "enum": [
+            1,
+            2
+          ],
+          "title": "Contract Version",
+          "type": "integer"
+        },
         "scan_id": {
           "format": "uuid4",
           "title": "Scan Id",
@@ -153,7 +864,7 @@
           "type": "string"
         },
         "scanner_version": {
-          "default": "0.1.1",
+          "default": "0.2.0.dev0",
           "minLength": 1,
           "title": "Scanner Version",
           "type": "string"
@@ -190,6 +901,15 @@
       ],
       "title": "ScanMetadata",
       "type": "object"
+    },
+    "SectionStatus": {
+      "enum": [
+        "read",
+        "not_read",
+        "not_applicable"
+      ],
+      "title": "SectionStatus",
+      "type": "string"
     },
     "SecurityFinding": {
       "additionalProperties": false,
@@ -300,6 +1020,58 @@
         }
       },
       "title": "SeverityCounts",
+      "type": "object"
+    },
+    "SponsorsSection": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/SectionStatus"
+        },
+        "sources": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "read_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Read At"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Accountable"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "SponsorsSection",
       "type": "object"
     },
     "SummaryCounts": {

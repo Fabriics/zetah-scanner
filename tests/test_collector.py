@@ -267,3 +267,49 @@ def test_a_lasting_network_failure_is_a_collection_error(monkeypatch):
 
     with pytest.raises(collector.CollectionError, match="timed out"):
         _http_with(down, monkeypatch).get("/v1.0/x")
+
+
+# --------------------------------------------------------------------------- #
+# Identity record inputs (contract version 2)
+# --------------------------------------------------------------------------- #
+
+def test_owners_are_read_with_their_account_status_and_profiles_with_description():
+    assert "accountEnabled" in collector._OWNER_EXPAND
+    assert "accountEnabled" in collector._SPONSOR_SELECT
+    for select in (collector._APP_SELECT, collector._SP_SELECT):
+        assert {"description", "notes"} <= set(select.split(","))
+
+
+def test_each_read_records_when_it_finished(fake_backend):
+    from src.nhi_scanner import snapshot as s
+
+    snap = collector.collect()
+    assert {s.SRC_APPLICATIONS, s.SRC_SERVICE_PRINCIPALS, s.SRC_AGENT_IDENTITIES, s.SRC_SPONSORS,
+            s.SRC_GRAPH_PERMISSIONS, s.SRC_DIRECTORY_ROLES, s.SRC_AZURE_RBAC} <= set(snap.read_at)
+    assert s.SRC_SIGNIN_ACTIVITY not in snap.read_at  # denied in this fixture
+    assert all(t <= snap.collected_at for t in snap.read_at.values())
+    assert snap.owner_status_read
+
+
+def test_graph_refusing_the_fuller_query_falls_back_to_the_0_1_reads(monkeypatch):
+    _backend(monkeypatch)
+    inner = collector._Http.get
+
+    def picky(self, url, params=None):
+        if params and ("accountEnabled" in params.get("$expand", "") or "notes" in params.get("$select", "")):
+            raise collector.CollectionError(f"GET {url} -> 400: Bad Request")
+        return inner(self, url, params)
+
+    monkeypatch.setattr(collector._Http, "get", picky)
+    snap = collector.collect()
+    assert not snap.owner_status_read
+    assert any("Owner account status, descriptions and notes not read" in w for w in snap.warnings)
+    payload = run_scan(snap)  # the scan still completes
+    rec = next(e for e in payload.entities if e.display_name == "etl-runner").record
+    assert "not read" in rec.owners.note and "not read" in rec.profile.note
+
+
+def test_other_directory_errors_still_stop_the_scan(monkeypatch):
+    _backend(monkeypatch, forbidden=("/v1.0/applications",))
+    with pytest.raises(collector.CollectionError, match="Application.Read.All"):
+        collector.collect()

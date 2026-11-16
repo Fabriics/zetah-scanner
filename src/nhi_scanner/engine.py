@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .inventory import build_inventory
-from .models import ScanMetadata, SecurityFinding, Severity, SummaryCounts, ZetahScanPayload
+from .models import CONTRACT_VERSION, ScanMetadata, SecurityFinding, Severity, SummaryCounts, ZetahScanPayload
 from .rules import RuleConfig, build_context, run_rules
 from .snapshot import TenantSnapshot
 
@@ -52,6 +52,7 @@ def run_scan(
 
     payload = ZetahScanPayload(
         metadata=ScanMetadata(
+            contract_version=CONTRACT_VERSION,
             tenant_id=snap.tenant_id,
             scan_timestamp=now,
             hygiene_score=hygiene_score(findings),

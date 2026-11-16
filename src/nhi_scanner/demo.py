@@ -26,8 +26,13 @@ def _ts(d: datetime) -> str:
     return d.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+# Owners whose accounts are disabled: the people who left, still named as accountable.
+_DISABLED_USERS = {"growth@demo-corp.example"}
+
+
 def _user(upn: str) -> dict[str, Any]:
-    return {"@odata.type": "#microsoft.graph.user", "id": _id("user", upn), "userPrincipalName": upn}
+    return {"@odata.type": "#microsoft.graph.user", "id": _id("user", upn), "userPrincipalName": upn,
+            "accountEnabled": upn not in _DISABLED_USERS}
 
 
 def _publisher(name: Optional[str]) -> dict[str, Any]:

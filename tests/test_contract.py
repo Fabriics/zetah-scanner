@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
+from src.nhi_scanner import __version__
 from src.nhi_scanner.demo import DEMO_TENANT_ID, build_demo_snapshot
 from src.nhi_scanner.engine import hygiene_score, run_scan
 from src.nhi_scanner.models import (
@@ -33,7 +34,7 @@ def test_demo_payload_round_trips_through_json(payload):
     data = json.loads(raw)
     assert set(data) == {"metadata", "entities", "findings"}
     assert data["metadata"]["tenant_id"] == DEMO_TENANT_ID
-    assert data["metadata"]["scanner_version"] == "0.1.1"
+    assert data["metadata"]["scanner_version"] == __version__
     assert data["metadata"]["scan_timestamp"] == "2026-10-26T12:00:00Z"
 
 
