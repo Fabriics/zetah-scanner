@@ -269,7 +269,7 @@
           "title": "End"
         },
         "held_on": {
-          "pattern": "^(application|service_principal)$",
+          "pattern": "^(application|service_principal|resource)$",
           "title": "Held On",
           "type": "string"
         }
@@ -284,7 +284,8 @@
     "CredentialKind": {
       "enum": [
         "client_secret",
-        "certificate"
+        "certificate",
+        "api_key"
       ],
       "title": "CredentialKind",
       "type": "string"
@@ -528,7 +529,8 @@
         "service_principal",
         "app_registration",
         "managed_identity",
-        "ai_agent"
+        "ai_agent",
+        "api_key"
       ],
       "title": "EntityType",
       "type": "string"
@@ -558,6 +560,12 @@
           "default": 0,
           "minimum": 0,
           "title": "Ai Agent",
+          "type": "integer"
+        },
+        "api_key": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Api Key",
           "type": "integer"
         }
       },

@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from .models import EntityType, NHIEntity
-from .record import application_record, build_index, service_principal_record
+from .record import api_key_record, application_record, build_index, service_principal_record
 from .snapshot import TenantSnapshot, parse_graph_datetime
 
 MICROSOFT_TENANTS = {
@@ -190,6 +190,24 @@ def build_inventory(snap: TenantSnapshot) -> Inventory:
                     "certificate_credential_count": len(app.get("keyCredentials") or []),
                 },
                 record=application_record(snap, app, has_local_sp=sp is not None),
+            )
+        )
+
+    for account in snap.ai_accounts or []:
+        entities.append(
+            NHIEntity(
+                entity_id=account["id"],
+                display_name=f"{account['name']} (keys)",
+                entity_type=EntityType.API_KEY,
+                is_enabled=not account.get("disable_local_auth"),
+                raw_metadata={
+                    "is_azure_resource": True, "resource_id": account["id"], "kind": account.get("kind"),
+                    "location": account.get("location"), "endpoint": account.get("endpoint"),
+                    "local_auth_enabled": not account.get("disable_local_auth"),
+                    "public_network_access": account.get("public_network_access"),
+                    "network_default_action": account.get("network_default_action"),
+                },
+                record=api_key_record(snap, account),
             )
         )
 

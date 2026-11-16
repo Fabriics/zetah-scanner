@@ -50,6 +50,7 @@ def test_clean_tenant_and_missing_data_render(tmp_path):
     snap.signin_activity = None
     snap.azure_role_assignments = None
     snap.mi_federated_credentials = None  # read through Azure, which this tenant does not scan
+    snap.ai_accounts = None
     snap.warnings = ["Sign-in activity unavailable (needs AuditLog.Read.All and Entra ID P1)"]
     payload = run_scan(snap, now=NOW)
     assert payload.findings == []

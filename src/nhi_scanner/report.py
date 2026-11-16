@@ -23,6 +23,7 @@ TYPE_LABEL = {
     EntityType.APP_REGISTRATION: "App registration",
     EntityType.MANAGED_IDENTITY: "Managed identity",
     EntityType.AI_AGENT: "AI agent",
+    EntityType.API_KEY: "API keys",
 }
 
 

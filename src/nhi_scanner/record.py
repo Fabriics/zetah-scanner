@@ -36,6 +36,7 @@ from .models import (
 )
 from .snapshot import (
     SRC_AGENT_IDENTITIES,
+    SRC_AI_ACCOUNTS,
     SRC_APPLICATIONS,
     SRC_AZURE_RBAC,
     SRC_DELEGATED_GRANTS,
@@ -205,6 +206,33 @@ def application_record(snap: TenantSnapshot, app: dict[str, Any], has_local_sp: 
             snap, app.get("appId"),
             None if has_local_sp else "No service principal in this tenant: it signs in to other tenants only.",
         ),
+    )
+
+
+def api_key_record(snap: TenantSnapshot, account: dict[str, Any]) -> IdentityRecord:
+    """Record of an Azure OpenAI or AI Services account seen as what its keys are: a shared static identity."""
+    na = lambda note: {"status": NOT_APPLICABLE, "note": note}  # noqa: E731
+    keys_live = not account.get("disable_local_auth")
+    reach = ("public network access enabled" if account.get("public_network_access") != "Disabled" else "public network access disabled")
+    return IdentityRecord(
+        profile=ProfileSection(**_read(snap, SRC_AI_ACCOUNTS),
+                               description=f"{account.get('kind')} account in {account.get('location')}",
+                               note=f"Endpoint {account.get('endpoint') or 'not stated'}; {reach}; "
+                                    f"network default action {account.get('network_default_action') or 'not set'}."),
+        owners=OwnersSection(**na("Azure resources have no owner field: accountability comes from tags or role assignments.")),
+        sponsors=SponsorsSection(status=NOT_APPLICABLE),
+        credentials=CredentialsSection(
+            **_read(snap, SRC_AI_ACCOUNTS),
+            items=[Credential(kind="api_key", display_name=k, held_on="resource") for k in ("key1", "key2")] if keys_live else [],
+            note=("Two account keys accept requests while local authentication is enabled. Their values and age are never "
+                  "read." if keys_live else "Local authentication is disabled: the account keys cannot authenticate."),
+        ),
+        federated_credentials=FederatedCredentialsSection(**na("Not applicable to resource keys.")),
+        graph_permissions=GraphPermissionsSection(**na("Not applicable to resource keys.")),
+        delegated_permissions=DelegatedPermissionsSection(**na("Not applicable to resource keys.")),
+        directory_roles=DirectoryRolesSection(**na("Not applicable to resource keys.")),
+        azure_roles=AzureRolesSection(**na("The identities that can read these keys are listed in the finding.")),
+        activity=ActivitySection(status=NOT_READ, note="Key usage is in the account's diagnostic logs, which are not read."),
     )
 
 

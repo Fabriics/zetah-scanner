@@ -24,6 +24,7 @@ SRC_SPONSORS = "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/s
 SRC_GRAPH_PERMISSIONS = "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
 SRC_DELEGATED_GRANTS = "GET /v1.0/oauth2PermissionGrants"
 SRC_FEDERATED_APPS = "GET /v1.0/applications/{id}/federatedIdentityCredentials"
+SRC_AI_ACCOUNTS = "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
 SRC_FEDERATED_MI = "GET ARM .../userAssignedIdentities/{name}/federatedIdentityCredentials"
 SRC_DIRECTORY_ROLES = "GET /v1.0/roleManagement/directory/roleAssignments"
 SRC_SIGNIN_ACTIVITY = "GET /beta/reports/servicePrincipalSignInActivities"
@@ -95,6 +96,9 @@ class TenantSnapshot:
     # user-assigned managed identity principalId (its service principal id) -> its federated credentials from ARM,
     # flattened to {"id", "name", "issuer", "subject", "audiences", "identity_id"}. None when not read.
     mi_federated_credentials: Optional[dict[str, list[dict[str, Any]]]] = None
+    # Azure OpenAI and AI Services accounts, flattened to {"id", "name", "kind", "location", "endpoint", "sku",
+    # "disable_local_auth", "public_network_access", "network_default_action"}. None when Azure was not read.
+    ai_accounts: Optional[list[dict[str, Any]]] = None
 
     def read_time(self, source: str) -> datetime:
         return self.read_at.get(source, self.collected_at)
