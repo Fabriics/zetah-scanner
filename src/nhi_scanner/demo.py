@@ -185,6 +185,29 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         consent(nimbus, arm, "user_impersonation", "cfo@demo-corp.example"),
     ]
 
+    # --- federated credentials (workload identity federation) ------------- #
+    github = "https://token.actions.githubusercontent.com"
+
+    def fic(name: str, subject: object, issuer: str = github) -> dict[str, Any]:
+        return {"id": _id("fic", name), "name": name, "issuer": issuer, "subject": subject,
+                "audiences": ["api://AzureADTokenExchange"]}
+
+    app_fic: dict[str, list[dict[str, Any]]] = {a["id"]: [] for a in apps}
+    # the pipeline deploys from any pull request, and holds Contributor and User Access Administrator
+    app_fic[_id("app", "ci-deploy-pipeline")] = [fic("github-prs", "repo:demo-corp/infra:pull_request"),
+                                                 fic("github-main", "repo:demo-corp/infra:ref:refs/heads/main")]
+    app_fic[_id("app", "Identity Automation")] = [fic("github-prod", "repo:demo-corp/iam-automation:environment:production")]
+    app_fic[_id("app", "payments-api")] = [fic("github-main", "repo:demo-corp/payments:ref:refs/heads/main")]
+    # flexible credential: Graph v1.0 returns no subject for it
+    app_fic[_id("app", "marketing-analytics-poc")] = [fic("github-any-branch", None)]
+    mi_resource = {sp["id"]: next((n for n in sp["alternativeNames"] if n.startswith("/subscriptions/")), "")
+                   for sp in sps if sp["servicePrincipalType"] == "ManagedIdentity"}
+    mi_fic = {
+        mi_aks: [dict(fic("aks-payments-api", "system:serviceaccount:payments:api",
+                          "https://oidc.prod-aks.azure.com/00000000-0000-4000-8000-0000000000a1/"), identity_id=mi_resource[mi_aks])],
+        mi_agent: [dict(fic("github-dev", "repo:demo-corp/research-agent:ref:refs/heads/dev"), identity_id=mi_resource[mi_agent])],
+    }
+
     # --- Entra directory roles --------------------------------------------- #
     role_defs = {
         "e8611ab8-c189-46e8-94e1-60213ab1f814": {"displayName": "Privileged Role Administrator",
@@ -236,4 +259,6 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         azure_role_assignments=azure,
         warnings=[],
         delegated_permission_grants=delegated,
+        app_federated_credentials=app_fic,
+        mi_federated_credentials=mi_fic,
     )

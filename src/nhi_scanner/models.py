@@ -219,6 +219,23 @@ class CredentialsSection(_Section):
     items: list[Credential] = Field(default_factory=list)
 
 
+class FederatedCredential(_Contract):
+    """Trust in an external identity provider (workload identity federation): no secret exists, but whoever can
+    obtain a token from ``issuer`` with this ``subject`` signs in as the identity."""
+
+    id: Optional[str] = None
+    name: Optional[str] = None
+    issuer: NonEmptyStr
+    # None for a flexible credential, whose matching expression Microsoft Graph v1.0 does not return
+    subject: Optional[str] = None
+    audiences: list[str] = Field(default_factory=list)
+    held_on: Annotated[str, StringConstraints(pattern=r"^(application|managed_identity)$")]
+
+
+class FederatedCredentialsSection(_Section):
+    items: list[FederatedCredential] = Field(default_factory=list)
+
+
 class GraphPermission(_Contract):
     permission: NonEmptyStr
     assignment_id: NonEmptyStr
@@ -282,6 +299,7 @@ class IdentityRecord(_Contract):
     owners: OwnersSection
     sponsors: SponsorsSection
     credentials: CredentialsSection
+    federated_credentials: FederatedCredentialsSection
     graph_permissions: GraphPermissionsSection
     delegated_permissions: DelegatedPermissionsSection
     directory_roles: DirectoryRolesSection

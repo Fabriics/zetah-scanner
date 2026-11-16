@@ -23,6 +23,8 @@ SRC_AGENT_IDENTITIES = "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentit
 SRC_SPONSORS = "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
 SRC_GRAPH_PERMISSIONS = "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
 SRC_DELEGATED_GRANTS = "GET /v1.0/oauth2PermissionGrants"
+SRC_FEDERATED_APPS = "GET /v1.0/applications/{id}/federatedIdentityCredentials"
+SRC_FEDERATED_MI = "GET ARM .../userAssignedIdentities/{name}/federatedIdentityCredentials"
 SRC_DIRECTORY_ROLES = "GET /v1.0/roleManagement/directory/roleAssignments"
 SRC_SIGNIN_ACTIVITY = "GET /beta/reports/servicePrincipalSignInActivities"
 SRC_AZURE_RBAC = "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/roleAssignments"
@@ -86,6 +88,13 @@ class TenantSnapshot:
     # (consentType "AllPrincipals") or for one user ("Principal"). None when they could not be read;
     # the consent rules are then skipped.
     delegated_permission_grants: Optional[list[dict[str, Any]]] = None
+    # Federated identity credentials (workload identity federation, e.g. GitHub Actions OIDC):
+    # application object id -> its credentials, as GET /v1.0/applications/{id}/federatedIdentityCredentials returns
+    # them. None when they could not be read; the federation rule then skips app registrations.
+    app_federated_credentials: Optional[dict[str, list[dict[str, Any]]]] = None
+    # user-assigned managed identity principalId (its service principal id) -> its federated credentials from ARM,
+    # flattened to {"id", "name", "issuer", "subject", "audiences", "identity_id"}. None when not read.
+    mi_federated_credentials: Optional[dict[str, list[dict[str, Any]]]] = None
 
     def read_time(self, source: str) -> datetime:
         return self.read_at.get(source, self.collected_at)
