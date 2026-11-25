@@ -33,6 +33,7 @@ EXPECTED = {
     "NHI-PERM-001": ["NHI5:2025"],
     "NHI-PERM-002": ["NHI5:2025"],
     "NHI-PERM-003": ["NHI5:2025"],
+    "NHI-PERM-004": ["NHI3:2025", "NHI5:2025"],  # a vendor holds the credentials, and the reach is tenant-wide
     "NHI-RBAC-001": ["NHI5:2025"],
     "NHI-RBAC-002": ["NHI5:2025"],
     "NHI-AGENT-001": ["NHI1:2025"],

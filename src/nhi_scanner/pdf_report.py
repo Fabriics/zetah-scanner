@@ -41,6 +41,7 @@ from .engine import CRITICAL_CEILING, SCORE_PENALTIES
 from .models import EntityType, FindingCategory, NHIEntity, SectionStatus, SecurityFinding, Severity, ZetahScanPayload
 from .readiness import agent_readiness
 from .rules import RULES
+from .vendors import Vendor, summary_line, vendor_view
 
 # --------------------------------------------------------------------------- #
 # Design tokens
@@ -982,6 +983,58 @@ class _Report:
             out += [CondPageBreak(45 * mm), *block]
         return out
 
+    def vendors(self) -> list[Flowable]:
+        vendors = vendor_view(self.p)
+        if not vendors:
+            return []
+        out = self.h1(
+            "Third-party apps by vendor",
+            "Apps published by other organizations, grouped by the tenant that holds their credentials. Those "
+            "credentials cannot be seen or rotated from here: if a vendor is breached, everything in its group is "
+            "exposed at once.")
+        out += [self.para(_t(summary_line(vendors) or "")), Spacer(1, 8)]
+        w = CONTENT_W
+        widths = [w * 0.24, w * 0.15, w * 0.45, w * 0.16]
+        rows: list[list[Any]] = []
+        header_rows: list[int] = []
+        for v in vendors:
+            header_rows.append(len(rows) + 1)
+            rows.append([self.para(self._vendor_label(v), "cell"), "", "", ""])
+            for a in v.apps:
+                e = a.entity
+                last = ("n/a" if not self.signins_known else (_date(e.last_sign_in) if e.last_sign_in else "Never"))
+                status = f"{'Enabled' if e.is_enabled else '<b>Disabled</b>'}<br/>Last sign-in {_t(last)}"
+                if a.permissions is None:
+                    perms = "Not read in this scan"
+                elif not a.permissions:
+                    perms = f"<font color='{_hex(MUTED)}'>None tenant-wide</font>"
+                else:
+                    perms = "<br/>".join(
+                        (f"<font color='{_hex(SEV_COLOR[Severity.CRITICAL])}'><b>{_t(p.permission)}</b> (write)</font>"
+                         if p.write else _t(p.permission)) + f" <font size=6 color='{_hex(MUTED)}'>{_t(p.api)}</font>"
+                        for p in a.permissions)
+                consents = ("None" if not a.delegated_scopes else
+                            f"{a.delegated_scopes} scope(s)" + ("<br/>for all users" if a.delegated_all_users else ""))
+                rows.append([self.para(self.entity_label(e), "cell"), self.para(status, "cell"),
+                             self.para(perms, "cell"), self.para(consents, "cell")])
+        style = [s for r in header_rows for s in (
+            ("SPAN", (0, r), (-1, r)), ("BACKGROUND", (0, r), (-1, r), PANEL),
+            ("LINEABOVE", (0, r), (-1, r), 0.8, NAVY_2))]
+        out.append(self.data_table(["Vendor / app", "Status", "Tenant-wide application permissions",
+                                    "Delegated consents"], rows, widths, zebra=False, extra_style=style))
+        out += [Spacer(1, 6), self.para(
+            "Application permissions are read on Microsoft Graph, Exchange Online and SharePoint Online. Write "
+            "permissions can change data or send mail on behalf of the organization. Delegated consents act as the "
+            "user who signs in, within that user's own access.", "small")]
+        return out
+
+    def _vendor_label(self, v: Vendor) -> str:
+        name = ", ".join(v.publishers) or "No verified publisher"
+        worst = v.worst
+        tail = (f" · <font color='{_hex(SEV_COLOR[worst])}'><b>{worst.value}</b></font>" if worst else "")
+        return (f"<b>{_t(name)}</b> · {len(v.apps)} app(s){tail}<br/>"
+                f"<font size=6 color='{_hex(MUTED)}'>Publisher tenant {_t(v.tenant_id)}</font>")
+
     def inventory(self) -> list[Flowable]:
         out = self.h1("Non-human identity inventory",
                       f"All {len(self.p.entities)} identities in scope, as observed at scan time.")
@@ -1161,9 +1214,11 @@ class _Report:
         ])
         story: list[Flowable] = [NextPageTemplate("body"), Spacer(1, 1), PageBreak()]
         for section in (self.executive_summary, self.agent_id_readiness, self.risk_overview, self.remediation_plan,
-                        self.detailed_findings, self.inventory, self.methodology):
-            story += section()
-            story.append(PageBreak())
+                        self.detailed_findings, self.vendors, self.inventory, self.methodology):
+            part = section()
+            if part:
+                story += part
+                story.append(PageBreak())
         story.pop()
         doc.build(story, canvasmaker=functools.partial(_NumberedCanvas, decorate=self.decorate))
 

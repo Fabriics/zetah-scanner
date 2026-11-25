@@ -17,8 +17,9 @@ from typing import Any, Callable, Optional
 
 from .inventory import Inventory
 from .owasp import order as owasp_order
+from .vendors import is_third_party
 from .models import EntityType, FindingCategory, NHIEntity, SecurityFinding, Severity
-from .snapshot import TenantSnapshot
+from .snapshot import EXCHANGE_ONLINE_APP_ID, RESOURCE_APIS, SHAREPOINT_ONLINE_APP_ID, TenantSnapshot
 from .snapshot import credential_metadata as _credentials
 
 GRAPH_API = "https://graph.microsoft.com/v1.0"
@@ -62,6 +63,29 @@ HIGH_IMPACT_GRAPH_PERMISSIONS: dict[str, str] = {
     "Contacts.ReadWrite": "read and modify every contact list",
     "Notes.ReadWrite.All": "read and modify every OneNote notebook",
 }
+
+# Application permissions on Exchange Online and SharePoint Online with tenant-wide reach. Graph is not the only door
+# to mail and files: these APIs grant the same reach under their own names.
+HIGH_IMPACT_RESOURCE_PERMISSIONS: dict[str, dict[str, str]] = {
+    EXCHANGE_ONLINE_APP_ID: {
+        "full_access_as_app": "read, change and send mail in every mailbox through Exchange Web Services",
+        "Exchange.ManageAsApp": "run Exchange Online administration with the Entra roles it holds",
+        "Mail.ReadWrite": "read and modify every mailbox",
+        "Mail.Read": "read every mailbox in the tenant",
+        "Mail.Send": "send mail as any user",
+        "Calendars.ReadWrite.All": "read and modify every calendar",
+        "Contacts.ReadWrite": "read and modify every contact list",
+    },
+    SHAREPOINT_ONLINE_APP_ID: {
+        "Sites.FullControl.All": "full control of every SharePoint site",
+        "Sites.Manage.All": "create and delete lists and libraries on every site",
+        "Sites.ReadWrite.All": "read and write every SharePoint site",
+        "Sites.Read.All": "read every SharePoint site",
+        "User.ReadWrite.All": "modify every user profile in SharePoint",
+        "TermStore.ReadWrite.All": "change the managed metadata of every site",
+    },
+}
+_WRITE_MARKERS = ("ReadWrite", "Send", "FullControl", "Manage", "full_access")
 
 # Agent "excessive agency": permissions that let an agent act, not just read.
 AGENT_ACTION_PERMISSIONS = {
@@ -142,6 +166,8 @@ class RuleContext:
     inv: Inventory
     cfg: RuleConfig
     graph_perms: dict[str, list[dict[str, str]]] = field(default_factory=dict)  # spId -> [{permission, assignment_id}]
+    # spId -> application permissions on Exchange Online and SharePoint Online: [{api_app_id, permission, assignment_id}]
+    resource_perms: dict[str, list[dict[str, str]]] = field(default_factory=dict)
     dir_roles: dict[str, list[dict[str, Any]]] = field(default_factory=dict)  # spId -> [{role, severity, ...}]
     azure_roles: dict[str, list[dict[str, Any]]] = field(default_factory=dict)  # spId -> [{role, scope, level, id}]
     privileged_sp_ids: set[str] = field(default_factory=set)
@@ -184,6 +210,16 @@ def build_context(snap: TenantSnapshot, inv: Inventory, cfg: RuleConfig, now: da
         if name:
             perms[a["principalId"]].append({"permission": name, "assignment_id": a["id"]})
     ctx.graph_perms = dict(perms)
+
+    rperms: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for api, assignments in (snap.resource_app_role_assignments or {}).items():
+        names = snap.resource_app_roles.get(api, {})
+        for a in assignments or []:
+            # an app role the API no longer lists is still a grant: keep its id
+            rperms[a["principalId"]].append({
+                "api_app_id": api, "permission": names.get(a["appRoleId"]) or a["appRoleId"], "assignment_id": a["id"],
+            })
+    ctx.resource_perms = dict(rperms)
 
     roles: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for a in snap.directory_role_assignments or []:
@@ -1094,6 +1130,102 @@ def privileged_directory_roles(ctx: RuleContext) -> list[SecurityFinding]:
 # --------------------------------------------------------------------------- #
 # azure_rbac_privilege
 # --------------------------------------------------------------------------- #
+
+
+def _is_write(permission: str) -> bool:
+    return permission in TIER0_GRAPH_PERMISSIONS or any(m in permission for m in _WRITE_MARKERS)
+
+
+def _vendor_permissions(ctx: RuleContext, sp_id: str) -> list[dict[str, Any]]:
+    """Every application permission of a service principal, on Graph and on the other APIs read, judged one by one."""
+    out = []
+    for p in ctx.graph_perms.get(sp_id, []):
+        name = p["permission"]
+        if name in TIER0_GRAPH_PERMISSIONS:
+            impact, sev, why = "tenant_takeover", Severity.CRITICAL, TIER0_GRAPH_PERMISSIONS[name]
+        elif name in HIGH_IMPACT_GRAPH_PERMISSIONS:
+            impact, sev, why = "tenant_wide_data", Severity.HIGH, HIGH_IMPACT_GRAPH_PERMISSIONS[name]
+        else:
+            impact, sev, why = "tenant_wide", Severity.MEDIUM, None
+        out.append({"api": "Microsoft Graph", "permission": name, "write": _is_write(name), "impact": impact,
+                    "severity": sev, "why": why, "assignment_id": p["assignment_id"]})
+    for p in ctx.resource_perms.get(sp_id, []):
+        api, name = p["api_app_id"], p["permission"]
+        why = HIGH_IMPACT_RESOURCE_PERMISSIONS.get(api, {}).get(name)
+        impact, sev = ("tenant_wide_data", Severity.HIGH) if why else ("tenant_wide", Severity.MEDIUM)
+        out.append({"api": RESOURCE_APIS[api], "permission": name, "write": _is_write(name), "impact": impact,
+                    "severity": sev, "why": why, "assignment_id": p["assignment_id"]})
+    return sorted(out, key=lambda p: (-p["severity"].rank, p["api"], p["permission"]))
+
+
+@rule(
+    "NHI-PERM-004", FindingCategory.EXCESSIVE_GRAPH_PERMISSIONS, requires="graph_permissions",
+    title="Third-party app with tenant-wide access",
+    action="Confirm with the vendor what the service needs, then revoke the rest",
+    owasp=("NHI3:2025", "NHI5:2025"),
+)
+def third_party_tenant_wide_access(ctx: RuleContext) -> list[SecurityFinding]:
+    entities = [e for e in _sp_entities(ctx) if is_third_party(e)]
+    by_vendor: dict[str, list[str]] = defaultdict(list)
+    for e in entities:
+        by_vendor[e.raw_metadata.get("appOwnerOrganizationId")].append(e.display_name)
+    not_read = sorted(RESOURCE_APIS[api] for api, v in (ctx.snap.resource_app_role_assignments or {}).items() if v is None)
+    if ctx.snap.resource_app_role_assignments is None:
+        not_read = sorted(RESOURCE_APIS.values())
+
+    out = []
+    for entity in entities:
+        perms = _vendor_permissions(ctx, entity.entity_id)
+        if not perms:
+            continue
+        sev = max((p["severity"] for p in perms), key=lambda s: s.rank)
+        vendor = entity.raw_metadata.get("appOwnerOrganizationId")
+        publisher = entity.raw_metadata.get("verifiedPublisher")
+        writes = [f"{p['permission']} ({p['api']})" for p in perms if p["write"]]
+        listed = [f"{p['permission']} ({p['api']})" for p in perms]
+        reach = [p["why"] for p in perms if p["why"]]
+        siblings = sorted(n for n in by_vendor[vendor] if n != entity.display_name)
+        out.append(ctx.finding(
+            entity, "NHI-PERM-004",
+            category=FindingCategory.EXCESSIVE_GRAPH_PERMISSIONS,
+            severity=sev,
+            title=f"Third-party app with tenant-wide access: {', '.join(listed[:3])}"
+                  + (f" and {len(listed) - 3} more" if len(listed) > 3 else ""),
+            description=(
+                f"'{entity.display_name}' is published by another organization (tenant {vendor}"
+                + (f", verified publisher {publisher}" if publisher else ", no verified publisher") + ") "
+                f"and holds {len(perms)} application permission(s) valid across this tenant"
+                + (f", {len(writes)} of them able to write or send: {', '.join(writes)}" if writes else "")
+                + ". Its credentials live in the publisher's tenant: they cannot be seen, rotated or revoked from here."
+            ),
+            attack_path_context=(
+                "If the vendor is breached, the attacker signs in as this app with credentials that never pass "
+                "through this tenant, with no user, no MFA and no Conditional Access for users in the way"
+                + "." + (" What this app can do: " + "; ".join(reach) + "." if reach else "")
+                + (f" The same vendor also publishes {', '.join(siblings)} in this tenant." if siblings else "")
+                + (" The app is disabled, so it cannot sign in until someone enables it." if not entity.is_enabled else "")
+            ),
+            remediation_cli="\n".join([
+                "# 1. Ask the vendor which of these permissions the service needs, and why.",
+                "# 2. Revoke the rest. Revoking breaks the vendor's integration if it still uses them:",
+                *(_hold(line) for line in _revoke_app_roles(entity.entity_id, perms).splitlines()),
+                "# 3. If the service is no longer used, disable it (reversible with accountEnabled=true):",
+                _hold(f"az ad sp update --id {entity.entity_id} --set accountEnabled=false"),
+            ]),
+            evidence={
+                "vendor_tenant_id": vendor,
+                "verified_publisher": publisher,
+                "permissions": [{k: (v.value if isinstance(v, Severity) else v) for k, v in p.items() if k != "why"}
+                                for p in perms],
+                "write_permissions": writes,
+                "account_enabled": entity.is_enabled,
+                "last_sign_in": _iso(entity.last_sign_in),
+                "sign_in_read": ctx.snap.signin_activity is not None,
+                "other_apps_from_vendor": siblings,
+                "apis_not_read": not_read,
+            },
+        ))
+    return out
 
 
 @rule(

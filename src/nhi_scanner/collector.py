@@ -23,6 +23,7 @@ from requests.compat import urlsplit  # the read-only test bans urllib imports: 
 
 from .snapshot import (
     AGENT_ID_UNREADABLE,
+    RESOURCE_APIS,
     SRC_AGENT_IDENTITIES,
     SRC_APPLICATIONS,
     SRC_AZURE_RBAC,
@@ -32,6 +33,7 @@ from .snapshot import (
     SRC_FEDERATED_APPS,
     SRC_FEDERATED_MI,
     SRC_GRAPH_PERMISSIONS,
+    SRC_RESOURCE_PERMISSIONS,
     SRC_SERVICE_PRINCIPALS,
     SRC_SIGNIN_ACTIVITY,
     SRC_SPONSORS,
@@ -247,6 +249,27 @@ def collect(
     else:
         warnings.append("Microsoft Graph service principal not found; permission rules skipped.")
 
+    progress("Exchange Online and SharePoint Online application permissions")
+    resource_assignments: dict[str, Optional[list[dict[str, Any]]]] = {}
+    resource_roles: dict[str, dict[str, str]] = {}
+    for app_id, name in RESOURCE_APIS.items():
+        resource = next((sp for sp in sps if sp.get("appId") == app_id), None)
+        if resource is None:
+            resource_assignments[app_id] = []  # not in the tenant: nothing can be granted on it
+            continue
+        try:
+            full = graph.get(f"/v1.0/servicePrincipals/{resource['id']}", {"$select": "appRoles"})
+            resource_roles[app_id] = {r["id"]: r["value"] for r in full.get("appRoles", []) if r.get("value")}
+            resource_assignments[app_id] = [
+                a for a in graph.paged(f"/v1.0/servicePrincipals/{resource['id']}/appRoleAssignedTo")
+                if a.get("principalType") == "ServicePrincipal"
+            ]
+        except CollectionError as exc:
+            resource_assignments[app_id] = None
+            warnings.append(f"{name} application permissions not read (needs Application.Read.All). [{exc}]")
+    if any(v is not None for v in resource_assignments.values()):
+        read_at[SRC_RESOURCE_PERMISSIONS] = _now()
+
     progress("Federated credentials of app registrations")
     app_fic: Optional[dict[str, list[dict[str, Any]]]] = {}
     try:
@@ -355,6 +378,8 @@ def collect(
         service_principals=sps,
         graph_app_role_assignments=graph_assignments,
         graph_app_roles=graph_roles,
+        resource_app_role_assignments=resource_assignments,
+        resource_app_roles=resource_roles,
         directory_role_assignments=role_assignments,
         directory_role_definitions=role_defs,
         signin_activity=signin,
