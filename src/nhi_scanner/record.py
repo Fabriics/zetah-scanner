@@ -299,7 +299,8 @@ def service_principal_record(
     else:
         perms = GraphPermissionsSection(
             **_read(snap, SRC_GRAPH_PERMISSIONS), items=index.graph_permissions.get(sp_id, []),
-            note="Application permissions on Microsoft Graph only: other APIs are not read yet.",
+            note="Application permissions on Microsoft Graph only. Those on Exchange Online and SharePoint Online are "
+                 "read for third-party apps (NHI-PERM-004) but not listed here yet; other APIs are not read.",
         )
     if snap.delegated_permission_grants is None:
         consents = DelegatedPermissionsSection(status=NOT_READ, note="Delegated permission grants could not be read.")

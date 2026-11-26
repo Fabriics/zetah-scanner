@@ -13,6 +13,7 @@ from rich.table import Table
 from rich.text import Text
 
 from .models import EntityType, Severity, ZetahScanPayload
+from .vendors import summary_line, vendor_view
 
 _CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 
@@ -103,6 +104,9 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
             Text(str(len(sevs)), style=SEVERITY_STYLE[worst]) if worst else Text("0", style="green"),
         )
     console.print(ent)
+    vendors = summary_line(vendor_view(payload))
+    if vendors:
+        console.print(f"Third-party vendors: {escape(vendors)} The PDF groups them by vendor.")
 
     if not payload.findings:
         console.print("[bold green]No findings. Clean tenant.[/]")

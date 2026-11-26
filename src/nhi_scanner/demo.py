@@ -131,6 +131,11 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
                           app_id="00000003-0000-0000-c000-000000000000", publisher="Microsoft Services")
     arm = external_sp("Windows Azure Service Management API", "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
                       app_id="797f4846-ba00-4fd7-ba43-dac1f8f63013", publisher="Microsoft Services")
+    sharepoint = external_sp("Office 365 SharePoint Online", "f8cdef31-a31e-4b4a-93e4-5f571e91255a",
+                             app_id="00000003-0000-0ff1-ce00-000000000000", publisher="Microsoft Services")
+    # The same vendor's second app: a breach at Acme reaches both
+    backup_sp = external_sp("Acme Backup for SharePoint", "4c1e2a6b-0000-4000-8000-0000000acbe0",
+                            publisher="Acme Backup Inc.")
     # A third-party AI assistant that users connected to their mail and files themselves
     nimbus = external_sp("Nimbus AI Assistant", "6d2b9c41-0000-4000-8000-0000000a1a10", publisher="Nimbus Labs")
     mi_func = managed_identity("func-invoice-processor", user_assigned=False,
@@ -164,6 +169,20 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
          "appRoleId": _id("approle", p), "resourceId": _id("sp", "Microsoft Graph")}
         for sp, plist in grants.items() for p in plist
     ]
+
+    # --- application permissions on Exchange Online and SharePoint Online --- #
+    resource_grants = {
+        "00000002-0000-0ff1-ce00-000000000000": (exo, {backup: ["full_access_as_app"]}),
+        "00000003-0000-0ff1-ce00-000000000000": (sharepoint, {backup_sp: ["Sites.FullControl.All", "User.Read.All"]}),
+    }
+    resource_roles = {api: {_id("approle", api, p): p for plist in g.values() for p in plist}
+                      for api, (_, g) in resource_grants.items()}
+    resource_assignments = {
+        api: [{"id": _id("ara", sp, api, p), "principalId": sp, "principalType": "ServicePrincipal",
+               "appRoleId": _id("approle", api, p), "resourceId": res}
+              for sp, plist in g.items() for p in plist]
+        for api, (res, g) in resource_grants.items()
+    }
 
     # --- delegated permission grants (consents) ---------------------------- #
     def consent(client: str, resource: str, scope: str, user: Optional[str] = None) -> dict[str, Any]:
@@ -261,7 +280,7 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
 
     # --- sign-in activity (appId -> last sign-in; absent = never) ---------- #
     by_sp = {sp["id"]: sp["appId"] for sp in sps}
-    last_seen = {ci: 0, hr: 240, fin: 1, helpdesk: 3, idauto: 2, payments: 0, spmig: 4, backup: 0, exo: 0,
+    last_seen = {ci: 0, hr: 240, fin: 1, helpdesk: 3, idauto: 2, payments: 0, spmig: 4, backup: 0, backup_sp: 6, exo: 0,
                  nimbus: 0, mi_func: 0, mi_aks: 0, mi_agent: 1}
     signin = {by_sp[sp]: now - timedelta(days=d, hours=3) for sp, d in last_seen.items()}
 
@@ -273,6 +292,8 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         service_principals=sps,
         graph_app_role_assignments=graph_assignments,
         graph_app_roles=graph_roles,
+        resource_app_role_assignments=resource_assignments,
+        resource_app_roles=resource_roles,
         directory_role_assignments=dir_assignments,
         directory_role_definitions=role_defs,
         signin_activity=signin,

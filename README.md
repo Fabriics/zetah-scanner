@@ -75,7 +75,7 @@ Microsoft Graph **read** permissions for the scanning identity (application or d
 
 | Permission | Used for |
 |---|---|
-| `Application.Read.All` | app registrations, service principals, their credentials (secrets, certificates and federated credentials), owners, descriptions and notes |
+| `Application.Read.All` | app registrations, service principals, their credentials (secrets, certificates and federated credentials), owners, descriptions and notes, and the application permissions granted on Microsoft Graph, Exchange Online and SharePoint Online |
 | `Directory.Read.All` | directory objects, the delegated permissions consented to each app (`oauth2PermissionGrants`), and the name of consenting users who hold an Entra role |
 | `RoleManagement.Read.Directory` | Entra roles held by service principals, and by users who consented to an app |
 | `AuditLog.Read.All` (+ Entra ID P1) | last sign-in of each service principal (dormancy rules; they are skipped when the report is unavailable or empty) |
@@ -112,6 +112,7 @@ affected rules are skipped, never guessed.
 | NHI-PERM-001 | Graph permissions that allow tenant takeover | NHI5 |
 | NHI-PERM-002 | tenant-wide data access (mail, files, chats...) | NHI5 |
 | NHI-PERM-003 | privileged Entra directory roles | NHI5 |
+| NHI-PERM-004 | third-party app (published by another organization, credentials in its tenant) with application permissions valid across the tenant on Microsoft Graph, Exchange Online or SharePoint Online: critical with tenant-takeover permissions, high with mail, files or sites, medium otherwise | NHI3, NHI5 |
 | NHI-RBAC-001 | Owner / User Access Administrator / RBAC Administrator in Azure | NHI5 |
 | NHI-RBAC-002 | Contributor at subscription or management-group scope | NHI5 |
 | NHI-AGENT-001 | AI agent with no owner and no sponsor | NHI1 |

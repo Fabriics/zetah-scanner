@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+**Third-party apps by vendor (T-34).** Apps published by another organization sign in with credentials that live in
+the publisher's tenant: they cannot be seen, rotated or revoked from yours. The PDF has a new section that groups them
+by the tenant that holds those credentials, with each app's status, last sign-in, tenant-wide application permissions
+(those that can write or send highlighted) and delegated consents. The console prints a one-line summary.
+
+**New check**
+- `NHI-PERM-004`: a third-party app with application permissions valid across the tenant. Critical with a
+  tenant-takeover Graph permission, high with mail, files or sites, medium otherwise. The finding names the vendor's
+  tenant and verified publisher, the other apps of the same vendor, the account status and the last sign-in. Every
+  suggested command is commented out: revoking breaks the vendor's integration. OWASP NHI3 and NHI5. A third-party
+  app with a tenant-takeover or data permission also keeps its `NHI-PERM-001` or `NHI-PERM-002` finding: one says
+  what the permission allows, the other who holds the credentials.
+
+**Reads.** Application permissions on Exchange Online (`full_access_as_app`, `Exchange.ManageAsApp`, `Mail.*`) and
+SharePoint Online (`Sites.FullControl.All`, ...) are now read, with the same `Application.Read.All` permission and only
+`GET` requests. They are not listed in the identity record yet: the record keeps its Microsoft Graph section.
+
 ## 0.2.0 (2026-11-16)
 
 The scanner now describes every non-human identity, not only the risky ones, and checks the paths that recent

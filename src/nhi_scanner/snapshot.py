@@ -16,12 +16,22 @@ _FRACTION = re.compile(r"(\.\d{6})\d+")
 # Start of the collection warning raised when Entra Agent ID identities cannot be listed.
 AGENT_ID_UNREADABLE = "Entra Agent ID identities not read"
 
+# APIs besides Microsoft Graph whose application permissions are read: appId -> display name. An application
+# permission on one of them reaches every mailbox or every site, like a Graph one.
+EXCHANGE_ONLINE_APP_ID = "00000002-0000-0ff1-ce00-000000000000"
+SHAREPOINT_ONLINE_APP_ID = "00000003-0000-0ff1-ce00-000000000000"
+RESOURCE_APIS: dict[str, str] = {
+    EXCHANGE_ONLINE_APP_ID: "Office 365 Exchange Online",
+    SHAREPOINT_ONLINE_APP_ID: "Office 365 SharePoint Online",
+}
+
 # The reads each part of a snapshot comes from. Identity records cite them as their sources.
 SRC_APPLICATIONS = "GET /v1.0/applications"
 SRC_SERVICE_PRINCIPALS = "GET /v1.0/servicePrincipals"
 SRC_AGENT_IDENTITIES = "GET /v1.0/servicePrincipals/microsoft.graph.agentIdentity"
 SRC_SPONSORS = "GET /v1.0/servicePrincipals/{id}/microsoft.graph.agentIdentity/sponsors"
 SRC_GRAPH_PERMISSIONS = "GET /v1.0/servicePrincipals/{Microsoft Graph}/appRoleAssignedTo"
+SRC_RESOURCE_PERMISSIONS = "GET /v1.0/servicePrincipals/{Exchange Online, SharePoint Online}/appRoleAssignedTo"
 SRC_DELEGATED_GRANTS = "GET /v1.0/oauth2PermissionGrants"
 SRC_FEDERATED_APPS = "GET /v1.0/applications/{id}/federatedIdentityCredentials"
 SRC_AI_ACCOUNTS = "GET ARM /subscriptions/{id}/providers/Microsoft.CognitiveServices/accounts"
@@ -104,6 +114,12 @@ class TenantSnapshot:
     consenting_user_roles: Optional[dict[str, list[dict[str, Any]]]] = None
     # user id -> {"userPrincipalName", "accountEnabled"}, read only for consenting users who hold a role
     consenting_users: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # Application permissions on the other APIs in RESOURCE_APIS: resource appId -> its appRoleAssignedTo entries
+    # (service principals only), or None when that API's grants could not be read. An API whose service principal
+    # is not in the tenant has an empty list: nothing can be granted on it. The whole field is None when not read.
+    resource_app_role_assignments: Optional[dict[str, Optional[list[dict[str, Any]]]]] = None
+    # resource appId -> appRoleId -> permission value
+    resource_app_roles: dict[str, dict[str, str]] = field(default_factory=dict)
 
     def read_time(self, source: str) -> datetime:
         return self.read_at.get(source, self.collected_at)
