@@ -40,6 +40,7 @@ from . import __version__, owasp
 from .engine import CRITICAL_CEILING, SCORE_PENALTIES
 from .models import EntityType, FindingCategory, NHIEntity, SectionStatus, SecurityFinding, Severity, ZetahScanPayload
 from .readiness import agent_readiness
+from .commands import safe_remediation
 from .rules import RULES
 from .vendors import Vendor, summary_line, vendor_view
 
@@ -69,6 +70,16 @@ SEV_TINT = {
     Severity.LOW: colors.HexColor("#EFF8FF"),
 }
 SEV_WEIGHT = {Severity.CRITICAL: 10, Severity.HIGH: 5, Severity.MEDIUM: 2, Severity.LOW: 1}
+# A large tenant has tens of thousands of findings: past these sizes the report shows the most important rows and
+# points to the JSON payload, which always holds every one. A PDF of 30,000 pages is read by nobody.
+PLAN_ROWS = 300
+MAX_TEXT = 600  # characters of one value in a table cell; Entra caps names at 256
+MAX_PARAGRAPH = 4000  # characters of a full-width paragraph
+EVIDENCE_LINES = 40  # per finding
+COMMAND_LINES = 60  # per finding
+DETAILED_FINDINGS = 60
+INVENTORY_ROWS = 1000
+VENDOR_APP_ROWS = 400
 PRIORITY = {Severity.CRITICAL: "P1", Severity.HIGH: "P2", Severity.MEDIUM: "P3", Severity.LOW: "P4"}
 PRIORITY_HINT = {
     Severity.CRITICAL: "Immediately",
@@ -135,9 +146,15 @@ CONTENT_W = PAGE_W - 2 * MARGIN
 _REPLACEMENTS = {"→": "->", "≥": ">=", "≤": "<=", "✓": "v", "✗": "x", "☁️": "", " ": " "}
 
 
-def _t(value: Any) -> str:
-    """Safe Paragraph text: XML-escaped and limited to what the PDF fonts can draw."""
+def _t(value: Any, limit: Optional[int] = None) -> str:
+    """Safe Paragraph text: XML-escaped, limited to what the PDF fonts can draw, and short enough to fit a page.
+
+    A table row taller than the page stops the whole report, and a saved payload can carry text of any length.
+    """
     text = "" if value is None else str(value)
+    limit = limit or MAX_TEXT
+    if len(text) > limit:
+        text = text[:limit] + f"… [{len(text) - limit} more characters in the JSON payload]"
     for src, dst in _REPLACEMENTS.items():
         text = text.replace(src, dst)
     text = "".join(c if c in "\n\t" or _encodable(c) else "?" for c in text)
@@ -220,7 +237,10 @@ def _fmt_scalar(v: Any) -> str:
     if v is None:
         return "-"
     if isinstance(v, str) and _ISO_TS.match(v):
-        return _date(datetime.strptime(v, "%Y-%m-%dT%H:%M:%SZ"))
+        try:
+            return _date(datetime.strptime(v, "%Y-%m-%dT%H:%M:%SZ"))
+        except ValueError:  # shaped like a timestamp, not one: 2026-13-45T99:00:00Z
+            return v
     if isinstance(v, str) and v in {"client_secret", "certificate"}:
         return v.replace("_", " ")
     return str(v)
@@ -893,15 +913,21 @@ class _Report:
         return out
 
     def remediation_plan(self) -> list[Flowable]:
+        shown = self.p.findings[:PLAN_ROWS]
+        capped = len(shown) < len(self.p.findings)
         out = self.h1(
             "Remediation plan",
-            "Every finding, ordered by priority. P1 items enable tenant or Azure takeover and should be handled "
-            "immediately; detailed commands are in the next section.",
+            (f"The first {len(shown)} of {len(self.p.findings)} findings, ordered by priority, after a count by rule. "
+             if capped else "Every finding, ordered by priority. ")
+            + "P1 items enable tenant or Azure takeover and should be handled immediately; detailed commands are in "
+              "the next section.",
         )
         if not self.p.findings:
             return out + [self.para("Nothing to remediate.")]
+        if capped:
+            out += self.findings_by_rule()
         rows = []
-        for i, f in enumerate(self.p.findings, 1):
+        for i, f in enumerate(shown, 1):
             rule = self.rules.get(f.rule_id)
             rows.append([
                 self.para(f"<b>{PRIORITY[f.severity]}</b><br/><font size=6.5 color='{_hex(MUTED)}'>"
@@ -913,15 +939,41 @@ class _Report:
                 self.para(_t(rule.action if rule else "See detailed findings"), "cell"),
             ])
         w = CONTENT_W
-        sev_style = [("LINEBEFORE", (0, i), (0, i), 3, SEV_COLOR[f.severity]) for i, f in enumerate(self.p.findings, 1)]
+        sev_style = [("LINEBEFORE", (0, i), (0, i), 3, SEV_COLOR[f.severity]) for i, f in enumerate(shown, 1)]
         out.append(self.data_table(["Priority", "Issue", "Identity", "Recommended action"], rows,
                                    [w * 0.13, w * 0.37, w * 0.22, w * 0.28], extra_style=sev_style))
+        if capped:
+            out.append(self.more_in_json(len(self.p.findings) - len(shown), "findings"))
         return out
 
+    def findings_by_rule(self) -> list[Flowable]:
+        """Every finding counted by rule: what the capped list leaves out is still accounted for."""
+        per_rule: dict[str, list[SecurityFinding]] = defaultdict(list)
+        for f in self.p.findings:
+            per_rule[f.rule_id].append(f)
+        ordered = sorted(per_rule.items(), key=lambda kv: (-kv[1][0].severity.rank, -len(kv[1]), kv[0]))
+        rows = []
+        for rule_id, fs in ordered:
+            rule = self.rules.get(rule_id)
+            rows.append([self.badge(fs[0].severity), self.para(f"<b>{_t(rule_id)}</b><br/>{_t(fs[0].title)}", "cell"),
+                         self.para(str(len(fs)), "cell"),
+                         self.para(_t(rule.action if rule else "See detailed findings"), "cell")])
+        w = CONTENT_W
+        return [self.para("Findings by rule", "h2"),
+                self.data_table(["Severity", "Rule", "Findings", "Recommended action"], rows,
+                                [w * 0.15, w * 0.40, w * 0.12, w * 0.33]),
+                self.para("Findings in order of priority", "h2")]
+
+    def more_in_json(self, count: int, what: str) -> Paragraph:
+        return self.para(f"{count} more {what} are not listed here. The JSON payload of this scan (--json) holds all "
+                         "of them, with the same detail.", "small")
+
     def detailed_findings(self) -> list[Flowable]:
+        shown = self.p.findings[:DETAILED_FINDINGS]
         out = self.h1("Detailed findings",
-                      "Technical detail for each finding: what was found, how it can be abused, the evidence "
-                      "collected and the commands to fix it.")
+                      ("Technical detail for each finding" if len(shown) == len(self.p.findings) else
+                       f"Technical detail for the first {len(shown)} findings in order of priority")
+                      + ": what was found, how it can be abused, the evidence collected and the commands to fix it.")
         out.append(Table(
             [[self.para(
                 "<b>Review every command before you run it.</b> These commands change a live tenant and come from a "
@@ -935,7 +987,7 @@ class _Report:
                               ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]),
         ))
         out.append(Spacer(1, 12))
-        for i, f in enumerate(self.p.findings, 1):
+        for i, f in enumerate(shown, 1):
             e = self.entities[f.entity_id]
             head = Table(
                 [[self.badge(f.severity, 19 * mm),
@@ -956,7 +1008,7 @@ class _Report:
                 "small",
             )
             attack = Table(
-                [[self.para(f"<b>Attack path.</b> {_t(f.attack_path_context)}", "cell")]],
+                [[self.para(f"<b>Attack path.</b> {_t(f.attack_path_context, MAX_PARAGRAPH)}", "cell")]],
                 colWidths=[CONTENT_W],
                 style=TableStyle([("BACKGROUND", (0, 0), (-1, -1), PANEL),
                                   ("LINEBEFORE", (0, 0), (0, -1), 2, NAVY_2),
@@ -964,15 +1016,23 @@ class _Report:
                                   ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6)]),
             )
             block: list[Flowable] = [KeepTogether([
-                head, Spacer(1, 4), meta, self.para("FINDING", "label"), self.para(_t(f.description)),
+                head, Spacer(1, 4), meta, self.para("FINDING", "label"), self.para(_t(f.description, MAX_PARAGRAPH)),
                 Spacer(1, 6), attack,
             ])]
             if f.evidence:
                 block.append(self.para("EVIDENCE", "label"))
-                block += [self.para(line, "evidence") for line in _evidence_lines(f.evidence)]
+                lines = _evidence_lines(f.evidence)
+                if len(lines) > EVIDENCE_LINES:
+                    lines = lines[:EVIDENCE_LINES] + [f"… {len(lines) - EVIDENCE_LINES} more lines of evidence in the "
+                                                      "JSON payload (--json)"]
+                block += [self.para(line, "evidence") for line in lines]
             block.append(self.para("REMEDIATION · REVIEW BEFORE RUNNING", "label"))
+            commands = safe_remediation(f.remediation_cli).splitlines()
+            if len(commands) > COMMAND_LINES:
+                commands = commands[:COMMAND_LINES] + [f"# … {len(commands) - COMMAND_LINES} more lines in the JSON "
+                                                       "payload (--json)"]
             code_rows = [[self.para(_t(line) or "&nbsp;", "codecomment" if line.lstrip().startswith("#") else "code")]
-                         for line in f.remediation_cli.splitlines()]
+                         for line in commands]
             block.append(Table(code_rows, colWidths=[CONTENT_W], style=TableStyle([
                 ("BACKGROUND", (0, 0), (-1, -1), CODE_BG),
                 ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8),
@@ -981,6 +1041,8 @@ class _Report:
             ])))
             block.append(Spacer(1, 16))
             out += [CondPageBreak(45 * mm), *block]
+        if len(shown) < len(self.p.findings):
+            out.append(self.more_in_json(len(self.p.findings) - len(shown), "findings"))
         return out
 
     def vendors(self) -> list[Flowable]:
@@ -997,7 +1059,12 @@ class _Report:
         widths = [w * 0.24, w * 0.15, w * 0.45, w * 0.16]
         rows: list[list[Any]] = []
         header_rows: list[int] = []
+        listed = apps_listed = 0
         for v in vendors:
+            if apps_listed and apps_listed + len(v.apps) > VENDOR_APP_ROWS:
+                break
+            listed += 1
+            apps_listed += len(v.apps)
             header_rows.append(len(rows) + 1)
             rows.append([self.para(self._vendor_label(v), "cell"), "", "", ""])
             for a in v.apps:
@@ -1022,6 +1089,9 @@ class _Report:
             ("LINEABOVE", (0, r), (-1, r), 0.8, NAVY_2))]
         out.append(self.data_table(["Vendor / app", "Status", "Tenant-wide application permissions",
                                     "Delegated consents"], rows, widths, zebra=False, extra_style=style))
+        if listed < len(vendors):
+            rest = vendors[listed:]
+            out.append(self.more_in_json(len(rest), f"vendors, with {sum(len(v.apps) for v in rest)} apps,"))
         out += [Spacer(1, 6), self.para(
             "Application permissions are read on Microsoft Graph, Exchange Online and SharePoint Online. Write "
             "permissions can change data or send mail on behalf of the organization. Delegated consents act as the "
@@ -1036,10 +1106,18 @@ class _Report:
                 f"<font size=6 color='{_hex(MUTED)}'>Publisher tenant {_t(v.tenant_id)}</font>")
 
     def inventory(self) -> list[Flowable]:
-        out = self.h1("Non-human identity inventory",
-                      f"All {len(self.p.entities)} identities in scope, as observed at scan time.")
+        entities = self.p.entities
+        if len(entities) > INVENTORY_ROWS:
+            exposure = {e.entity_id: sum(SEV_WEIGHT[f.severity] for f in self.by_entity.get(e.entity_id, []))
+                        for e in entities}
+            entities = sorted(entities, key=lambda e: -exposure[e.entity_id])[:INVENTORY_ROWS]
+            subtitle = (f"The {len(entities)} most exposed of the {len(self.p.entities)} identities in scope, as "
+                        "observed at scan time. The JSON payload of this scan (--json) lists every one.")
+        else:
+            subtitle = f"All {len(entities)} identities in scope, as observed at scan time."
+        out = self.h1("Non-human identity inventory", subtitle)
         rows = []
-        for e in self.p.entities:
+        for e in entities:
             fs = self.by_entity.get(e.entity_id, [])
             worst = self.worst(fs)
             owner = (f"<font color='{_hex(SEV_COLOR[Severity.CRITICAL])}'><b>Orphaned</b></font>" if e.is_orphaned
@@ -1166,8 +1244,8 @@ class _Report:
             "This is a point-in-time assessment; identities and permissions change continuously.",
             "A clean result covers only the checks listed in this report: it does not prove that an identity is "
             "harmless.",
-            "Only application permissions on Microsoft Graph are evaluated. Permissions on other APIs, such as "
-            "Exchange Online full_access_as_app or SharePoint Online, are not read.",
+            "Application permissions are evaluated on Microsoft Graph for every identity, and on Exchange Online "
+            "and SharePoint Online for third-party apps (NHI-PERM-004). Permissions on other APIs are not read.",
             "Entra roles held through role-assignable groups, Azure roles held through groups, and custom Azure "
             "roles equivalent to Owner or Contributor are not evaluated.",
             "AI agents are recognised from Entra Agent ID objects, agent tags and naming patterns. Naming-based "

@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+**Large tenants (T-14).** `--demo --demo-size N` generates a synthetic tenant of about N identities. On 100,000
+identities the full scan (rules, JSON, PDF) takes about 30 seconds with a peak of about 2 GB on a laptop, down from
+over 6 GB: the payload is re-validated one part at a time and written to disk in parts, byte for byte as before. The
+PDF and the console list the most important rows (300 in the plan, 60 in detail, 1,000 identities) and count the rest
+by rule; the JSON always holds everything. The collector asks for pages of 999 objects, reads federated credentials
+from one expanded listing instead of one request per app, and does the remaining per-object reads eight at a time,
+still only with `GET` (Graph's `$batch` is a POST). Throttling (429) gets its own retry budget, up to ten minutes of
+waiting per request, and `Retry-After` is bounded. `tests/scale_benchmark.py` measures collection against a simulated
+Graph with latency and throttling.
+
+**Security review (26/11/2026).** The scanner was attacked from every side it has; `tests/test_attacks.py` keeps
+every attack in the suite.
+- Remediation commands are checked by an allowlist, not a list of dangers: only `az ad app`, `az ad sp`,
+  `az role assignment` and `az rest`; no shell syntax outside quotes; `az rest` only towards Microsoft Graph or
+  Azure Resource Manager, never with `--resource`, custom headers or an output file; no argument that loads a file.
+  The old check let through `az` commands that could send a token to another host or upload a local file.
+- The check runs again when the PDF is written and when a saved payload is loaded with `--from-json`: an edited
+  payload can no longer put a live command in the report as if Zetah had suggested it.
+- The collector no longer follows redirects, stops when a paging link repeats or pages never end, treats a response
+  that is not a JSON object as a read that failed (a warning, not a crash), and checks every object id from a
+  response before it becomes part of a URL.
+- A malformed date reads as unknown instead of stopping the scan; `--dormant-days` must be between 1 and 3650.
+- The PDF and the console cap the length of one value and the lines of one finding: a very long text or thousands of
+  credentials on one identity no longer stop the report or take minutes. The JSON keeps everything.
+
 **Third-party apps by vendor (T-34).** Apps published by another organization sign in with credentials that live in
 the publisher's tenant: they cannot be seen, rotated or revoked from yours. The PDF has a new section that groups them
 by the tenant that holds those credentials, with each app's status, last sign-in, tenant-wide application permissions

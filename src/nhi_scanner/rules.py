@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any, Callable, Optional
 
+from .commands import safe_remediation
 from .inventory import Inventory
 from .owasp import order as owasp_order
 from .vendors import is_third_party
@@ -383,30 +384,11 @@ def _hold(command: str) -> str:
 
 
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-_CONTROL = re.compile(r"[\x00-\x1f\x7f-\x9f]")
-_UNSAFE_LIVE = re.compile(r"[;|&`]|\$\(|[\x00-\x1f\x7f-\x9f]")
 
 
 def _name(value: Optional[str], placeholder: str) -> str:
     """A tenant-chosen name goes into a command only if it is a plain Azure name; otherwise a placeholder."""
     return value if value and _SAFE_NAME.match(value) else placeholder
-
-
-def safe_remediation(text: str) -> str:
-    """Last line of defence for every finding: a runnable line must be a plain `az` command.
-
-    Comments may quote tenant data, but lose control characters. A runnable line that does not start with `az `,
-    contains a shell separator, a substitution or a control character, or leaves a quote open is commented out.
-    """
-    out = []
-    for line in text.splitlines():
-        if line.startswith("#"):
-            out.append(_CONTROL.sub("?", line))
-        elif line.startswith("az ") and not _UNSAFE_LIVE.search(line) and line.count("'") % 2 == 0 and line.count('"') % 2 == 0:
-            out.append(line)
-        else:
-            out.append("# [blocked: unsafe value from the tenant] " + _CONTROL.sub("?", line))
-    return "\n".join(out)
 
 
 _FEDERATED_EXAMPLE = json.dumps({

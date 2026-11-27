@@ -7,6 +7,7 @@ between scans. Timestamps are relative to "now".
 
 from __future__ import annotations
 
+import random
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -309,3 +310,185 @@ def build_demo_snapshot(now: Optional[datetime] = None) -> TenantSnapshot:
         mi_federated_credentials=mi_fic,
         ai_accounts=ai_accounts,
     )
+
+
+# --- scale tenant -------------------------------------------------------------------------------------------------- #
+# The demo tenant above, padded with generated identities in the proportions of a large enterprise tenant: about a
+# third of the inventory comes from app registrations (each one is two identities, the app and its service
+# principal), a fifth from third-party apps of a few hundred vendors, a seventh from managed identities, a few percent
+# from Entra Agent ID agents. Every rule has something to find, so the scan does the work it would do on a real tenant.
+
+SCALE_SHARES = {"app_registration": 0.30, "external_app": 0.22, "managed_identity": 0.15, "agent": 0.03}
+_MICROSOFT_TENANT = "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
+_GRAPH_PERMISSIONS = ["User.Read.All", "Mail.Read", "Mail.Send", "Files.Read.All", "Sites.Read.All", "Group.Read.All",
+                      "Directory.Read.All", "Application.ReadWrite.All", "Sites.FullControl.All", "Mail.ReadWrite"]
+_SCOPES = ["openid", "profile", "offline_access", "User.Read", "Mail.Read", "Mail.Send", "Files.Read.All",
+           "Calendars.Read", "Sites.Read.All"]
+_AZURE_ROLES = ["Reader", "Contributor", "Owner", "Key Vault Secrets User", "Storage Blob Data Reader",
+                "User Access Administrator", "Cognitive Services User"]
+
+
+def build_scale_snapshot(identities: int, seed: int = 7, now: Optional[datetime] = None) -> TenantSnapshot:
+    """A tenant of about ``identities`` inventoried identities, the same on every run with the same seed."""
+
+    if identities < 1:
+        raise ValueError("identities must be at least 1")
+    now = now or datetime.now(timezone.utc)
+    snap = build_demo_snapshot(now)
+    rnd = random.Random(seed)
+    base = len(snap.applications) * 2 + sum(
+        1 for sp in snap.service_principals if sp.get("appOwnerOrganizationId") != _MICROSOFT_TENANT
+    )
+    extra = max(0, identities - base)
+    n_apps = round(extra * SCALE_SHARES["app_registration"])
+    n_ext = round(extra * SCALE_SHARES["external_app"])
+    n_agents = round(extra * SCALE_SHARES["agent"])
+    n_mi = max(0, extra - 2 * n_apps - n_ext - n_agents)
+
+    ts = lambda days: _ts(now + timedelta(days=days))  # noqa: E731
+    users = [f"user{i:05d}@demo-corp.example" for i in range(max(50, extra // 20))]
+    disabled = set(rnd.sample(users, len(users) // 20))
+    user_obj = lambda upn: {"@odata.type": "#microsoft.graph.user", "id": _id("user", upn),  # noqa: E731
+                            "userPrincipalName": upn, "accountEnabled": upn not in disabled}
+    vendors = [(_id("vendor", str(i)), f"Vendor {i:03d} Ltd") for i in range(max(20, n_ext // 60))]
+    msgraph = next(sp["id"] for sp in snap.service_principals if sp["appId"] == "00000003-0000-0000-c000-000000000000")
+    exo = next(sp["id"] for sp in snap.service_principals if sp["appId"] == "00000002-0000-0ff1-ce00-000000000000")
+    spo = next(sp["id"] for sp in snap.service_principals if sp["appId"] == "00000003-0000-0ff1-ce00-000000000000")
+
+    def creds(kind: str, name: str, count: int) -> list[dict[str, Any]]:
+        out = []
+        for i in range(count):
+            start = -rnd.randint(1, 1500)
+            c = {"keyId": _id("cred", name, str(i)), "displayName": f"{kind}-{i}", "hint": "abc",
+                 "startDateTime": ts(start), "endDateTime": ts(start + rnd.choice([90, 180, 365, 730, 3650]))}
+            if kind == "cert":
+                c.update(type="AsymmetricX509Cert", usage="Verify")
+            out.append(c)
+        return out
+
+    sp_ids: list[str] = []
+    ext_ids: list[str] = []
+    mi_ids: list[str] = []
+    for i in range(n_apps):
+        name = f"app-{i:06d}"
+        app_id = _id("appId", name)
+        owners = [user_obj(u) for u in rnd.sample(users, rnd.choice([0, 0, 1, 1, 1, 2]))]
+        snap.applications.append({
+            "id": _id("app", name), "appId": app_id, "displayName": name,
+            "createdDateTime": ts(-rnd.randint(1, 2500)),
+            "signInAudience": "AzureADMultipleOrgs" if rnd.random() < 0.1 else "AzureADMyOrg",
+            "tags": ["AIAgent"] if rnd.random() < 0.01 else [], "publisherDomain": "demo-corp.onmicrosoft.com",
+            "passwordCredentials": creds("secret", name, rnd.choice([0, 0, 1, 1, 2, 3])),
+            "keyCredentials": creds("cert", name + "/c", 1 if rnd.random() < 0.15 else 0), "owners": owners,
+        })
+        sid = _id("sp", name)
+        snap.service_principals.append({
+            "id": sid, "appId": app_id, "displayName": name, "servicePrincipalType": "Application",
+            "accountEnabled": rnd.random() > 0.03, "appOwnerOrganizationId": DEMO_TENANT_ID, "tags": [],
+            "verifiedPublisher": _publisher("Demo Corp"), "alternativeNames": [],
+            "passwordCredentials": creds("secret", name + "/sp", 1) if rnd.random() < 0.01 else [],
+            "keyCredentials": [], "owners": [],
+        })
+        sp_ids.append(sid)
+    for i in range(n_ext):
+        org, publisher = rnd.choice(vendors)
+        name = f"{publisher} app {i:06d}"
+        sid = _id("sp", "ext", str(i))
+        snap.service_principals.append({
+            "id": sid, "appId": _id("appId", "ext", str(i)), "displayName": name,
+            "servicePrincipalType": "Application", "accountEnabled": True, "appOwnerOrganizationId": org,
+            "tags": ["WindowsAzureActiveDirectoryIntegratedApp"],
+            "verifiedPublisher": _publisher(publisher if rnd.random() < 0.6 else None), "alternativeNames": [],
+            "passwordCredentials": [], "keyCredentials": [], "owners": [],
+        })
+        ext_ids.append(sid)
+    for i in range(n_mi):
+        user_assigned = rnd.random() < 0.35
+        name = f"id-workload-{i:06d}" if user_assigned else f"func-{i:06d}"
+        provider = "Microsoft.ManagedIdentity/userAssignedIdentities" if user_assigned else "Microsoft.Web/sites"
+        sid = _id("sp", "mi", str(i))
+        snap.service_principals.append({
+            "id": sid, "appId": _id("appId", "mi", str(i)), "displayName": name,
+            "servicePrincipalType": "ManagedIdentity", "accountEnabled": True, "appOwnerOrganizationId": None,
+            "tags": [], "verifiedPublisher": _publisher(None),
+            "alternativeNames": [f"isExplicit={user_assigned}",
+                                 f"/subscriptions/{_SUB}/resourceGroups/rg-{i % 400:03d}/providers/{provider}/{name}"],
+            "passwordCredentials": [], "keyCredentials": [], "owners": [],
+        })
+        mi_ids.append(sid)
+    blueprint = _id("appId", "sales-workflows-blueprint")
+    agent_ids = []
+    for i in range(n_agents):
+        name = f"agent-{i:05d}"
+        sid = _id("sp", "agent", str(i))
+        snap.service_principals.append({
+            "@odata.type": "#microsoft.graph.agentIdentity", "id": sid, "appId": _id("appId", "agent", str(i)),
+            "displayName": name, "servicePrincipalType": "ServiceIdentity", "accountEnabled": True,
+            "appOwnerOrganizationId": DEMO_TENANT_ID, "agentIdentityBlueprintId": blueprint, "tags": [],
+            "verifiedPublisher": _publisher("Demo Corp"), "alternativeNames": [], "passwordCredentials": [],
+            "keyCredentials": [], "owners": [],
+            "sponsors": [user_obj(u) for u in rnd.sample(users, rnd.choice([0, 1, 1, 1]))],
+        })
+        agent_ids.append(sid)
+
+    # application permissions: a tenth of the service principals hold some, a few on Exchange and SharePoint
+    for sid in rnd.sample(sp_ids + ext_ids + mi_ids + agent_ids, (len(sp_ids) + len(ext_ids) + len(mi_ids)) // 10):
+        for perm in rnd.sample(_GRAPH_PERMISSIONS, rnd.randint(1, 3)):
+            role = _id("approle", perm)
+            snap.graph_app_roles[role] = perm
+            snap.graph_app_role_assignments.append({"id": _id("ara", sid, perm), "principalId": sid,
+                                                    "principalType": "ServicePrincipal", "appRoleId": role,
+                                                    "resourceId": msgraph})
+    resource = {"00000002-0000-0ff1-ce00-000000000000": (exo, "full_access_as_app"),
+                "00000003-0000-0ff1-ce00-000000000000": (spo, "Sites.FullControl.All")}
+    for sid in rnd.sample(ext_ids, len(ext_ids) // 100):
+        api = rnd.choice(list(resource))
+        res, perm = resource[api]
+        role = _id("approle", api, perm)
+        snap.resource_app_roles.setdefault(api, {})[role] = perm
+        snap.resource_app_role_assignments[api].append({"id": _id("ara", sid, api, perm), "principalId": sid,
+                                                        "principalType": "ServicePrincipal", "appRoleId": role,
+                                                        "resourceId": res})
+    # consents: a fifth of the third-party apps, for every user or for a few users each
+    for sid in rnd.sample(ext_ids, len(ext_ids) // 5):
+        scope = " ".join(rnd.sample(_SCOPES, rnd.randint(2, 6)))
+        if rnd.random() < 0.3:
+            snap.delegated_permission_grants.append({"id": _id("grant", sid, "all"), "clientId": sid,
+                                                     "resourceId": msgraph, "consentType": "AllPrincipals",
+                                                     "principalId": None, "scope": scope})
+        else:
+            for u in rnd.sample(users, rnd.randint(1, 4)):
+                snap.delegated_permission_grants.append({"id": _id("grant", sid, u), "clientId": sid,
+                                                         "resourceId": msgraph, "consentType": "Principal",
+                                                         "principalId": _id("user", u), "scope": scope})
+    # federated credentials on a tenth of the app registrations, some trusting every pull request
+    for app in rnd.sample(snap.applications[len(snap.applications) - n_apps:], n_apps // 10):
+        subject = rnd.choice(["ref:refs/heads/main", "environment:production", "pull_request"])
+        snap.app_federated_credentials[app["id"]] = [{
+            "id": _id("fic", app["id"]), "name": "github", "issuer": "https://token.actions.githubusercontent.com",
+            "subject": f"repo:demo-corp/{app['displayName']}:{subject}", "audiences": ["api://AzureADTokenExchange"]}]
+    for app in snap.applications:
+        snap.app_federated_credentials.setdefault(app["id"], [])
+    # Azure RBAC: half of the managed identities and a tenth of the app service principals
+    for sid in rnd.sample(mi_ids, len(mi_ids) // 2) + rnd.sample(sp_ids, len(sp_ids) // 10):
+        role = rnd.choice(_AZURE_ROLES)
+        scope = f"/subscriptions/{_SUB}"
+        if rnd.random() >= 0.1:
+            scope += f"/resourceGroups/rg-{rnd.randint(0, 399):03d}"
+        snap.azure_role_assignments.append({
+            "id": f"{scope}/providers/Microsoft.Authorization/roleAssignments/{_id('ra', sid, role, scope)}",
+            "principalId": sid, "roleName": role, "scope": scope})
+    # Entra roles on a few service principals
+    roles = list(snap.directory_role_definitions)
+    for sid in rnd.sample(sp_ids, len(sp_ids) // 200):
+        snap.directory_role_assignments.append({"id": _id("dra", sid), "principalId": sid, "directoryScopeId": "/",
+                                                "roleDefinitionId": rnd.choice(roles)})
+    # sign-ins: most identities were seen recently, some long ago, some never
+    by_id = {sp["id"]: sp["appId"] for sp in snap.service_principals}
+    for sid in sp_ids + ext_ids + mi_ids + agent_ids:
+        r = rnd.random()
+        if r < 0.85:
+            days = rnd.randint(0, 30) if r < 0.7 else rnd.randint(91, 900)
+            snap.signin_activity[by_id[sid]] = now - timedelta(days=days)
+    snap.tenant_name = f"Demo Corp at scale ({identities:,} identities, synthetic)"
+    return snap
