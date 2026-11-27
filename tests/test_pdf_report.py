@@ -175,9 +175,19 @@ def test_output_files_are_utf8_on_every_platform(tmp_path, monkeypatch):
         encodings.append(kwargs.get("encoding"))
         return real(self, data, *args, **kwargs)
 
+    real_open = Path.open
+
+    def open_spy(self, mode="r", *args, **kwargs):
+        if "w" in mode:  # the payload is written in parts, through an open file
+            encodings.append(kwargs.get("encoding"))
+        return real_open(self, mode, *args, **kwargs)
+
     monkeypatch.setattr(Path, "write_text", spy)
+    monkeypatch.setattr(Path, "open", open_spy)
     assert main(["--demo", "--quiet", "--json", str(tmp_path / "s.json"), "--schema-out", str(tmp_path / "x.json")]) == 0
-    assert encodings == ["utf-8", "utf-8"]
+    # write_text may itself go through Path.open, depending on the Python version: what counts is that no write
+    # falls back to the platform encoding
+    assert len(encodings) >= 2 and set(encodings) == {"utf-8"}
 
 
 def test_inventory_shows_access_and_credentials_of_every_identity(tmp_path):

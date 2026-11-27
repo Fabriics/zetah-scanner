@@ -15,12 +15,20 @@ from rich.text import Text
 from .models import EntityType, Severity, ZetahScanPayload
 from .vendors import summary_line, vendor_view
 
+# Rows of each console table on a large tenant; the JSON payload always holds every one.
+CONSOLE_ROWS = 200
+CONSOLE_TEXT = 500  # characters of one value
+
 _CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 
 
 def plain(text: object) -> str:
-    """Tenant text for a terminal: no escape sequences (links, titles, cursor moves), no bells, no NUL."""
-    return _CONTROL.sub("?", str(text))
+    """Tenant text for a terminal: no escape sequences (links, titles, cursor moves), no bells, no NUL, and short
+    enough to wrap quickly (Entra caps names at 256 characters; a saved payload has no cap)."""
+    value = str(text)
+    if len(value) > CONSOLE_TEXT:
+        value = value[:CONSOLE_TEXT] + f"… [{len(value) - CONSOLE_TEXT} more characters]"
+    return _CONTROL.sub("?", value)
 
 
 def escape(text: object) -> str:
@@ -91,7 +99,11 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
     per_entity: dict[str, list[Severity]] = {}
     for f in payload.findings:
         per_entity.setdefault(f.entity_id, []).append(f.severity)
-    for e in payload.entities:
+    entities = payload.entities
+    if len(entities) > CONSOLE_ROWS:  # a large tenant: the most exposed first, the full list is in --json
+        weight = {e.entity_id: sum(s.rank for s in per_entity.get(e.entity_id, [])) for e in entities}
+        entities = sorted(entities, key=lambda e: -weight[e.entity_id])[:CONSOLE_ROWS]
+    for e in entities:
         sevs = per_entity.get(e.entity_id, [])
         worst = max(sevs, key=lambda s: s.rank) if sevs else None
         owners = "[bold red]ORPHANED[/]" if e.is_orphaned else (escape(", ".join(e.owners)) or "[dim]n/a (by design)[/]")
@@ -104,6 +116,9 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
             Text(str(len(sevs)), style=SEVERITY_STYLE[worst]) if worst else Text("0", style="green"),
         )
     console.print(ent)
+    if len(entities) < len(payload.entities):
+        console.print(f"[dim]The {len(entities)} most exposed of {len(payload.entities)} identities; "
+                      "the full inventory is in the JSON payload (--json).[/]")
     vendors = summary_line(vendor_view(payload))
     if vendors:
         console.print(f"Third-party vendors: {escape(vendors)} The PDF groups them by vendor.")
@@ -117,7 +132,7 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
     fnd.add_column("Rule", no_wrap=True)
     fnd.add_column("Identity", overflow="fold")
     fnd.add_column("Finding / attack path", overflow="fold", ratio=3)
-    for f in payload.findings:
+    for f in payload.findings[:CONSOLE_ROWS]:
         fnd.add_row(
             Text(f.severity.value, style=SEVERITY_STYLE[f.severity]),
             Group(Text(f.rule_id), Text(" ".join(f.owasp), style="dim")) if f.owasp else f.rule_id,
@@ -125,3 +140,6 @@ def render(payload: ZetahScanPayload, console: Console, tenant_name: str | None 
             Group(Text(plain(f.title), style="bold"), Text(plain(f.attack_path_context), style="dim")),
         )
     console.print(fnd)
+    if len(payload.findings) > CONSOLE_ROWS:
+        console.print(f"[dim]The first {CONSOLE_ROWS} of {len(payload.findings)} findings, in order of priority; "
+                      "all of them are in the JSON payload (--json) and the PDF counts them by rule.[/]")

@@ -14,9 +14,13 @@ managed identity or an ``az login`` session.
 from __future__ import annotations
 
 import logging
+import random
+import re
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Iterator, Optional, TypeVar
 
 import requests
 from requests.compat import urlsplit  # the read-only test bans urllib imports: only requests talks to the network
@@ -69,6 +73,60 @@ COGNITIVE_SERVICES_API = "2024-10-01"
 AI_KINDS = {"OpenAI", "AIServices"}
 _SPONSOR_SELECT = "id,userPrincipalName,displayName,accountEnabled"
 
+# Scale (T-14). Graph's $batch would group reads into one request, but it is a POST, and this scanner sends only GET.
+# A large tenant is read instead with the biggest page Graph allows, with relationships expanded inside the list
+# where Graph documents it, and with the few per-object reads left done a handful at a time.
+PAGE_SIZE = "999"
+PARALLEL_READS = 8
+
+MAX_ERRORS = 6
+# Throttled requests are retried for up to ten minutes of waiting each, never sooner than MIN_THROTTLED_WAIT; the
+# count only bounds a server that keeps answering 429 with almost no wait.
+MAX_THROTTLED = 1000
+MIN_THROTTLED_WAIT = 0.05
+MAX_THROTTLED_WAIT = 600.0
+MAX_RETRY_AFTER = 120.0
+
+_T = TypeVar("_T")
+_R = TypeVar("_R")
+
+
+MAX_PAGES = 50_000  # 5 million objects at Graph's smallest page: past it, a server is paging forever
+_OBJECT_ID = re.compile(r"^[0-9A-Za-z-]{1,64}$")
+_MI_RESOURCE = re.compile(r"^/subscriptions/[0-9A-Za-z-]{1,64}/resourceGroups/[^/?#%\\]{1,90}/providers/"
+                          r"Microsoft\.ManagedIdentity/userAssignedIdentities/[^/?#%\\]{1,128}$", re.IGNORECASE)
+
+
+def _seg(value: Any) -> str:
+    """An object id from a response, checked before it becomes part of a URL path: no '/', '?', '#' or '..'."""
+    if isinstance(value, str) and _OBJECT_ID.match(value):
+        return value
+    raise CollectionError(f"refusing an object id that is not a plain identifier: {str(value)[:80]!r}")
+
+
+def _mi_path(value: Any) -> str:
+    if isinstance(value, str) and _MI_RESOURCE.match(value) and "/../" not in value + "/":
+        return value
+    raise CollectionError(f"refusing a managed identity resource id of unexpected shape: {str(value)[:120]!r}")
+
+
+def _retry_after(headers: Any, default: float) -> float:
+    """Seconds to wait, from Retry-After when it is a sane number of seconds; never forever, never negative."""
+    try:
+        value = float(headers.get("Retry-After", default))
+    except (TypeError, ValueError):  # an HTTP date or garbage: wait the default
+        return float(default)
+    return min(value, MAX_RETRY_AFTER) if value >= 0 else float(default)  # NaN fails the comparison too
+
+
+def _parallel(fn: Callable[[_T], _R], items: list[_T]) -> list[_R]:
+    """``fn`` over ``items``, in order, a few at a time. The first failure stops the reads not yet started."""
+    pool = ThreadPoolExecutor(max_workers=PARALLEL_READS)
+    try:
+        return list(pool.map(fn, items))
+    finally:
+        pool.shutdown(wait=True, cancel_futures=True)
+
 
 class CollectionError(RuntimeError):
     pass
@@ -83,13 +141,25 @@ class _Http:
         self._tenant_id = tenant_id
         self._base = base
         self._token: Optional[Any] = None
-        self._session = requests.Session()
+        self._token_lock = threading.Lock()
+        self._local = threading.local()  # one connection pool per thread: a requests.Session is not thread-safe
+
+    @property
+    def _session(self) -> requests.Session:
+        if not hasattr(self._local, "session"):
+            self._local.session = requests.Session()
+        return self._local.session
+
+    @_session.setter
+    def _session(self, session: requests.Session) -> None:
+        self._local.session = session
 
     def _auth_header(self) -> dict[str, str]:
-        if self._token is None or self._token.expires_on - 120 < time.time():
-            kwargs = {"tenant_id": self._tenant_id} if self._tenant_id else {}
-            self._token = self._credential.get_token(self._scope, **kwargs)
-        return {"Authorization": f"Bearer {self._token.token}"}
+        with self._token_lock:
+            if self._token is None or self._token.expires_on - 120 < time.time():
+                kwargs = {"tenant_id": self._tenant_id} if self._tenant_id else {}
+                self._token = self._credential.get_token(self._scope, **kwargs)
+            return {"Authorization": f"Bearer {self._token.token}"}
 
     def _resolve(self, url: str) -> str:
         """Absolute URL on this API's host. Paging links and ids come from responses: never send the token elsewhere."""
@@ -98,34 +168,79 @@ class _Http:
         target, base = urlsplit(url), urlsplit(self._base)
         if (target.scheme, target.hostname, target.port) != (base.scheme, base.hostname, base.port) or target.username or target.password:
             raise CollectionError(f"refusing to send the token to host {target.hostname or url!r}: only {base.hostname} is allowed")
+        if any(seg in (".", "..") for seg in target.path.split("/")) or "%2e" in target.path.lower():
+            raise CollectionError(f"refusing a path with dot segments: {target.path[:120]!r}")
         return url
 
     def get(self, url: str, params: Optional[dict[str, str]] = None) -> dict[str, Any]:
         url = self._resolve(url)
         failure = ""
-        for attempt in range(6):
+        errors = throttled = 0
+        waited = 0.0
+        # Throttling is Graph asking to wait, not a failure: a large tenant read a few requests at a time meets it
+        # often, so it has its own, larger budget. Errors and outages keep the short one.
+        while errors < MAX_ERRORS and throttled < MAX_THROTTLED and waited < MAX_THROTTLED_WAIT:
             try:
-                resp = self._session.get(url, params=params, headers=self._auth_header(), timeout=60)
+                # redirects are not followed: data comes only from the API host, and the token stays there
+                resp = self._session.get(url, params=params, headers=self._auth_header(), timeout=60,
+                                         allow_redirects=False)
             except requests.RequestException as exc:  # reset, timeout, DNS: usually transient
                 failure = str(exc)
-                time.sleep(2**attempt)
+                time.sleep(2**errors)
+                errors += 1
                 continue
-            if resp.status_code in (429, 500, 502, 503, 504):
+            if resp.status_code == 429:
+                failure = "HTTP 429 (throttled)"
+                # a little jitter, so that parallel reads told to wait the same time do not all come back at once
+                delay = max(_retry_after(resp.headers, 2 ** min(throttled, 5)), MIN_THROTTLED_WAIT)
+                delay *= 1 + random.random() / 4
+                time.sleep(delay)
+                waited += delay
+                throttled += 1
+                continue
+            if resp.status_code in (500, 502, 503, 504):
                 failure = f"HTTP {resp.status_code}"
-                time.sleep(float(resp.headers.get("Retry-After", 2**attempt)))
+                time.sleep(_retry_after(resp.headers, 2**errors))
+                errors += 1
                 continue
-            if resp.status_code >= 400:
+            if resp.status_code >= 300:
                 raise CollectionError(f"GET {url} -> {resp.status_code}: {resp.text[:300]}")
-            return resp.json()
+            try:
+                body = resp.json()
+            except ValueError as exc:  # an HTML page from a proxy, a truncated body
+                raise CollectionError(f"GET {url} -> {resp.status_code}: the response is not JSON") from exc
+            if not isinstance(body, dict):
+                raise CollectionError(f"GET {url} -> {resp.status_code}: the response is not a JSON object")
+            return body
         raise CollectionError(f"GET {url} kept failing after retries: {failure}")
 
     def paged(self, url: str, params: Optional[dict[str, str]] = None) -> Iterator[dict[str, Any]]:
         page = self.get(url, params)
+        yield from self._pages(page)
+
+    def paged_large(self, url: str, params: Optional[dict[str, str]] = None) -> Iterator[dict[str, Any]]:
+        """Like ``paged``, with pages of 999 objects instead of Graph's default 100; without $top if it is refused."""
+        try:
+            page = self.get(url, {**(params or {}), "$top": PAGE_SIZE})
+        except CollectionError as exc:
+            if " -> 400" not in str(exc):
+                raise
+            page = self.get(url, params)
+        yield from self._pages(page)
+
+    def _pages(self, page: dict[str, Any]) -> Iterator[dict[str, Any]]:
+        seen: set[str] = set()
         while True:
-            yield from page.get("value", [])
+            rows = page.get("value", [])
+            if not isinstance(rows, list) or not all(isinstance(r, dict) for r in rows):
+                raise CollectionError("a page of results is not a list of objects")
+            yield from rows
             nxt = page.get("@odata.nextLink") or page.get("nextLink")
             if not nxt:
                 return
+            if not isinstance(nxt, str) or nxt in seen or len(seen) >= MAX_PAGES:
+                raise CollectionError("paging does not end: a next link repeats or the pages never stop")
+            seen.add(nxt)
             page = self.get(nxt)
 
 
@@ -143,7 +258,7 @@ def _merge_agent_identities(
     they cannot be read the key is left out, and the agent is then not reported as orphaned.
     """
     try:
-        agents = list(graph.paged(AGENT_IDENTITIES, {"$expand": owner_expand}))
+        agents = list(graph.paged_large(AGENT_IDENTITIES, {"$expand": owner_expand}))
         read_at[SRC_AGENT_IDENTITIES] = _now()
     except CollectionError as exc:
         warnings.append(
@@ -152,22 +267,30 @@ def _merge_agent_identities(
         )
         return
     index = {sp["id"]: i for i, sp in enumerate(sps)}
+
+    def sponsors(agent: dict[str, Any]) -> list[dict[str, Any]]:
+        path = f"/v1.0/servicePrincipals/{_seg(agent.get('id'))}/microsoft.graph.agentIdentity/sponsors"
+        return list(graph.paged(path, {"$select": _SPONSOR_SELECT}))
+
     sponsors_readable = True
+    try:
+        # the first agent alone tells whether sponsors can be read at all, before thousands of refused reads
+        if agents:
+            agents[0]["sponsors"] = sponsors(agents[0])
+        for agent, found in zip(agents[1:], _parallel(sponsors, agents[1:]), strict=True):
+            agent["sponsors"] = found
+    except CollectionError as exc:
+        sponsors_readable = False
+        for agent in agents:  # half-read sponsors would make some agents look orphaned and others not
+            agent.pop("sponsors", None)
+        denied = any(code in str(exc) for code in (" -> 401", " -> 403"))
+        warnings.append(
+            "Sponsors of Entra Agent ID identities not readable"
+            + (" (Microsoft currently documents AgentIdentity.ReadWrite.All for this read)" if denied else "")
+            + f"; those agents are not reported as orphaned. [{exc}]"
+        )
     for agent in agents:
         agent.setdefault("@odata.type", "#microsoft.graph.agentIdentity")
-        if sponsors_readable:
-            try:
-                agent["sponsors"] = list(graph.paged(
-                    f"/v1.0/servicePrincipals/{agent['id']}/microsoft.graph.agentIdentity/sponsors",
-                    {"$select": _SPONSOR_SELECT},
-                ))
-            except CollectionError as exc:
-                sponsors_readable = False
-                warnings.append(
-                    "Sponsors of Entra Agent ID identities not readable (Microsoft currently documents "
-                    "AgentIdentity.ReadWrite.All for this read); those agents are not reported as orphaned. "
-                    f"[{exc}]"
-                )
         if agent["id"] in index:
             sps[index[agent["id"]]].update(agent)
         else:
@@ -233,10 +356,10 @@ def collect(
     graph_assignments: Optional[list[dict[str, Any]]] = None
     if msgraph:
         try:
-            full = graph.get(f"/v1.0/servicePrincipals/{msgraph['id']}", {"$select": "appRoles"})
+            full = graph.get(f"/v1.0/servicePrincipals/{_seg(msgraph.get('id'))}", {"$select": "appRoles"})
             graph_roles = {r["id"]: r["value"] for r in full.get("appRoles", [])}
             graph_assignments = [
-                a for a in graph.paged(f"/v1.0/servicePrincipals/{msgraph['id']}/appRoleAssignedTo")
+                a for a in graph.paged_large(f"/v1.0/servicePrincipals/{_seg(msgraph.get('id'))}/appRoleAssignedTo")
                 if a.get("principalType") == "ServicePrincipal"
             ]
             read_at[SRC_GRAPH_PERMISSIONS] = _now()
@@ -258,10 +381,10 @@ def collect(
             resource_assignments[app_id] = []  # not in the tenant: nothing can be granted on it
             continue
         try:
-            full = graph.get(f"/v1.0/servicePrincipals/{resource['id']}", {"$select": "appRoles"})
+            full = graph.get(f"/v1.0/servicePrincipals/{_seg(resource.get('id'))}", {"$select": "appRoles"})
             resource_roles[app_id] = {r["id"]: r["value"] for r in full.get("appRoles", []) if r.get("value")}
             resource_assignments[app_id] = [
-                a for a in graph.paged(f"/v1.0/servicePrincipals/{resource['id']}/appRoleAssignedTo")
+                a for a in graph.paged_large(f"/v1.0/servicePrincipals/{_seg(resource.get('id'))}/appRoleAssignedTo")
                 if a.get("principalType") == "ServicePrincipal"
             ]
         except CollectionError as exc:
@@ -273,9 +396,7 @@ def collect(
     progress("Federated credentials of app registrations")
     app_fic: Optional[dict[str, list[dict[str, Any]]]] = {}
     try:
-        # one read per app: Graph documents no $expand for this relationship, and $batch would be a POST
-        for app in apps:
-            app_fic[app["id"]] = list(graph.paged(f"/v1.0/applications/{app['id']}/federatedIdentityCredentials"))
+        app_fic = _read_app_federation(graph, apps)
         read_at[SRC_FEDERATED_APPS] = _now()
     except CollectionError as exc:
         app_fic = None
@@ -285,7 +406,7 @@ def collect(
     progress("Delegated permission grants")
     delegated: Optional[list[dict[str, Any]]] = None
     try:
-        delegated = list(graph.paged("/v1.0/oauth2PermissionGrants"))
+        delegated = list(graph.paged_large("/v1.0/oauth2PermissionGrants"))
         read_at[SRC_DELEGATED_GRANTS] = _now()
     except CollectionError as exc:
         warnings.append(
@@ -304,7 +425,7 @@ def collect(
                                  {"$select": "id,displayName,templateId"})
         }
         sp_ids = {sp["id"] for sp in sps}
-        assignments = list(graph.paged("/v1.0/roleManagement/directory/roleAssignments"))
+        assignments = list(graph.paged_large("/v1.0/roleManagement/directory/roleAssignments"))
         role_assignments = [a for a in assignments if a.get("principalId") in sp_ids]
         # a user who consents to an app lends it their own rights: keep the roles of those users too
         consenters = {g["principalId"] for g in delegated or [] if g.get("consentType") == "Principal" and g.get("principalId")}
@@ -318,19 +439,21 @@ def collect(
             f"Entra directory roles not read (needs RoleManagement.Read.Directory); role rule skipped. [{exc}]"
         )
 
-    consenting_users: dict[str, dict[str, Any]] = {}
-    for uid in sorted(user_roles or {}):
-        try:  # a handful of reads: only consenting users who hold a role
-            consenting_users[uid] = graph.get(f"/v1.0/users/{uid}", {"$select": "id,userPrincipalName,accountEnabled"})
+    def consenting_user(uid: str) -> Optional[dict[str, Any]]:
+        try:  # only consenting users who hold a role
+            return graph.get(f"/v1.0/users/{_seg(uid)}", {"$select": "id,userPrincipalName,accountEnabled"})
         except CollectionError:
-            pass  # the id still identifies them
+            return None  # the id still identifies them
+
+    uids = sorted(user_roles or {})
+    consenting_users = {uid: u for uid, u in zip(uids, _parallel(consenting_user, uids), strict=True) if u is not None}
 
     progress("Service principal sign-in activity")
     signin: Optional[dict[str, Optional[datetime]]]
     try:
         signin = {
             row["appId"]: parse_graph_datetime((row.get("lastSignInActivity") or {}).get("lastSignInDateTime"))
-            for row in graph.paged("/beta/reports/servicePrincipalSignInActivities")
+            for row in graph.paged_large("/beta/reports/servicePrincipalSignInActivities")
         }
         read_at[SRC_SIGNIN_ACTIVITY] = _now()
     except CollectionError as exc:
@@ -401,13 +524,35 @@ def _read_directory(
     app_select: str, sp_select: str, owner_expand: str,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     progress("App registrations")
-    apps = list(graph.paged("/v1.0/applications", {"$select": app_select, "$expand": owner_expand}))
+    apps = list(graph.paged_large("/v1.0/applications", {"$select": app_select, "$expand": owner_expand}))
     read_at[SRC_APPLICATIONS] = _now()
 
     progress("Service principals")
-    sps = list(graph.paged("/v1.0/servicePrincipals", {"$select": sp_select, "$expand": owner_expand}))
+    sps = list(graph.paged_large("/v1.0/servicePrincipals", {"$select": sp_select, "$expand": owner_expand}))
     read_at[SRC_SERVICE_PRINCIPALS] = _now()
     return apps, sps
+
+
+def _read_app_federation(graph: _Http, apps: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    """Federated credentials of every app registration: one listing with the relationship expanded, then one read per
+    app only for the apps that listing did not cover. On 30,000 apps that is 31 requests instead of 30,000."""
+    out: dict[str, list[dict[str, Any]]] = {}
+    ids = {app["id"] for app in apps}
+    try:
+        for row in graph.paged_large("/v1.0/applications",
+                                     {"$select": "id", "$expand": "federatedIdentityCredentials"}):
+            fics = row.get("federatedIdentityCredentials")
+            if row.get("id") in ids and isinstance(fics, list):
+                out[row["id"]] = fics
+    except CollectionError:
+        out = {}  # the expanded listing is an optimisation: the reads one by one below give the same answer
+    missing = [app["id"] for app in apps if app["id"] not in out]
+    def one(app_id: str) -> list[dict[str, Any]]:
+        return list(graph.paged(f"/v1.0/applications/{_seg(app_id)}/federatedIdentityCredentials"))
+
+    found = _parallel(one, missing)
+    out.update(zip(missing, found, strict=True))
+    return {app["id"]: out[app["id"]] for app in apps}
 
 
 def _collect_mi_federation(arm: _Http, warnings: list[str]) -> dict[str, list[dict[str, Any]]]:
@@ -417,8 +562,9 @@ def _collect_mi_federation(arm: _Http, warnings: list[str]) -> dict[str, list[di
     unreadable = 0
     for sub in subs:
         try:
+            sub_id = _seg(sub.get("subscriptionId"))
             identities = list(arm.paged(
-                f"/subscriptions/{sub['subscriptionId']}/providers/Microsoft.ManagedIdentity/userAssignedIdentities",
+                f"/subscriptions/{sub_id}/providers/Microsoft.ManagedIdentity/userAssignedIdentities",
                 {"api-version": MANAGED_IDENTITY_API}))
             for mi in identities:
                 principal = (mi.get("properties") or {}).get("principalId")
@@ -429,7 +575,8 @@ def _collect_mi_federation(arm: _Http, warnings: list[str]) -> dict[str, list[di
                      "issuer": (f.get("properties") or {}).get("issuer"),
                      "subject": (f.get("properties") or {}).get("subject"),
                      "audiences": (f.get("properties") or {}).get("audiences") or []}
-                    for f in arm.paged(f"{mi['id']}/federatedIdentityCredentials", {"api-version": MANAGED_IDENTITY_API})
+                    for f in arm.paged(f"{_mi_path(mi.get('id'))}/federatedIdentityCredentials",
+                                       {"api-version": MANAGED_IDENTITY_API})
                 ]
         except CollectionError as exc:
             unreadable += 1
@@ -446,7 +593,8 @@ def _collect_ai_accounts(arm: _Http, warnings: list[str]) -> list[dict[str, Any]
     unreadable = 0
     for sub in subs:
         try:
-            accounts = list(arm.paged(f"/subscriptions/{sub['subscriptionId']}/providers/Microsoft.CognitiveServices/accounts",
+            sub_id = _seg(sub.get("subscriptionId"))
+            accounts = list(arm.paged(f"/subscriptions/{sub_id}/providers/Microsoft.CognitiveServices/accounts",
                                       {"api-version": COGNITIVE_SERVICES_API}))
         except CollectionError as exc:
             unreadable += 1
@@ -474,7 +622,7 @@ def _collect_azure_rbac(arm: _Http, warnings: list[str]) -> list[dict[str, Any]]
     subs = list(arm.paged("/subscriptions", {"api-version": "2022-12-01"}))
     unreadable = 0
     for sub in subs:
-        base = f"/subscriptions/{sub['subscriptionId']}/providers/Microsoft.Authorization"
+        base = f"/subscriptions/{_seg(sub.get('subscriptionId'))}/providers/Microsoft.Authorization"
         try:
             role_names = {
                 d["name"]: d["properties"]["roleName"]

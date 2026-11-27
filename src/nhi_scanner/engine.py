@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
+
+from pydantic import BaseModel
 
 from .inventory import build_inventory
 from .models import CONTRACT_VERSION, ScanMetadata, SecurityFinding, Severity, SummaryCounts, ZetahScanPayload
@@ -63,5 +66,38 @@ def run_scan(
         entities=entities,
         findings=findings,
     )
-    # What leaves the scanner must re-validate from its own JSON, byte for byte.
-    return ZetahScanPayload.model_validate_json(payload.model_dump_json())
+    # What leaves the scanner must re-validate from its own JSON, byte for byte. Each part is checked on its own (the
+    # payload-level checks ran when it was built): re-reading the whole payload at once would hold a second, larger
+    # copy of it, several GB on a tenant of 100,000 identities.
+    for part in [payload.metadata, *payload.entities, *payload.findings]:
+        _round_trip(part)
+    return payload
+
+
+def _round_trip(model: BaseModel) -> None:
+    data = model.model_dump_json()
+    if type(model).model_validate_json(data).model_dump_json() != data:
+        raise ValueError(f"{type(model).__name__} does not read back from its own JSON")
+
+
+def write_payload_json(payload: ZetahScanPayload, path: Path) -> None:
+    """The payload as ``model_dump_json(indent=2)`` writes it, byte for byte, one part at a time.
+
+    Building the whole string first costs about four times the file in memory: 2 GB for the 520 MB payload of a
+    tenant of 100,000 identities. Each part here is serialised with the same indent and shifted to its depth.
+    """
+    def part(model: BaseModel, depth: int) -> str:
+        return model.model_dump_json(indent=2).replace("\n", "\n" + " " * depth)
+
+    with path.open("w", encoding="utf-8") as out:
+        out.write('{\n  "metadata": ' + part(payload.metadata, 2))
+        for name, items in (("entities", payload.entities), ("findings", payload.findings)):
+            out.write(f',\n  "{name}": ')
+            if not items:
+                out.write("[]")
+                continue
+            out.write("[\n")
+            for i, item in enumerate(items):
+                out.write(("    " if i == 0 else ",\n    ") + part(item, 4))
+            out.write("\n  ]")
+        out.write("\n}\n")

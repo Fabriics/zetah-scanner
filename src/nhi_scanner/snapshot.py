@@ -43,10 +43,13 @@ SRC_AZURE_RBAC = "GET ARM /subscriptions/{id}/providers/Microsoft.Authorization/
 
 def parse_graph_datetime(value: Optional[str]) -> Optional[datetime]:
     """Graph/ARM timestamps -> aware UTC datetime (handles 'Z' and 7-digit fractions)."""
-    if not value:
+    if not value or not isinstance(value, str) or len(value) > 40:
         return None
     value = _FRACTION.sub(r"\1", value.replace("Z", "+00:00"))
-    parsed = datetime.fromisoformat(value)
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:  # a malformed date reads as unknown: one bad value must not stop the scan
+        return None
     return (parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
 
 

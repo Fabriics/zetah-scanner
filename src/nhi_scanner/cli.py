@@ -18,11 +18,15 @@ from rich.console import Console
 from .report import escape
 
 from . import __version__
-from .engine import run_scan
+from .commands import safe_remediation
+from .engine import run_scan, write_payload_json
 from .models import Severity, ZetahScanPayload
 from .readiness import agent_readiness
 from .rules import RuleConfig
 
+
+# The synthetic tenant lives in memory: about 20 MB per 1,000 identities, so a typo cannot ask for a terabyte.
+MAX_DEMO_SIZE = 1_000_000
 
 # A secret is the credential the scanner warns about, so it is not what the help suggests: an interactive login, or an
 # identity that has no secret at all (managed identity, workload identity federation).
@@ -40,6 +44,8 @@ def _parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     p.add_argument("--demo", action="store_true", help="scan a synthetic tenant instead of a real one")
+    p.add_argument("--demo-size", type=int, metavar="N",
+                   help="with --demo, pad the synthetic tenant to about N identities (scale test)")
     p.add_argument("--tenant-id", help="Entra tenant to scan (default: the credential's home tenant)")
     p.add_argument("--skip-azure-rbac", action="store_true", help="do not read Azure RBAC role assignments")
     p.add_argument("--dormant-days", type=int, default=90, help="inactivity threshold for dormancy rules (default 90)")
@@ -70,6 +76,14 @@ def main(argv: Optional[list[str]] = None) -> int:
         if not (args.demo or args.tenant_id or args.json or args.pdf or args.from_json):
             return 0
 
+    if not 1 <= args.dormant_days <= 3650:
+        err.print("[red]✗ --dormant-days must be between 1 and 3650[/]")
+        return 1
+
+    if args.demo_size is not None and (not args.demo or not 1 <= args.demo_size <= MAX_DEMO_SIZE):
+        err.print(f"[red]✗ --demo-size needs --demo and between 1 and {MAX_DEMO_SIZE:,} identities[/]")
+        return 1
+
     if args.from_json:
         if args.demo or args.tenant_id:
             err.print("[red]✗ --from-json cannot be combined with --demo or --tenant-id[/]")
@@ -79,13 +93,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         except (OSError, ValueError) as exc:
             err.print(f"[red]✗ {escape(str(args.from_json))} is not a valid ZetahScanPayload: {escape(str(exc))}[/]")
             return 1
+        # a saved payload may have been edited by anyone: its commands pass the same check as freshly made ones
+        for f in payload.findings:
+            f.remediation_cli = safe_remediation(f.remediation_cli)
         org_name = args.org_name or payload.metadata.tenant_id
     else:
         cfg = RuleConfig(dormant_days=args.dormant_days)
         with console.status("[bold magenta]Collecting tenant data…[/]") as status:
             if args.demo:
-                from .demo import build_demo_snapshot
-                snap = build_demo_snapshot()
+                from .demo import build_demo_snapshot, build_scale_snapshot
+                snap = build_scale_snapshot(args.demo_size) if args.demo_size else build_demo_snapshot()
             else:
                 from azure.core.exceptions import ClientAuthenticationError
 
@@ -123,14 +140,18 @@ def main(argv: Optional[list[str]] = None) -> int:
         )
 
     if args.json:
-        args.json.write_text(payload.model_dump_json(indent=2) + "\n", encoding="utf-8")
+        write_payload_json(payload, args.json)
         console.print(f"[green]✓[/] ZetahScanPayload written to {args.json} "
                       f"([dim]{len(payload.entities)} entities, {len(payload.findings)} findings[/])")
 
     if args.pdf:
         from .pdf_report import write_pdf_report
-        with console.status("[bold magenta]Rendering PDF report…[/]"):
-            write_pdf_report(payload, args.pdf, org_name)
+        try:
+            with console.status("[bold magenta]Rendering PDF report…[/]"):
+                write_pdf_report(payload, args.pdf, org_name)
+        except Exception as exc:  # noqa: BLE001 — a report that cannot be laid out ends with a message
+            err.print(f"[red]✗ PDF report not written: {escape(str(exc)[:300])}[/]")
+            return 1
         console.print(f"[green]✓[/] PDF report written to {args.pdf}")
 
     if args.fail_on:

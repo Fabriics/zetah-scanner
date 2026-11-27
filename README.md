@@ -163,8 +163,8 @@ what the section does not cover yet. The record is new in contract version 2
 
 - Point-in-time scan; identities and permissions change continuously. A clean result covers only the
   checks listed above: it does not prove that an identity is harmless.
-- Only application permissions on Microsoft Graph are evaluated. Permissions on other APIs, such as
-  Exchange Online `full_access_as_app` or SharePoint Online, are not read yet.
+- Application permissions are evaluated on Microsoft Graph for every identity, and on Exchange Online and
+  SharePoint Online for third-party apps (NHI-PERM-004). Permissions on other APIs are not read yet.
 - Entra roles held through role-assignable groups, Azure roles held through groups, and custom Azure
   roles equivalent to Owner or Contributor are not evaluated yet.
 - Delegated permissions are read as consents. They act within each signed-in user's own access, which is

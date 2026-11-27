@@ -352,3 +352,39 @@ def test_other_directory_errors_still_stop_the_scan(monkeypatch):
     _backend(monkeypatch, forbidden=("/v1.0/applications",))
     with pytest.raises(collector.CollectionError, match="Application.Read.All"):
         collector.collect()
+
+
+def test_throttling_has_its_own_larger_budget(monkeypatch):
+    calls = []
+
+    def busy(url, **_kwargs):  # more 429s in a row than the error budget allows
+        calls.append(url)
+        if len(calls) <= collector.MAX_ERRORS + 4:
+            return types.SimpleNamespace(status_code=429, headers={"Retry-After": "1"}, text="")
+        return types.SimpleNamespace(status_code=200, json=lambda: {"ok": True})
+
+    assert _http_with(busy, monkeypatch).get("/v1.0/x") == {"ok": True}
+
+
+def test_endless_throttling_still_ends(monkeypatch):
+    calls = []
+
+    def always(url, **_kwargs):
+        calls.append(url)
+        return types.SimpleNamespace(status_code=429, headers={}, text="")
+
+    http = _http_with(always, monkeypatch)
+    slept = []
+    monkeypatch.setattr(collector.time, "sleep", slept.append)
+    with pytest.raises(collector.CollectionError, match="throttled"):
+        http.get("/v1.0/x")
+    assert len(calls) <= collector.MAX_THROTTLED
+    assert sum(slept) < collector.MAX_THROTTLED_WAIT + collector.MAX_RETRY_AFTER * 1.25  # minutes, never forever
+
+
+@pytest.mark.parametrize("header, expected", [
+    ("3", 3.0), ("0", 0.0), ("1e9", collector.MAX_RETRY_AFTER), ("inf", collector.MAX_RETRY_AFTER),
+    ("-5", 7.0), ("nan", 7.0), ("Wed, 21 Oct 2026 07:28:00 GMT", 7.0), ("", 7.0),
+])
+def test_retry_after_from_the_server_is_bounded(header, expected):
+    assert collector._retry_after({"Retry-After": header}, 7) == expected
